@@ -1,36 +1,47 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Frontend 문서
 
-## Getting Started
+---
 
-First, run the development server:
+# [기술 스택]
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+### 언어 & 프레임워크
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- React
+- Node.js
+- Next.js
+- TypeScript
+- turbopack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### **스타일링 라이브러리**
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Tailwind CSS
+- Phosphor Icons
+- Framer Motion
+- lottieFiles
 
-## Learn More
+### 상태 관리 라이브러리
 
-To learn more about Next.js, take a look at the following resources:
+- Zustand
+- TanStack Query (React Query)
+- axios
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 실시간 통신 라이브러리
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Socket.IO
 
-## Deploy on Vercel
+### 테스팅 라이브러리
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Jest
+- React Testing Library
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 컴포넌트 라이브러리
+
+- Storybook
+
+### 애니메이션 라이브러리 (캐릭터 움직임용)
+
+- Three.js
+
+---
+
+[프론트엔드 공부](https://www.notion.so/1ddfcf357f128009a5c6f1fb74045d6c?pvs=21)
