@@ -2,46 +2,197 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect, FormEvent, ChangeEvent } from "react";
 import { Eye, EyeSlash, X, CaretLeft } from "@phosphor-icons/react";
 
+// 타입 정의
+interface LoginFormData {
+  username: string;
+  password: string;
+}
+
+interface InputFieldProps {
+  id: string;
+  name: keyof LoginFormData;
+  label: string;
+  type: string;
+  value: string;
+  showPassword?: boolean;
+  focusedField: string | null;
+  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  onFocus: (fieldName: string) => void;
+  onBlur: () => void;
+  onClear: (field: keyof LoginFormData) => void;
+  onTogglePassword?: () => void;
+  isPassword?: boolean;
+}
+
+// 입력 필드 컴포넌트
+const InputField = ({
+  id,
+  name,
+  label,
+  type,
+  value,
+  showPassword,
+  focusedField,
+  onChange,
+  onFocus,
+  onBlur,
+  onClear,
+  onTogglePassword,
+  isPassword = false,
+}: InputFieldProps) => {
+  const isFocused = focusedField === name;
+  const hasValue = value !== "";
+
+  return (
+    <div className={`relative ${isFocused ? "bg-[#f8f5ff]" : ""}`}>
+      <div className="px-4 pt-2 pb-1 relative">
+        <span
+          className={`absolute transition-all duration-200 ${isFocused || hasValue
+            ? "text-xs text-[#6C2FF2] top-1"
+            : "text-base text-gray-500 top-3"
+            }`}
+        >
+          {label}
+        </span>
+        <input
+          type={isPassword ? (showPassword ? "text" : "password") : type}
+          id={id}
+          name={name}
+          value={value}
+          onChange={onChange}
+          onFocus={() => onFocus(name)}
+          onBlur={onBlur}
+          className="w-full pt-4 pb-1 focus:outline-none text-black"
+          style={{ background: "transparent" }}
+        />
+        <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex">
+          {isPassword && onTogglePassword && (
+            <button
+              type="button"
+              onClick={onTogglePassword}
+              className="mr-2 text-gray-400"
+              aria-label={showPassword ? "비밀번호 숨기기" : "비밀번호 표시"}
+            >
+              {showPassword ? <EyeSlash size={20} /> : <Eye size={20} />}
+            </button>
+          )}
+          {hasValue && (
+            <button
+              type="button"
+              onClick={() => onClear(name)}
+              className="text-gray-400"
+              aria-label="입력 지우기"
+            >
+              <X size={18} />
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function LoginPage() {
-  const [formData, setFormData] = useState({
+  // 상태 관리
+  const [formData, setFormData] = useState<LoginFormData>({
     username: "",
     password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // 입력 필드 변경 핸들러
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
       [name]: value,
     });
+    // 에러 메시지가 있었다면 지우기
+    if (error) setError(null);
   };
 
-  const handleClearInput = (field: "username" | "password") => {
+  // 입력 필드 지우기
+  const handleClearInput = (field: keyof LoginFormData) => {
     setFormData({
       ...formData,
       [field]: "",
     });
   };
 
+  // 비밀번호 표시/숨김 토글
   const handleTogglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("로그인 시도:", formData);
+  // 포커스 핸들러
+  const handleFocus = (fieldName: string) => {
+    setFocusedField(fieldName);
   };
+
+  // 블러 핸들러
+  const handleBlur = () => {
+    setFocusedField(null);
+  };
+
+  // 폼 제출 핸들러
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+
+    // 입력값 검증
+    if (!formData.username.trim()) {
+      setError("아이디를 입력해주세요.");
+      return;
+    }
+
+    if (!formData.password.trim()) {
+      setError("비밀번호를 입력해주세요.");
+      return;
+    }
+
+    // API 연동 시 로직
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      // API 통신 코드가 들어갈 위치
+      console.log("로그인 시도:", formData);
+
+      // 로그인 성공 시 처리 (주석 처리)
+      // router.push('/main');
+
+    } catch (err) {
+      // 실제 에러 처리
+      setError("로그인에 실패했습니다. 아이디와 비밀번호를 확인해주세요.");
+      console.error("로그인 오류:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 키보드 이벤트 핸들러 (Enter 키로 제출)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Enter" && focusedField) {
+        const form = document.getElementById("login-form") as HTMLFormElement;
+        if (form) form.requestSubmit();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [focusedField]);
 
   return (
     <div className="flex flex-col items-center px-6 py-8">
       {/* 뒤로가기 버튼 */}
       <div className="self-start mb-10">
-        <Link href="/" className="text-2xl">
+        <Link href="/" className="text-2xl" aria-label="홈으로 돌아가기">
           <CaretLeft size={24} weight="bold" />
         </Link>
       </div>
@@ -58,95 +209,64 @@ export default function LoginPage() {
       </div>
 
       {/* 로그인 폼 */}
-      <form onSubmit={handleSubmit} className="w-full mb-6">
-        {/* 입력 필드 컨테이너 - 테두리가 있는 둥근 박스 */}
+      <form id="login-form" onSubmit={handleSubmit} className="w-full mb-6">
+        {/* 입력 필드 컨테이너 */}
         <div className="w-full rounded-lg border border-gray-300 overflow-hidden mb-6">
           {/* 아이디 입력 필드 */}
-          <div className={`relative ${focusedField === 'username' ? 'bg-[#f8f5ff]' : ''}`}>
-            <div className="px-4 pt-2 pb-1 relative">
-              <span className={`absolute transition-all duration-200 ${(focusedField === 'username' || formData.username)
-                ? 'text-xs text-[#6C2FF2] top-1'
-                : 'text-base text-gray-500 top-3'
-                }`}>
-                아이디
-              </span>
-              <input
-                type="text"
-                id="username"
-                name="username"
-                value={formData.username}
-                onChange={handleChange}
-                onFocus={() => setFocusedField('username')}
-                onBlur={() => setFocusedField(null)}
-                className="w-full pt-4 pb-1 focus:outline-none text-black"
-                style={{ background: 'transparent' }}
-              />
-              {formData.username && (
-                <button
-                  type="button"
-                  onClick={() => handleClearInput("username")}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                >
-                  <X size={18} />
-                </button>
-              )}
-            </div>
-          </div>
+          <InputField
+            id="username"
+            name="username"
+            label="아이디"
+            type="text"
+            value={formData.username}
+            focusedField={focusedField}
+            onChange={handleChange}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            onClear={handleClearInput}
+          />
 
-          {/* 구분선 - 포커스된 필드에 따라 색상 변경 */}
-          <div className={`border-t ${focusedField === 'username' ? 'border-[#6C2FF2]' :
-            focusedField === 'password' ? 'border-[#6C2FF2]' :
-              'border-gray-300'
-            }`}></div>
+          {/* 구분선 */}
+          <div
+            className={`border-t ${focusedField === "username" || focusedField === "password"
+              ? "border-[#6C2FF2]"
+              : "border-gray-300"
+              }`}
+          ></div>
 
           {/* 비밀번호 입력 필드 */}
-          <div className={`relative ${focusedField === 'password' ? 'bg-[#f8f5ff]' : ''}`}>
-            <div className="px-4 pt-2 pb-1 relative">
-              <span className={`absolute transition-all duration-200 ${(focusedField === 'password' || formData.password)
-                ? 'text-xs text-[#6C2FF2] top-1'
-                : 'text-base text-gray-500 top-3'
-                }`}>
-                비밀번호
-              </span>
-              <input
-                type={showPassword ? "text" : "password"}
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                onFocus={() => setFocusedField('password')}
-                onBlur={() => setFocusedField(null)}
-                className="w-full pt-4 pb-1 focus:outline-none text-black"
-                style={{ background: 'transparent' }}
-              />
-              <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex">
-                <button
-                  type="button"
-                  onClick={handleTogglePasswordVisibility}
-                  className="mr-2 text-gray-400"
-                >
-                  {showPassword ? <EyeSlash size={20} /> : <Eye size={20} />}
-                </button>
-                {formData.password && (
-                  <button
-                    type="button"
-                    onClick={() => handleClearInput("password")}
-                    className="text-gray-400"
-                  >
-                    <X size={18} />
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
+          <InputField
+            id="password"
+            name="password"
+            label="비밀번호"
+            type="password"
+            value={formData.password}
+            showPassword={showPassword}
+            focusedField={focusedField}
+            onChange={handleChange}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            onClear={handleClearInput}
+            onTogglePassword={handleTogglePasswordVisibility}
+            isPassword={true}
+          />
         </div>
+
+        {/* 에러 메시지 */}
+        {error && (
+          <div className="text-red-500 text-sm mb-4">
+            {error}
+          </div>
+        )}
 
         {/* 로그인 버튼 */}
         <button
           type="submit"
-          className="w-full p-3 rounded-md bg-[#6C2FF2] text-white font-medium"
+          className={`w-full p-3 rounded-md ${isLoading ? "bg-gray-400" : "bg-[#6C2FF2]"
+            } text-white font-medium`}
+          disabled={isLoading}
         >
-          로그인
+          {isLoading ? "로그인 중..." : "로그인"}
         </button>
       </form>
 
