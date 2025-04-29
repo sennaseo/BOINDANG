@@ -21,15 +21,15 @@ export default function SignUpComplete() {
 
         <h1 className="text-2xl font-bold mb-3">회원가입 완료!</h1>
         <p className="text-gray-600 mb-8">
-          보인당 서비스에 가입해주셔서 감사합니다.<br />
-          맞춤 영양 분석을 통해 건강한 식단 관리를 시작해보세요.
+          복잡했던 식품 라벨 분석과 맞춤 영양 리포트, <br />
+          이제 보인당과 함께 쉽고 재미있게 관리해보세요!
         </p>
       </div>
 
       <div className="px-6 py-5 w-full bg-white">
         <Button
           type="button"
-          text="시작하기"
+          text="네 좋아요!"
           onClick={goToHome}
         />
       </div>
