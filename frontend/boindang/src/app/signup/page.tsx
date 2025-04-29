@@ -99,8 +99,8 @@ export default function SignUp() {
       );
       */
 
-      // 다음 단계(타입 선택 페이지)로 이동 - 실제 API 연동 전까지 사용
-      router.push('/signup/type');
+      // 다음 단계(신체 정보 입력 페이지)로 이동 - 실제 API 연동 전까지 사용
+      router.push('/signup/physical-info');
     }
   };
 
