@@ -17,7 +17,7 @@ export default function ActionMenu({ onClose }: ActionMenuProps) {
       {/* 메뉴 컨테이너: 상단 테두리 추가 */}
       {/* 3. 검은 선 문제 해결 시도: z-[51], overflow-hidden 추가 */}
       <div
-        className="bg-white w-full rounded-t-2xl p-6 pt-8 flex flex-col items-center relative z-[51] overflow-hidden border-t border-gray-200"
+        className="bg-white w-full md:w-[440px] md:mx-auto rounded-t-2xl p-6 pt-8 flex flex-col items-center relative z-[51] overflow-hidden border-t border-gray-200"
         onClick={(e) => e.stopPropagation()} // 메뉴 내부 클릭 시 이벤트 전파 방지
       >
         {/* 성분 분석하기 버튼 */}
