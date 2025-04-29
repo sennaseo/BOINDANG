@@ -23,7 +23,7 @@ export default function ActionMenu({ onClose }: ActionMenuProps) {
         {/* 성분 분석하기 버튼 */}
         {/* TODO: 성분 분석 페이지 또는 기능 경로로 변경 */}
         <Link
-          href="/analyze"
+          href="/ocr/camera"
           className="w-full border border-[#6C2FF2] rounded-xl p-4 flex items-center justify-center gap-2 mb-6 text-[#6C2FF2] font-medium hover:bg-[#F5F1FF] transition-colors"
           onClick={onClose} // 링크 클릭 시 메뉴 닫기
         >
