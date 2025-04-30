@@ -1,6 +1,6 @@
 'use client';
 
-import { Camera, NewspaperClipping, Trophy, BookmarkSimple, X } from "@phosphor-icons/react";
+import { Camera, NewspaperClipping, Trophy, BookmarkSimple, X, ChatCircleDots } from "@phosphor-icons/react";
 import Link from "next/link"; // Link 컴포넌트 사용을 위해 import
 
 interface ActionMenuProps {
@@ -31,27 +31,34 @@ export default function ActionMenu({ onClose }: ActionMenuProps) {
           <span>성분 분석하기</span>
         </Link>
 
-        {/* 카드 뉴스 / 영양 퀴즈 / 체험단: justify-around, flex-1 추가 */}
-        <div className="flex justify-around w-full mb-8">
+        {/* 카드 뉴스 / 영양 퀴즈 / 체험단 / 커뮤니티: 3열 그리드, gap-y-6 추가 */}
+        <div className="grid grid-cols-3 gap-y-6 w-full mb-8">
           {/* 카드 뉴스 */}
           {/* TODO: 카드 뉴스 페이지 경로로 변경 */}
-          <Link href="/news" className="flex flex-1 flex-col items-center gap-1 text-gray-700 text-sm" onClick={onClose}>
+          <Link href="/news" className="flex flex-col items-center gap-1 text-gray-700 text-sm" onClick={onClose}>
             <NewspaperClipping size={28} weight="fill" />
             <span>카드 뉴스</span>
           </Link>
 
           {/* 영양 퀴즈 */}
           {/* TODO: 영양 퀴즈 페이지 경로로 변경 */}
-          <Link href="/quiz" className="flex flex-1 flex-col items-center gap-1 text-gray-700 text-sm" onClick={onClose}>
+          <Link href="/quiz" className="flex flex-col items-center gap-1 text-gray-700 text-sm" onClick={onClose}>
             <Trophy size={28} weight="fill" />
             <span>영양 퀴즈</span>
           </Link>
 
           {/* 체험단 */}
           {/* TODO: 체험단 페이지 경로로 변경 */}
-          <Link href="/experience" className="flex flex-1 flex-col items-center gap-1 text-gray-700 text-sm" onClick={onClose}>
+          <Link href="/experience" className="flex flex-col items-center gap-1 text-gray-700 text-sm" onClick={onClose}>
             <BookmarkSimple size={28} weight="fill" />
             <span>체험단</span>
+          </Link>
+
+          {/* 커뮤니티 - 새로운 메뉴 항목 */}
+          {/* TODO: 커뮤니티 페이지 경로로 변경 */}
+          <Link href="/community" className="flex flex-col items-center gap-1 text-gray-700 text-sm" onClick={onClose}>
+            <ChatCircleDots size={28} weight="fill" />
+            <span>커뮤니티</span>
           </Link>
         </div>
 
