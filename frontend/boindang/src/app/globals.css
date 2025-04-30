@@ -24,3 +24,9 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@layer utilities {
+  .offset-path {
+    offset-path: path('M0,160 C360,80 1080,240 1440,160');
+  }
+}
