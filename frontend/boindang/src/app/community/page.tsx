@@ -89,9 +89,9 @@ export default function CommunityPage() {
           <div className="flex justify-between items-center">
             <h1 className="text-xl font-bold">커뮤니티</h1>
             <div className="flex items-center gap-x-4">
-              <button aria-label="사용자 프로필">
+              <Link href="/community/profile" aria-label="사용자 프로필">
                 <User size={24} weight="fill" color="#4A5568" />
-              </button>
+              </Link>
               <Link href="/community/write" aria-label="글쓰기">
                 <PencilSimple size={24} weight="fill" color="#4A5568" />
               </Link>
