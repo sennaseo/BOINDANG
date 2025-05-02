@@ -16,12 +16,12 @@ export const metadata: Metadata = {
   title: "보인당",
   description: "보인당 앱",
   manifest: "/manifest.json",
-  themeColor: "#FFFFFF",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
     title: "보인당",
   },
+  applicationName: "보인당",
 };
 
 export default function RootLayout({
@@ -34,7 +34,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <div className="w-full md:mx-auto md:max-w-[440px] min-h-screen bg-white md:border md:border-gray-200 md:shadow-lg md:my-4">
+        <div className="w-full md:mx-auto md:max-w-[440px] min-h-screen bg-white border border-gray-200 shadow-lg">
           <main>
             {children}
           </main>
