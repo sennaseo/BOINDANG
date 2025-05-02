@@ -230,17 +230,10 @@ export default function OnboardingPage() {
                   router.push('/login');
                 }
               }}
-<<<<<<< HEAD
-              className={`flex items-center justify-center transition-all duration-300
-                ${page === 2
-                  ? 'w-32 h-12 rounded-full bg-[#6C2FF2] text-white font-medium mx-auto'
-                  : 'w-14 h-14 rounded-full bg-[#6C2FF2] ml-auto'
-=======
               className={`flex items-center justify-center transition-all duration-300 ${page === 0 ? 'ml-auto' : ''}
                 ${page === 2 
                   ? 'w-20 h-12 rounded-full bg-[#6C2FF2] text-white font-medium' 
                   : 'w-14 h-14 rounded-full bg-[#6C2FF2]'
->>>>>>> fe/develop
                 }`}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
