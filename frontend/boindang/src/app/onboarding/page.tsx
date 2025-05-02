@@ -25,6 +25,50 @@ export default function OnboardingPage() {
 
   return (
     <div className="relative w-full h-screen bg-white overflow-hidden">
+      {/* Skip 버튼 */}
+      {page !== 2 && (
+        <motion.button
+          onClick={() => router.push('/login')}
+          className="absolute top-8 right-4 text-gray-300 font-medium text-base z-20 flex items-center gap-0.5"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          Skip
+          <span className="inline-flex items-center">
+            <svg 
+              width="14" 
+              height="14" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              className="text-gray-300"
+            >
+              <path 
+                d="M9 6L15 12L9 18" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              />
+            </svg>
+            <svg 
+              width="14" 
+              height="14" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              className="text-gray-300 -ml-2"
+            >
+              <path 
+                d="M9 6L15 12L9 18" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              />
+            </svg>
+          </span>
+        </motion.button>
+      )}
+
       {/* 배경 이미지 슬라이더 */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute w-full h-full">
@@ -141,16 +185,31 @@ export default function OnboardingPage() {
           </div>
 
           {/* 버튼 영역 */}
-          <div className="w-full flex justify-between items-center px-4">
-            {/* Skip 버튼 */}
-            {page !== 2 && (
+          <div className="relative w-full flex justify-between items-center px-4">
+            {/* 뒤로가기 버튼 */}
+            {page !== 0 && (
               <motion.button
-                onClick={() => router.push('/login')}
-                className="text-[#6C2FF2] font-medium text-lg"
+                onClick={() => setPage(page - 1)}
+                className="flex items-center justify-center w-14 h-14 rounded-full border-2 border-[#6C2FF2]"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                Skip
+                <svg 
+                  width="24" 
+                  height="24" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  className="text-[#6C2FF2]"
+                  style={{ transform: 'rotate(180deg)' }}
+                >
+                  <path 
+                    d="M9 6L15 12L9 18" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  />
+                </svg>
               </motion.button>
             )}
 
@@ -163,16 +222,16 @@ export default function OnboardingPage() {
                   router.push('/login');
                 }
               }}
-              className={`flex items-center justify-center transition-all duration-300
+              className={`flex items-center justify-center transition-all duration-300 ${page === 0 ? 'ml-auto' : ''}
                 ${page === 2 
-                  ? 'w-32 h-12 rounded-full bg-[#6C2FF2] text-white font-medium mx-auto' 
-                  : 'w-14 h-14 rounded-full bg-[#6C2FF2] ml-auto'
+                  ? 'w-20 h-12 rounded-full bg-[#6C2FF2] text-white font-medium' 
+                  : 'w-14 h-14 rounded-full bg-[#6C2FF2]'
                 }`}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
               {page === 2 ? (
-                "시작하기"
+                "Start"
               ) : (
                 <svg 
                   width="24" 
