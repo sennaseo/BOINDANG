@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: gateway
+  cloud:
+    gateway:
+      routes:
+        - id: test-service
+          uri: lb://test-service
+          predicates:
+            - Path=/test-service/**
+
+eureka:
+  client:
+    enabled: true
+    fetch-registry: true
+    register-with-eureka: false
+    service-url:
+      defaultZone: http://172.31.4.100:8761/eureka/
+
+server:
+  port: 8000

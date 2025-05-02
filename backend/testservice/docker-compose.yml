@@ -1,0 +1,10 @@
+services:
+  test-server:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: test-server
+    container_name: test-server
+    ports:
+      - "8000:8081"
+    restart: always
