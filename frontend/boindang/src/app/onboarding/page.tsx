@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 const onboardingContent = [
   {
@@ -83,11 +84,13 @@ export default function OnboardingPage() {
             }}
           >
             <div className="absolute w-[300%] h-full">
-              <img
+              <Image
                 src="/assets/onboarding/wave.png"
                 alt="Wave Background"
-                className="w-full h-full object-cover"
+                fill
+                priority
                 style={{
+                  objectFit: 'cover',
                   maxWidth: '120%',
                   maxHeight: '120vh',
                   transform: 'scale(1.2)'
@@ -113,15 +116,13 @@ export default function OnboardingPage() {
         >
           <motion.div
             animate={{ opacity: [0, 1] }}
-            transition={{ 
+            transition={{
               duration: 0.5,
-              delay: 2 
+              delay: 2
             }}
           >
-            <motion.img
-              src={`/assets/onboarding/sugar${page + 1}.png`}
-              alt="Sugar Character"
-              className="w-40 h-40 sm:w-48 sm:h-48 md:w-52 md:h-52 max-w-[208px]"
+            <motion.div
+              className="w-40 h-40 sm:w-48 sm:h-48 md:w-52 md:h-52 max-w-[208px] relative"
               animate={{
                 y: [-10, 10],
                 rotate: [-5, 5],
@@ -140,7 +141,15 @@ export default function OnboardingPage() {
                   ease: "easeInOut"
                 }
               }}
-            />
+            >
+              <Image
+                src={`/assets/onboarding/sugar${page + 1}.png`}
+                alt="Sugar Character"
+                fill
+                sizes="(max-width: 640px) 10rem, (max-width: 768px) 12rem, 13rem"
+                style={{ objectFit: 'contain' }}
+              />
+            </motion.div>
           </motion.div>
         </motion.div>
       </div>
@@ -175,11 +184,10 @@ export default function OnboardingPage() {
               <button
                 key={idx}
                 onClick={() => setPage(idx)}
-                className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                  idx === page 
-                    ? 'bg-[#6C2FF2] w-4' 
-                    : 'bg-[#D4C6FF]'
-                }`}
+                className={`w-2 h-2 rounded-full transition-all duration-300 ${idx === page
+                  ? 'bg-[#6C2FF2] w-4'
+                  : 'bg-[#D4C6FF]'
+                  }`}
               />
             ))}
           </div>
@@ -222,10 +230,17 @@ export default function OnboardingPage() {
                   router.push('/login');
                 }
               }}
+<<<<<<< HEAD
+              className={`flex items-center justify-center transition-all duration-300
+                ${page === 2
+                  ? 'w-32 h-12 rounded-full bg-[#6C2FF2] text-white font-medium mx-auto'
+                  : 'w-14 h-14 rounded-full bg-[#6C2FF2] ml-auto'
+=======
               className={`flex items-center justify-center transition-all duration-300 ${page === 0 ? 'ml-auto' : ''}
                 ${page === 2 
                   ? 'w-20 h-12 rounded-full bg-[#6C2FF2] text-white font-medium' 
                   : 'w-14 h-14 rounded-full bg-[#6C2FF2]'
+>>>>>>> fe/develop
                 }`}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -233,18 +248,18 @@ export default function OnboardingPage() {
               {page === 2 ? (
                 "Start"
               ) : (
-                <svg 
-                  width="24" 
-                  height="24" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
                   className="text-white"
                 >
-                  <path 
-                    d="M9 6L15 12L9 18" 
-                    stroke="currentColor" 
-                    strokeWidth="2" 
-                    strokeLinecap="round" 
+                  <path
+                    d="M9 6L15 12L9 18"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
                     strokeLinejoin="round"
                   />
                 </svg>
