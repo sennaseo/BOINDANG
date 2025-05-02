@@ -23,7 +23,7 @@ export default function BottomNavBar() {
       {/* 액션 메뉴 */}
       {isActionMenuOpen && <ActionMenu onClose={toggleActionMenu} />} {/* 조건부 렌더링 및 onClose 전달 */}
 
-      <nav className="fixed bottom-0 left-0 right-0 w-full h-[70px] bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.05)] flex items-center justify-around px-4 z-40"> {/* z-index 조정 */}
+      <nav className="fixed bottom-0 left-0 right-0 w-full md:max-w-[440px] md:mx-auto h-[70px] bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.05)] flex items-center justify-around px-4 z-40"> {/* z-index 조정 */}
         {/* 홈 */}
         <Link href="/" className="flex flex-col items-center justify-center w-1/5">
           <House size={26} weight="fill" color={pathname === '/' ? activeColor : inactiveColor} />

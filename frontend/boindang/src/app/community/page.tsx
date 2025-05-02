@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { User, PencilSimple, Heart, ChatCircle } from '@phosphor-icons/react';
 import BottomNavBar from '../../components/navigation/BottomNavBar';
 
@@ -91,9 +92,9 @@ export default function CommunityPage() {
               <button aria-label="사용자 프로필">
                 <User size={24} weight="fill" color="#4A5568" />
               </button>
-              <button aria-label="글쓰기">
+              <Link href="/community/write" aria-label="글쓰기">
                 <PencilSimple size={24} weight="fill" color="#4A5568" />
-              </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -140,7 +141,7 @@ export default function CommunityPage() {
       <main className="pt-4 pb-[70px] flex flex-col divide-y divide-gray-200">
         {/* 피드 탭 활성 시 게시물 목록 렌더링 */}
         {activeTab === '피드' && posts.map((post) => (
-          <div key={post.id} className="bg-white p-4 shadow-sm">
+          <Link key={post.id} href={`/community/${post.id}`} className="block bg-white p-4 shadow-sm hover:bg-gray-50 transition-colors duration-150">
             {/* 사용자 정보 */}
             <div className="flex items-center mb-3">
               <div className={`w-8 h-8 rounded-full ${post.authorImage} mr-2`}></div>
@@ -150,7 +151,7 @@ export default function CommunityPage() {
               </div>
             </div>
             {/* 본문 내용 - 이미지 유무에 따라 mb 조정 */}
-            <p className={`text-text-primary text-sm ${post.imageUrl ? 'mb-2' : 'mb-4'}`}>{post.content}</p>
+            <p className={`text-text-primary text-sm ${post.imageUrl ? 'mb-2' : 'mb-4'} line-clamp-3`}>{post.content}</p>
             {/* 이미지 영역 (이미지 URL이 있을 경우) */}
             {post.imageUrl && (
               <div className="h-[180px] bg-gray-100 rounded-[22px] mb-4 flex items-center justify-center text-gray-400">
@@ -158,22 +159,28 @@ export default function CommunityPage() {
                 (이미지: {post.imageUrl})
               </div>
             )}
-            {/* 좋아요 / 댓글 버튼 */}
-            <div className="flex items-center text-gray-600">
-              <button
-                onClick={() => handleLikeToggle(post.id)}
-                className="w-1/2 flex justify-center items-center gap-x-1"
+            {/* 좋아요 / 댓글 버튼 - Link 내부에서는 button 동작 방식 확인 필요 */}
+            <div className="flex items-center text-gray-600 mt-2">
+              <div
+                // onClick 핸들러는 Link 내부에서 직접 사용 시 이벤트 전파 문제 발생 가능성 있음
+                // 필요 시 이벤트 버블링 중단(e.stopPropagation()) 또는 별도 컴포넌트 분리 고려
+                className="w-1/2 flex justify-center items-center gap-x-1 cursor-pointer"
+                onClick={(e) => {
+                  e.preventDefault(); // Link 이동 방지
+                  e.stopPropagation(); // 이벤트 버블링 중단
+                  handleLikeToggle(post.id); // 기존 좋아요 토글 함수 호출
+                }}
               >
                 <Heart size={22} weight="fill" color={post.isLiked ? '#6C2FF2' : '#A0AEC0'} />
                 <span className="text-sm">{post.likes}</span>
-              </button>
-              <button className="w-1/2 flex justify-center items-center gap-x-1">
+              </div>
+              <div className="w-1/2 flex justify-center items-center gap-x-1 cursor-pointer">
                 <ChatCircle size={22} weight="fill" color="#A0AEC0" />
                 {/* TODO: 실제 댓글 수 표시 */}
                 <span className="text-sm">댓글 달기</span>
-              </button>
+              </div>
             </div>
-          </div>
+          </Link>
         ))}
 
         {/* 매거진 탭 활성 시 */}
