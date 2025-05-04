@@ -1,8 +1,8 @@
 package com.boindang.encyclopedia.presentation;
 
-import co.elastic.clients.elasticsearch.xpack.usage.Base;
 import com.boindang.encyclopedia.application.EncyclopediaService;
 import com.boindang.encyclopedia.common.response.BaseResponse;
+import com.boindang.encyclopedia.presentation.dto.EncyclopediaDetailResponse;
 import com.boindang.encyclopedia.presentation.dto.EncyclopediaSearchResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -36,4 +36,10 @@ public class EncyclopediaController implements EncyclopediaApi {
 
         return BaseResponse.success(encyclopediaService.searchIngredients(query));
     }
+
+    @Override
+    public BaseResponse<EncyclopediaDetailResponse> getDetail(String id) {
+        return BaseResponse.success(encyclopediaService.getIngredientDetail(id));
+    }
+
 }

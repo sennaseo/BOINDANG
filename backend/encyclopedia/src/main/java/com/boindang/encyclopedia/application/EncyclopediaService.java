@@ -1,7 +1,11 @@
 package com.boindang.encyclopedia.application;
 
+import com.boindang.encyclopedia.application.mapper.EncyclopediaMapper;
+import com.boindang.encyclopedia.common.exception.ErrorCode;
+import com.boindang.encyclopedia.common.exception.IngredientException;
 import com.boindang.encyclopedia.domain.IngredientDictionary;
 import com.boindang.encyclopedia.infrastructure.EncyclopediaRepository;
+import com.boindang.encyclopedia.presentation.dto.EncyclopediaDetailResponse;
 import com.boindang.encyclopedia.presentation.dto.EncyclopediaSearchResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -55,4 +59,12 @@ public class EncyclopediaService {
                 .map(EncyclopediaSearchResponse::from)
                 .toList();
     }
+
+    public EncyclopediaDetailResponse getIngredientDetail(String id) {
+        IngredientDictionary ingredient = encyclopediaRepository.findById(id)
+                .orElseThrow(() -> new IngredientException(ErrorCode.INGREDIENT_NOT_FOUND));
+
+        return EncyclopediaMapper.toDetailResponse(ingredient);
+    }
+
 }
