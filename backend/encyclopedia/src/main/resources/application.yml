@@ -1,0 +1,17 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: encyclopedia
+
+  elasticsearch:
+    uris: http://localhost:9200
+    connection-timeout: 3s
+    socket-timeout: 3s
+    index:
+      auto-create: true
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
