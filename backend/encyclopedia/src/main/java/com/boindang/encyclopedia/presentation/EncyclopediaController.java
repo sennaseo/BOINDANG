@@ -1,15 +1,9 @@
 package com.boindang.encyclopedia.presentation;
 
+import co.elastic.clients.elasticsearch.xpack.usage.Base;
 import com.boindang.encyclopedia.application.EncyclopediaService;
 import com.boindang.encyclopedia.common.response.BaseResponse;
 import com.boindang.encyclopedia.presentation.dto.EncyclopediaSearchResponse;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -34,6 +28,10 @@ public class EncyclopediaController implements EncyclopediaApi {
     public BaseResponse<List<EncyclopediaSearchResponse>> search(@RequestParam String query) {
         if (query == null || query.trim().isEmpty()) {
             return BaseResponse.fail(400, "검색어를 입력하세요.");
+        }
+
+        if (query.trim().length() < 2) {
+            return BaseResponse.fail(400, "검색어는 최소 2자 이상 입력해주세요.");
         }
 
         return BaseResponse.success(encyclopediaService.searchIngredients(query));
