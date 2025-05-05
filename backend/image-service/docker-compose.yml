@@ -1,0 +1,22 @@
+services:
+  image-service:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: image-service
+    container_name: image-service
+    depends_on:
+      image-db:
+        condition: service_healthy
+    ports:
+      - "8082:8082"
+    restart: always
+    networks:
+      - image-network
+
+volumes:
+  mysql_data:
+
+networks:
+  image-network:
+    external: true
