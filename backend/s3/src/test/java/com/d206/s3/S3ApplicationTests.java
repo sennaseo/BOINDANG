@@ -1,10 +1,10 @@
-package com.d206.testservice;
+package com.d206.s3;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class TestserviceApplicationTests {
+class S3ApplicationTests {
 
 	@Test
 	void contextLoads() {

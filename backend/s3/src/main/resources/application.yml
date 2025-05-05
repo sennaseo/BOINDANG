@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: s3
+
+
+# S3 ??
+cloud:
+  aws:
+    s3:
+      bucket: ${S3_BUCKET_NAME}
+    credentials:
+      access-key: ${S3_ACCESS_KEY}
+      secret-key: ${S3_SECRET_ACCESS_KEY}
+    region:
+      static: ${S3_REGION}
+    stack:
+      auto: false
+
+## prometheusds
+#management:
+#  endpoints:
+#    web:
+#      exposure:
+#        include: "*"
+#  server:
+#    port: 1111 # ?? ?? ??
+##    base-path: # ?? ?? ??
+
+server:
+  port: ${SERVER_PORT}

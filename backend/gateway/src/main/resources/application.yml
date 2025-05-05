@@ -5,7 +5,7 @@ spring:
     gateway:
       routes:
         - id: test-service
-          uri: lb://test-service
+          uri: lb://TEST-SERVICE
           predicates:
             - Path=/test-service/**
 
@@ -15,7 +15,8 @@ eureka:
     fetch-registry: true
     register-with-eureka: false
     service-url:
-      defaultZone: http://172.31.4.100:8761/eureka/
+#      defaultZone: http://172.31.4.100:8761/eureka/
+      defaultZone: http://localhost:8761/eureka/
 
 server:
   port: 8000

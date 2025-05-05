@@ -1,13 +1,13 @@
-package com.d206.testservice;
+package com.d206.s3;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class TestserviceApplication {
+public class S3Application {
 
 	public static void main(String[] args) {
-		SpringApplication.run(TestserviceApplication.class, args);
+		SpringApplication.run(S3Application.class, args);
 	}
 
 }
