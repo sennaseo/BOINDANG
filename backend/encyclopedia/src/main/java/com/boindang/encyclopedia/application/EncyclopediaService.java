@@ -17,6 +17,7 @@ import java.util.List;
 public class EncyclopediaService {
 
     private final EncyclopediaRepository encyclopediaRepository;
+    private final PopularIngredientService popularIngredientService;
 
     public void saveIngredientData() {
         IngredientDictionary ingredient = IngredientDictionary.builder()
@@ -55,15 +56,23 @@ public class EncyclopediaService {
     }
 
     public List<EncyclopediaSearchResponse> searchIngredients(String query) {
-        return encyclopediaRepository.findByNameContaining(query).stream()
+        List<EncyclopediaSearchResponse> results = encyclopediaRepository.findByNameContaining(query)
+                .stream()
                 .map(EncyclopediaSearchResponse::from)
                 .toList();
+
+        // 검색 결과가 존재하면 첫 번째 결과의 정확한 성분명으로 Redis 카운트 증가
+        if (!results.isEmpty()) {
+            String accurateName = results.get(0).getName(); // ex. "말티톨"
+            popularIngredientService.incrementSearchCount(accurateName);
+        }
+
+        return results;
     }
 
     public EncyclopediaDetailResponse getIngredientDetail(String id) {
         IngredientDictionary ingredient = encyclopediaRepository.findById(id)
                 .orElseThrow(() -> new IngredientException(ErrorCode.INGREDIENT_NOT_FOUND));
-
         return EncyclopediaMapper.toDetailResponse(ingredient);
     }
 

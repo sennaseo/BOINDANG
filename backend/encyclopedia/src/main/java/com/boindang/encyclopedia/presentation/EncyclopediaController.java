@@ -1,6 +1,7 @@
 package com.boindang.encyclopedia.presentation;
 
 import com.boindang.encyclopedia.application.EncyclopediaService;
+import com.boindang.encyclopedia.application.PopularIngredientService;
 import com.boindang.encyclopedia.common.response.BaseResponse;
 import com.boindang.encyclopedia.presentation.dto.EncyclopediaDetailResponse;
 import com.boindang.encyclopedia.presentation.dto.EncyclopediaSearchResponse;
@@ -17,6 +18,7 @@ import java.util.List;
 public class EncyclopediaController implements EncyclopediaApi {
 
     private final EncyclopediaService encyclopediaService;
+    private final PopularIngredientService popularIngredientService;
 
     @PostMapping("/insert-data")
     public String insertSample() {

@@ -76,5 +76,4 @@ public interface EncyclopediaApi {
     @GetMapping("/{id}")
     BaseResponse<EncyclopediaDetailResponse> getDetail(
             @Parameter(description = "성분 ID", required = true) @PathVariable String id);
-
 }
