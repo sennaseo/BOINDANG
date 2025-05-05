@@ -1,0 +1,10 @@
+services:
+  eureka-server:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: eureka-server
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    restart: always
