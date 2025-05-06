@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/ingredients")
@@ -28,7 +29,10 @@ public class EncyclopediaController implements EncyclopediaApi {
     }
 
     @Override
-    public BaseResponse<List<EncyclopediaSearchResponse>> search(@RequestParam String query) {
+    public BaseResponse<Map<String, Object>> searchIngredients(
+            @RequestParam String query,
+            @RequestParam boolean suggested
+    ) {
         if (query == null || query.trim().isEmpty()) {
             return BaseResponse.fail(400, "검색어를 입력하세요.");
         }
@@ -37,7 +41,7 @@ public class EncyclopediaController implements EncyclopediaApi {
             return BaseResponse.fail(400, "검색어는 최소 2자 이상 입력해주세요.");
         }
 
-        return BaseResponse.success(encyclopediaService.searchIngredients(query));
+        return BaseResponse.success(encyclopediaService.searchWithSuggestion(query, suggested));
     }
 
     @Override

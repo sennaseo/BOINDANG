@@ -88,10 +88,24 @@ public class EncyclopediaService {
         encyclopediaRepository.save(ingredient);
     }
 
-    public List<EncyclopediaSearchResponse> searchIngredients(String query) {
+    public Map<String, Object> searchWithSuggestion(String query, boolean suggested) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("originalQuery", query);  // 항상 포함
+
+        if (!suggested) {
+            // suggestedName 무시하고 원 검색어 그대로 검색 (Fuzzy 없이 정확한 match만 적용 가능)
+            List<EncyclopediaSearchResponse> exactResults = encyclopediaRepository.findByNameContaining(query)
+                    .stream()
+                    .map(EncyclopediaSearchResponse::from)
+                    .toList();
+
+            result.put("suggestedName", null);
+            result.put("results", exactResults);
+            return result;
+        }
+
         SearchSourceBuilder builder = new SearchSourceBuilder()
-                .query(QueryBuilders.matchQuery("name", query)
-                        .fuzziness(Fuzziness.AUTO))
+                .query(QueryBuilders.matchQuery("name", query).fuzziness(Fuzziness.AUTO))
                 .size(20);
 
         SearchRequest request = new SearchRequest("ingredients").source(builder);
@@ -102,25 +116,33 @@ public class EncyclopediaService {
                     .map(hit -> EncyclopediaSearchResponse.from2(hit.getSourceAsMap()))
                     .collect(Collectors.toList());
 
-            // Fuzzy 결과가 없으면 Prefix 기반으로 fallback
-            if (results.isEmpty()) {
-                SearchSourceBuilder fallbackBuilder = new SearchSourceBuilder()
-                        .query(QueryBuilders.prefixQuery("name.keyword", query)) // keyword or edge_ngram 가능
-                        .size(20);
-
-                SearchRequest fallbackRequest = new SearchRequest("ingredients").source(fallbackBuilder);
-                SearchResponse fallbackResponse = client.search(fallbackRequest, RequestOptions.DEFAULT);
-
-                results = Arrays.stream(fallbackResponse.getHits().getHits())
-                        .map(hit -> EncyclopediaSearchResponse.from2(hit.getSourceAsMap()))
-                        .collect(Collectors.toList());
-            }
-
             if (!results.isEmpty()) {
-                popularIngredientService.incrementSearchCount(results.get(0).getName());
+                String accurateName = results.get(0).getName();
+                result.put("suggestedName", !accurateName.equalsIgnoreCase(query) ? accurateName : null);
+                result.put("results", results);
+
+                if (accurateName.equalsIgnoreCase(query)) {
+                    popularIngredientService.incrementSearchCount(accurateName);
+                }
+
+                return result;
             }
 
-            return results;
+            // Fallback: prefix query
+            SearchSourceBuilder fallbackBuilder = new SearchSourceBuilder()
+                    .query(QueryBuilders.prefixQuery("name.keyword", query))
+                    .size(20);
+
+            SearchRequest fallbackRequest = new SearchRequest("ingredients").source(fallbackBuilder);
+            SearchResponse fallbackResponse = client.search(fallbackRequest, RequestOptions.DEFAULT);
+
+            List<EncyclopediaSearchResponse> fallbackResults = Arrays.stream(fallbackResponse.getHits().getHits())
+                    .map(hit -> EncyclopediaSearchResponse.from2(hit.getSourceAsMap()))
+                    .collect(Collectors.toList());
+
+            result.put("suggestedName", null);  // fallback 시에도 명시적으로 null
+            result.put("results", fallbackResults);
+            return result;
 
         } catch (IOException e) {
             throw new IngredientException(ErrorCode.INGREDIENT_NOT_FOUND);
