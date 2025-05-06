@@ -8,6 +8,7 @@ import com.boindang.encyclopedia.infrastructure.EncyclopediaRepository;
 import com.boindang.encyclopedia.presentation.dto.EncyclopediaDetailResponse;
 import com.boindang.encyclopedia.presentation.dto.EncyclopediaSearchResponse;
 import lombok.RequiredArgsConstructor;
+import org.elasticsearch.common.unit.Fuzziness;
 import org.springframework.stereotype.Service;
 
 import org.elasticsearch.action.search.SearchRequest;
@@ -88,18 +89,42 @@ public class EncyclopediaService {
     }
 
     public List<EncyclopediaSearchResponse> searchIngredients(String query) {
-        List<EncyclopediaSearchResponse> results = encyclopediaRepository.findByNameContaining(query)
-                .stream()
-                .map(EncyclopediaSearchResponse::from)
-                .toList();
+        SearchSourceBuilder builder = new SearchSourceBuilder()
+                .query(QueryBuilders.matchQuery("name", query)
+                        .fuzziness(Fuzziness.AUTO))
+                .size(20);
 
-        // 검색 결과가 존재하면 첫 번째 결과의 정확한 성분명으로 Redis 카운트 증가
-        if (!results.isEmpty()) {
-            String accurateName = results.get(0).getName(); // ex. "말티톨"
-            popularIngredientService.incrementSearchCount(accurateName);
+        SearchRequest request = new SearchRequest("ingredients").source(builder);
+
+        try {
+            SearchResponse response = client.search(request, RequestOptions.DEFAULT);
+            List<EncyclopediaSearchResponse> results = Arrays.stream(response.getHits().getHits())
+                    .map(hit -> EncyclopediaSearchResponse.from2(hit.getSourceAsMap()))
+                    .collect(Collectors.toList());
+
+            // Fuzzy 결과가 없으면 Prefix 기반으로 fallback
+            if (results.isEmpty()) {
+                SearchSourceBuilder fallbackBuilder = new SearchSourceBuilder()
+                        .query(QueryBuilders.prefixQuery("name.keyword", query)) // keyword or edge_ngram 가능
+                        .size(20);
+
+                SearchRequest fallbackRequest = new SearchRequest("ingredients").source(fallbackBuilder);
+                SearchResponse fallbackResponse = client.search(fallbackRequest, RequestOptions.DEFAULT);
+
+                results = Arrays.stream(fallbackResponse.getHits().getHits())
+                        .map(hit -> EncyclopediaSearchResponse.from2(hit.getSourceAsMap()))
+                        .collect(Collectors.toList());
+            }
+
+            if (!results.isEmpty()) {
+                popularIngredientService.incrementSearchCount(results.get(0).getName());
+            }
+
+            return results;
+
+        } catch (IOException e) {
+            throw new IngredientException(ErrorCode.INGREDIENT_NOT_FOUND);
         }
-
-        return results;
     }
 
     public EncyclopediaDetailResponse getIngredientDetail(String id) {
