@@ -7,6 +7,7 @@ import com.boindang.encyclopedia.presentation.dto.EncyclopediaDetailResponse;
 import com.boindang.encyclopedia.presentation.dto.EncyclopediaSearchResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -42,6 +43,12 @@ public class EncyclopediaController implements EncyclopediaApi {
     @Override
     public BaseResponse<EncyclopediaDetailResponse> getDetail(String id) {
         return BaseResponse.success(encyclopediaService.getIngredientDetail(id));
+    }
+
+    @Override
+    public BaseResponse<List<EncyclopediaSearchResponse>> getIngredientsByCategory(String category, String sort, String order, int size) {
+        List<EncyclopediaSearchResponse> result = encyclopediaService.getIngredientsByType(category, sort, order, size);
+        return BaseResponse.success(result);
     }
 
 }
