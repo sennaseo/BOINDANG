@@ -1,7 +1,7 @@
 'use client';
 
-import { ArrowLeft } from '@phosphor-icons/react';
-import { useRouter, useParams } from 'next/navigation';
+// import { useRouter, useParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import React from 'react';
 import Image from 'next/image';
 
@@ -42,8 +42,8 @@ const mockExperience: ExperienceDetail = {
 
 export default function ExperienceDetailPage() {
   const router = useRouter();
-  const params = useParams();
-  const experienceId = params?.id ? parseInt(params.id as string) : null;
+  // const params = useParams();
+  // const experienceId = params?.id ? parseInt(params.id as string) : null;
 
   // 실제 구현 시 API로 데이터 fetch 필요
   const experience = mockExperience;
@@ -52,20 +52,20 @@ export default function ExperienceDetailPage() {
     <div className="min-h-screen bg-white flex flex-col max-w-screen-sm mx-auto relative">
       {/* 상품 이미지 + 상단 뒤로가기 버튼 */}
       <div className="relative w-full h-[400px]">
-      <button
-        onClick={() => router.back()}
-        className="absolute top-4 left-4 w-12 h-12 flex items-center justify-center bg-white rounded-full shadow-md z-20"
-        aria-label="뒤로 가기"
-      >
-        <span className="text-2xl font-bold text-gray-700">&lt;</span>
-      </button>
-      <Image
-        src={experience.imageUrl}
-        alt={experience.title}
-        fill
-        className="object-contain bg-white"
-      />
-    </div>
+        <button
+          onClick={() => router.back()}
+          className="absolute top-4 left-4 w-12 h-12 flex items-center justify-center bg-white rounded-full shadow-md z-20"
+          aria-label="뒤로 가기"
+        >
+          <span className="text-2xl font-bold text-gray-700">&lt;</span>
+        </button>
+        <Image
+          src={experience.imageUrl}
+          alt={experience.title}
+          fill
+          className="object-contain bg-white"
+        />
+      </div>
 
       {/* 메인 컨텐츠 */}
       <main className="flex-1 overflow-y-auto pb-20">
@@ -74,7 +74,7 @@ export default function ExperienceDetailPage() {
           <div className="text-sm text-gray-500 mb-2">{experience.category}</div>
           <h1 className="text-xl font-semibold mb-2">{experience.title}</h1>
           <p className="text-gray-600 mb-4">{experience.description}</p>
-          
+
           {/* 태그 */}
           <div className="flex flex-wrap gap-2 mb-6">
             {experience.tags.map((tag, index) => (
