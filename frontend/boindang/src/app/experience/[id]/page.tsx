@@ -1,5 +1,9 @@
+'use client';
+
 import { ArrowLeft } from '@phosphor-icons/react';
 import { useRouter, useParams } from 'next/navigation';
+import React from 'react';
+import Image from 'next/image';
 
 interface ExperienceDetail {
   id: number;
@@ -7,6 +11,8 @@ interface ExperienceDetail {
   description: string;
   imageUrl: string;
   maxParticipants: number;
+  currentParticipants: number;
+  isApplied: boolean;
   openDateTime: string;
   company: string;
   category: string;
@@ -20,6 +26,8 @@ const mockExperience: ExperienceDetail = {
   description: "탄산음료",
   imageUrl: "/images/coke-zero.jpg",
   maxParticipants: 100,
+  currentParticipants: 0,
+  isApplied: false,
   openDateTime: "4/25 06:23",
   company: "코카콜라",
   category: "음료",
@@ -41,27 +49,26 @@ export default function ExperienceDetailPage() {
   const experience = mockExperience;
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      {/* 헤더 */}
-      <header className="sticky top-0 z-10 bg-white border-b">
-        <div className="flex items-center h-12 px-4">
-          <button onClick={() => router.back()} className="p-2 -ml-2">
-            <ArrowLeft size={24} />
-          </button>
-        </div>
-      </header>
+    <div className="min-h-screen bg-white flex flex-col max-w-screen-sm mx-auto relative">
+      {/* 상품 이미지 + 상단 뒤로가기 버튼 */}
+      <div className="relative w-full h-[400px]">
+      <button
+        onClick={() => router.back()}
+        className="absolute top-4 left-4 w-12 h-12 flex items-center justify-center bg-white rounded-full shadow-md z-20"
+        aria-label="뒤로 가기"
+      >
+        <span className="text-2xl font-bold text-gray-700">&lt;</span>
+      </button>
+      <Image
+        src={experience.imageUrl}
+        alt={experience.title}
+        fill
+        className="object-contain bg-white"
+      />
+    </div>
 
       {/* 메인 컨텐츠 */}
-      <main className="flex-1 pb-24">
-        {/* 상품 이미지 */}
-        <div className="w-full h-[400px] bg-gray-100">
-          <img
-            src={experience.imageUrl}
-            alt={experience.title}
-            className="w-full h-full object-contain"
-          />
-        </div>
-
+      <main className="flex-1 overflow-y-auto pb-20">
         {/* 상품 정보 */}
         <div className="px-5 py-6">
           <div className="text-sm text-gray-500 mb-2">{experience.category}</div>
@@ -78,11 +85,16 @@ export default function ExperienceDetailPage() {
           </div>
 
           {/* 체험단 정보 */}
-          <div className="mb-6">
-            <div className="flex items-center text-sm text-purple-600 mb-2">
-              <span>선착순 {experience.maxParticipants}명</span>
+          <div className="space-y-4 mb-8">
+            <div className="flex items-center gap-2">
+              <span className="text-[#6C2FF2] font-semibold">
+                선착순 {experience.maxParticipants}명
+              </span>
+              <span className="text-gray-400 text-sm">
+                ({experience.currentParticipants}명 신청완료)
+              </span>
             </div>
-            <div className="text-sm text-blue-600">
+            <div className="text-sm text-gray-600">
               {experience.openDateTime} 오픈 예정
             </div>
           </div>
@@ -100,10 +112,20 @@ export default function ExperienceDetailPage() {
       </main>
 
       {/* 하단 고정 버튼 */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t">
-        <button className="w-full bg-purple-600 text-white rounded-xl py-3 text-sm font-medium hover:bg-purple-700 transition-colors">
-          신청하기
-        </button>
+      <div className="sticky bottom-0 left-0 right-0 w-full">
+        {experience.isApplied ? (
+          <button
+            className="w-full bg-gray-300 text-white py-3 rounded-none text-sm font-medium border-t"
+          >
+            신청이 완료되었습니다
+          </button>
+        ) : (
+          <button
+            className="w-full bg-[#6C2FF2] text-white py-3 rounded-none text-sm font-medium border-t"
+          >
+            신청하기
+          </button>
+        )}
       </div>
     </div>
   );
