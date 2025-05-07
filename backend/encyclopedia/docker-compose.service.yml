@@ -1,0 +1,25 @@
+services:
+  encyclopedia-service:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: encyclopedia-service
+    container_name: encyclopedia-service
+    environment:
+      DB_URL: jdbc:mysql://encyclopedia-db:3306/${DB_NAME}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+    env_file:
+      - .env_encyclopedia
+    ports:
+      - "8081:8081"
+    restart: always
+    networks:
+      - encyclopedia-network
+
+volumes:
+  mysql_data:
+
+networks:
+  encyclopedia-network:
+    external: true
