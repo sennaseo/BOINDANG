@@ -14,6 +14,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(IngredientException.class)
     public BaseResponse<?> handleIngredientException(IngredientException e) {
+        log.error("IngredientException occurred", e);
         return BaseResponse.fail(e.getCode(), e.getMessage());
     }
 
