@@ -1,12 +1,12 @@
 server:
-  port: 8080
+  port: 8081
 
 spring:
   application:
     name: encyclopedia
 
   elasticsearch:
-    uris: http://localhost:9200
+    uris: http://k12d206.p.ssafy.io:9200
     connection-timeout: 3s
     socket-timeout: 3s
     index:
