@@ -37,53 +37,69 @@ public class EncyclopediaService {
 
     public void saveIngredientData() {
         IngredientDictionary ingredient = IngredientDictionary.builder()
-                .id("stevia")
-                .name("스테비아")
-                .engName("Stevia")
-                .category("감미료")
-                .type("천연 감미료")
-                .riskLevel(IngredientDictionary.RiskLevel.SAFE)
-                .gi(0)
-                .calories(0)
-                .sweetness(250)
-                .description("스테비아는 남아메리카 원산의 식물 '스테비아 레바우디아나(Stevia rebaudiana)'의 잎에서 추출한 천연 감미료입니다. 설탕보다 최대 250배까지 달지만 칼로리는 거의 없으며, 혈당 지수도 0에 가까워 당뇨병 환자나 체중 관리가 필요한 사람들에게 매우 적합한 감미료로 널리 사용됩니다.")
-                .examples(List.of("무설탕 탄산음료", "다이어트용 음료 및 간식", "설탕 대체 건강식품", "저탄고지 및 키토 제품", "천연 유래 영양제"))
-                .references(List.of(
-                        "Anton SD et al. “Stevia: A review of safety and efficacy for human consumption.” Journal of Nutrition, 2010.",
-                        "EFSA Panel. “Scientific opinion on steviol glycosides.” EFSA Journal, 2010.",
-                        "Chatsudthipong V & Muanprasat C. “Stevioside and related compounds: therapeutic benefits beyond sweetness.” Pharmacology & Therapeutics, 2009."
-                ))
-                .bloodResponse("GI가 0으로, 혈당을 전혀 상승시키지 않으며 인슐린 분비에도 영향을 주지 않습니다. 당뇨병 환자에게 안전하게 권장됩니다.")
-                .digestEffect("일반적인 섭취량에서는 위장에 큰 문제를 일으키지 않으며, 대부분 장에서 흡수되지 않고 배출됩니다.")
-                .toothEffect("구강 내 박테리아에 의해 발효되지 않기 때문에 충치 예방에 효과적입니다.")
-                .pros(List.of("혈당 상승 없음 (GI = 0)", "칼로리 없음", "강력한 감미도 (설탕 대비 250배)", "천연 유래로 소비자 선호도 높음"))
-                .cons(List.of("강한 단맛이 취향에 따라 거부감 유발", "일부 제품에서 쓴맛 또는 금속성 잔미 발생", "고온 조리 시 단맛이 약해질 수 있음"))
-                .diabetic(List.of(
-                        "혈당에 영향을 주지 않아 매우 적합",
-                        "장기 복용 시에도 안정성 입증",
-                        "인슐린 저항성과 관련된 부작용 없음"
-                ))
-                .kidneyPatient(List.of(
-                        "신장에서 대사되지 않기 때문에 비교적 안전",
-                        "다만 스테비아 보조성분과의 상호작용 주의 필요"
-                ))
-                .Dieter(List.of(
-                        "완전 무칼로리 대체 감미료로 적극 추천",
-                        "다이어트 음료, 디저트에 널리 활용 가능"
-                ))
-                .muscleBuilder(List.of(
-                        "혈당 변동 없이 단맛 제공 가능",
-                        "단백질 보충제나 스포츠 음료에 널리 사용"
-                ))
-                .recommendedDailyIntake(4) // steviol equivalent 기준: 4mg/kg
-                .regulatory("FDA, EFSA, WHO 모두 안전성을 인정하여 식품 첨가물로 승인. 국내 식약처도 천연 감미료로 허용 중.")
-                .issue("고용량 섭취 시 임산부나 특정 약물 복용자에게 호르몬 작용에 영향을 미칠 가능성이 제기되었으나, 일반적인 섭취 수준에서는 문제 없음.")
-                .compareTable(List.of(
-                        new IngredientDictionary.CompareItem("수크랄로스", 0, 0f, 600f, "주의"),
-                        new IngredientDictionary.CompareItem("아스파탐", 0, 0f, 200f, "주의"),
-                        new IngredientDictionary.CompareItem("설탕", 65, 4f, 1f, "위험")
-                ))
-                .build();
+            .id("maltitol")
+            .name("말티톨")
+            .engName("Maltitol")
+            .category("감미료")
+            .type("당알코올 감미료")
+            .riskLevel(IngredientDictionary.RiskLevel.CAUTION) // "주의"에 해당
+            .gi(35)
+            .calories(2.1f)
+            .sweetness(0.9f)
+            .description("말티톨은 자연에서 발견되는 당알코올의 일종으로, 주로 설탕을 대체하는 감미료로 사용됩니다. "
+                + "설탕과 유사한 맛과 질감을 가지고 있어 무설탕 또는 저설탕 제품에 널리 사용됩니다. "
+                + "말티톨은 설탕보다 칼로리가 낮고 혈당 지수가 낮아 당뇨병 환자나 체중 관리가 필요한 사람들에게 대안으로 제시되기도 합니다.")
+            .examples(List.of(
+                "무설탕 초콜릿 및 사탕",
+                "저당 아이스크림",
+                "당뇨병 환자용 특수 식품",
+                "무설탕 껌 및 민트",
+                "단백질 바 및 영양 보충제"
+            ))
+            .references(List.of(
+                "European Food Safety Authority. Scientific Opinion on the substantiation of health claims related to the sugar replacers. EFSA Journal, 2011.",
+                "Livesey G. Health potential of polyols as sugar replacers, with emphasis on low glycaemic properties. Nutrition Research Reviews, 2003.",
+                "Kearsley MW, Deis RC. Maltitol Powder. In: Sweeteners and Sugar Alternatives in Food Technology, 2012."
+            ))
+            .bloodResponse("말티톨은 설탕보다 혈당 지수(GI)가 낮지만, 다른 당알코올에 비해 상대적으로 높은 편입니다. 혈당 조절이 중요한 당뇨병 환자는 섭취량에 주의해야 합니다.")
+            .digestEffect("소화 과정에서 완전히 흡수되지 않아 과다 섭취 시 복부 팽만감, 가스, 설사 등 소화기계 불편함을 유발할 수 있습니다. 일반적으로 20-30g 이상 섭취 시 이러한 부작용이 나타날 수 있습니다.")
+            .toothEffect("충치를 유발하는 박테리아가 말티톨을 발효시키지 못해 충치 예방에 도움이 됩니다.")
+            .pros(List.of(
+                "설탕과 유사한 맛과 질감",
+                "설탕보다 낮은 칼로리(약 40% 감소)",
+                "충치 유발 가능성 낮음"
+            ))
+            .cons(List.of(
+                "과다 섭취 시 소화기계 불편함 유발",
+                "다른 당알코올에 비해 상대적으로 높은 혈당 지수",
+                "일부 제품에서 높은 가격"
+            ))
+            .diabetic(List.of(
+                "혈당 지수가 35로 설탕(GI 65)보다 낮지만, 다른 당알코올에 비해 높은 편입니다.",
+                "소량으로 시작하여 혈당 반응을 모니터링 하는 것이 좋습니다.",
+                "식사 계획에 포함할 때 의료 전문가와 상담하세요."
+            ))
+            .kidneyPatient(List.of(
+                "신장 질환이 있는 경우 당알코올 대시에 영향을 줄 수 있습니다.",
+                "의료 전문가와 상담 후 섭취 여부를 결정하세요."
+            ))
+            .Dieter(List.of(
+                "설탕보다 약 40% 낮은 칼로리를 제공합니다.",
+                "과다 섭취 시 소화기계 불편함이 체중 관리에 방해가 될 수 있습니다."
+            ))
+            .muscleBuilder(List.of(
+                "운동 전후 에너지원으로는 완전한 탄수화물보다 효과적이지 않을 수 있습니다.",
+                "단백질 바나 스포츠 영양 제품에 자주 사용됩니다."
+            ))
+            .recommendedDailyIntake(50)
+            .regulatory("FDA(미국 식품의약국)와 EFSA(유럽 식품안전청)에서 식품 첨가물로 승인되었습니다. 한국 식약처에서도 식품 첨가물로 허용되고 있습니다.")
+            .issue("일부 연구에서 장기적인 사용과 장내 미생물 변화의 연관성이 제기되었으나, 현재까지 명확한 결론은 없습니다.")
+            .compareTable(List.of(
+                new IngredientDictionary.CompareItem("에리스리톨", 0, 0.2f, 0.7f, "안심"),
+                new IngredientDictionary.CompareItem("자일리톨", 7, 2.4f, 1f, "주의"),
+                new IngredientDictionary.CompareItem("설탕", 65, 4f, 1f, "위험")
+            ))
+            .build();
 
         encyclopediaRepository.save(ingredient);
     }
