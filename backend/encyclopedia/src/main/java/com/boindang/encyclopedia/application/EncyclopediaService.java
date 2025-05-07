@@ -8,6 +8,8 @@ import com.boindang.encyclopedia.infrastructure.EncyclopediaRepository;
 import com.boindang.encyclopedia.presentation.dto.EncyclopediaDetailResponse;
 import com.boindang.encyclopedia.presentation.dto.EncyclopediaSearchResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.elasticsearch.common.unit.Fuzziness;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +27,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class EncyclopediaService {
@@ -36,6 +39,7 @@ public class EncyclopediaService {
     private static final Set<String> VALID_TYPES = Set.of("감미료", "보존제", "산화방지제", "착향료", "탄수화물");
 
     public Map<String, Object> searchWithSuggestion(String query, boolean suggested) {
+        log.info("Elasticsearch 검색 실행: query={}, suggested={}", query, suggested);
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("originalQuery", query);  // 항상 포함
 
@@ -91,7 +95,8 @@ public class EncyclopediaService {
             result.put("results", fallbackResults);
             return result;
 
-        } catch (IOException e) {
+        } catch (Exception e) {
+            log.error("Elasticsearch 검색 중 오류 발생", e);  // 전체 스택 찍기
             throw new IngredientException(ErrorCode.INGREDIENT_NOT_FOUND);
         }
     }
