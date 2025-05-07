@@ -20,13 +20,6 @@ import java.util.Map;
 public class EncyclopediaController implements EncyclopediaApi {
 
     private final EncyclopediaService encyclopediaService;
-    private final PopularIngredientService popularIngredientService;
-
-    @PostMapping("/insert-data")
-    public String insertSample() {
-        encyclopediaService.saveIngredientData();
-        return "샘플 성분 저장 완료!";
-    }
 
     @Override
     public BaseResponse<Map<String, Object>> searchIngredients(
