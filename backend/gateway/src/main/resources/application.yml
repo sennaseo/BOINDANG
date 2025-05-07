@@ -1,6 +1,8 @@
 spring:
   application:
     name: gateway
+  config:
+    import: optional:file:.env_gateway[.properties]
   cloud:
     gateway:
       routes:
@@ -19,3 +21,7 @@ eureka:
 
 server:
   port: 8000
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG

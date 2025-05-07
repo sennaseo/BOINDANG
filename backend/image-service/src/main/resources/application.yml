@@ -1,7 +1,6 @@
 spring:
   application:
     name: image-service
-
   config:
     import: optional:file:.env_image[.properties]
   jpa:
@@ -49,4 +48,4 @@ cloud:
 ##    base-path:
 
 server:
-  port: 8082
+  port: 8081
