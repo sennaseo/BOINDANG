@@ -23,6 +23,10 @@ repositories {
 	mavenCentral()
 }
 
+ext {
+	set('springCloudVersion', "2024.0.1")
+}
+
 dependencies {
 	// 기본 웹 + REST API
 	implementation 'org.springframework.boot:spring-boot-starter-web'
