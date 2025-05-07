@@ -65,7 +65,7 @@ public interface EncyclopediaApi {
             @RequestParam String query,
 
             @Parameter(description = "오타 교정 사용 여부 (기본값 true)")
-            @RequestParam(required = false, defaultValue = "true") boolean suggested
+            @RequestParam(required = false) Boolean suggested
     );
 
     @Operation(summary = "성분 상세 조회", description = "성분 ID를 기반으로 상세 정보를 조회합니다.")

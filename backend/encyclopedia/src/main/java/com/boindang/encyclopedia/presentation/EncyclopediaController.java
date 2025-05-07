@@ -24,7 +24,7 @@ public class EncyclopediaController implements EncyclopediaApi {
     @Override
     public BaseResponse<Map<String, Object>> searchIngredients(
             @RequestParam String query,
-            @RequestParam boolean suggested
+            @RequestParam Boolean suggested
     ) {
         if (query == null || query.trim().isEmpty()) {
             return BaseResponse.fail(400, "검색어를 입력하세요.");
