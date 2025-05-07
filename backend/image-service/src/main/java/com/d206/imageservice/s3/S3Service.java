@@ -2,6 +2,8 @@ package com.d206.imageservice.s3;
 
 import java.time.Duration;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -17,8 +19,11 @@ public class S3Service {
 	private final S3Client s3Client;
 	private final S3Presigner s3Presigner;
 
+	@Autowired
+	private Environment env;
+
 	public String createPresignedPutUrl(String keyName, String contentType) {
-		String bucketName = System.getenv("S3_BUCKET_NAME");
+		String bucketName = env.getProperty("S3_BUCKET_NAME");
 
 		// presign request를 위한 정보 생성
 		PutObjectRequest objectRequest = PutObjectRequest.builder()
