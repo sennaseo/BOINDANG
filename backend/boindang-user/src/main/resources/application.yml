@@ -1,0 +1,24 @@
+spring:
+  config:
+    import: application-secret.yml
+
+  application:
+    name: boindang-user
+
+  jpa:
+    hibernate:
+      ddl-auto: update  # ?? create, validate ? ??? ??
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  logging:
+    level:
+      p6spy: info   # ? ??? ??? SQL? ??
+      org.hibernate.SQL: info  # Hibernate ?? SQL ?? ???
+      root: INFO
+      com.monthlyzip: DEBUG  # ? ???? ???? ?? DEBUG ?? ??
+    charset:
+      console: UTF-8
+      file: UTF-8
