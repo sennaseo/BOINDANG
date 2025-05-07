@@ -26,9 +26,6 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none # 또는 update (DDL 자동 생성 여부)
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MySQL8Dialect
     open-in-view: false
 
 springdoc:
