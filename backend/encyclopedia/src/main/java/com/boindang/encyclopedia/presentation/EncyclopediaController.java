@@ -7,12 +7,15 @@ import com.boindang.encyclopedia.presentation.dto.EncyclopediaDetailResponse;
 import com.boindang.encyclopedia.presentation.dto.EncyclopediaSearchResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/ingredients")
 @RequiredArgsConstructor
@@ -26,6 +29,7 @@ public class EncyclopediaController implements EncyclopediaApi {
             @RequestParam String query,
             @RequestParam Boolean suggested
     ) {
+        log.info("searchIngredients called with query={}, suggested={}", query, suggested);
         if (query == null || query.trim().isEmpty()) {
             return BaseResponse.fail(400, "검색어를 입력하세요.");
         }
