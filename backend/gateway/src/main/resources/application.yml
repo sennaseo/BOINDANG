@@ -4,11 +4,14 @@ spring:
   cloud:
     gateway:
       routes:
-        - id: test-service
-          uri: lb://TEST-SERVICE
+        - id: image-service
+          uri: lb://IMAGE-SERVICE
           predicates:
-            - Path=/test-service/**
-
+            - Path=/image/**
+        - id: encyclopedia
+          uri: lb://ENCYCLOPEDIA
+          predicates:
+            - Path=/api/**
 eureka:
   client:
     enabled: true
