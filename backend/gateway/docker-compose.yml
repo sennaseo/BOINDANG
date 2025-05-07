@@ -1,10 +1,10 @@
 services:
-  gateway-server:
+  gateway:
     build:
       context: ./
       dockerfile: Dockerfile
-    image: gateway-server
-    container_name: gateway-server
+    image: kimhwidong/boindang-repo:gateway
+    container_name: gateway
     ports:
       - "8000:8000"
     restart: always
