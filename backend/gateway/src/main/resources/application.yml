@@ -1,6 +1,8 @@
 spring:
   application:
     name: gateway
+  config:
+    import: optional:file:.env_gateway[.properties]
   cloud:
     gateway:
       routes:
@@ -18,8 +20,7 @@ eureka:
     fetch-registry: true
     register-with-eureka: false
     service-url:
-#      defaultZone: http://172.31.4.100:8761/eureka/
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${EUREKA_URL}
 
 server:
   port: 8000
