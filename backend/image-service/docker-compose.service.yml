@@ -1,0 +1,31 @@
+services:
+  image-service:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: image-service
+    container_name: image-service
+    environment:
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY}
+      S3_BUCKET_NAME: ${S3_BUCKET_NAME}
+      S3_REGION: ${S3_REGION}
+      DB_URL: jdbc:mysql://image-db:3306/${DB_NAME}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      EUREKA_URL: ${EUREKA_URL}
+      HOST_IP: ${HOST_IP}
+    env_file:
+      - .env_image
+    ports:
+      - "8082:8082"
+    restart: always
+    networks:
+      - image-network
+
+volumes:
+  mysql_data:
+
+networks:
+  image-network:
+    external: true
