@@ -31,7 +31,7 @@ springdoc:
 
 open-api:
   service:
-    url: http://3.34.141.11:8000
+    url: http://43.203.153.204:8081
 
 
 # S3
