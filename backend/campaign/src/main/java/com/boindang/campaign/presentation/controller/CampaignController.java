@@ -16,7 +16,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-public class CampaignController {
+public class CampaignController implements CampaignApi {
 
 	private final KafkaProducerService kafkaProducer;
 	private final CampaignApplyService applyService;
@@ -27,7 +27,7 @@ public class CampaignController {
 		return ResponseEntity.ok("✅ 메시지 전송 완료!");
 	}
 
-	@PostMapping("/{campaignId}/apply")
+	@Override
 	public BaseResponse<ApplyResultResponse> apply(@PathVariable Long campaignId, @RequestParam Long userId) {
 		ApplyResultResponse result = applyService.apply(campaignId, userId);
 		String message = result.isSelected() ? "체험단 신청이 완료되었습니다." : "정원이 마감되었습니다.";
