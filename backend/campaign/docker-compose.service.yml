@@ -10,6 +10,7 @@ services:
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
       BOOTSTRAP_SERVER: ${BOOTSTRAP_SERVER}
+      REDIS_HOST: redis
       EUREKA_URL: ${EUREKA_URL}
       HOST_IP: ${HOST_IP}
     ports:
