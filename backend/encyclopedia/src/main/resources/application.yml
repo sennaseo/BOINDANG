@@ -43,5 +43,3 @@ springdoc:
     path: /encyclopedia/v3/api-docs
   swagger-ui:
     path: /encyclopedia/swagger-ui.html
-    url: /encyclopedia/v3/api-docs
-
