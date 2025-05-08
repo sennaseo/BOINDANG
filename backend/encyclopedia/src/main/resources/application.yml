@@ -47,8 +47,12 @@ eureka:
 #    enabled: false
 
 springdoc:
-  api-docs:
-    path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
-    url: /encyclopedia/v3/api-docs  # 이걸 명시해야 Swagger UI에서 올바른 docs 요청함
+    urls:
+      - url: /encyclopedia/v3/api-docs
+        name: encyclopedia
+
+openapi:
+  service:
+    url: http://3.34.141.11:8000   # API Gateway 포트
