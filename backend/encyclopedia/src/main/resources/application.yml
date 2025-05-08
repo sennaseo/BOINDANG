@@ -47,11 +47,12 @@ eureka:
 #    enabled: false
 
 springdoc:
+  api-docs:
+    enabled: true
   swagger-ui:
+    enabled: true
     path: /swagger-ui.html
-    urls:
-      - url: /encyclopedia/v3/api-docs
-        name: encyclopedia
+
 
 openapi:
   service:
