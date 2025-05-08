@@ -1,6 +1,7 @@
 package com.boindanguser.user.service;
 
 import com.boindanguser.user.model.entity.User;
+import com.boindanguser.user.model.type.UserType;
 import com.boindanguser.user.repository.UserRepository;
 import com.boindanguser.user.model.dto.request.UserSignupRequest;
 import com.boindanguser.user.model.dto.response.UserResponse;
@@ -21,11 +22,15 @@ public class UserService {
             throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
         }
 
+
         User user = User.builder()
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .nickname(request.getNickname())
-                .userType(request.getUserType())
+                .userType(UserType.valueOf(request.getUserType()))
+                .gender(request.getGender())
+                .height(request.getHeight())
+                .weight(request.getWeight())
                 .build();
 
         User saved = userRepository.save(user);
