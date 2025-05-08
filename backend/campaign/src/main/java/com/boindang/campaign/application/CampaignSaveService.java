@@ -22,13 +22,19 @@ public class CampaignSaveService {
 	private final CampaignRepository campaignRepository;
 
 	public void save(ApplyEvent event) {
-		CampaignApplication application = CampaignApplication.of(event);
+		// 1. Campaign 조회
+		Campaign campaign = campaignRepository.findById(event.getCampaignId())
+			.orElseThrow(() -> new CampaignException(ErrorCode.CAMPAIGN_NOT_FOUND));
+
+		// 2. CampaignApplication 생성 (연관 객체 전달)
+		CampaignApplication application = CampaignApplication.of(event, campaign);
+		System.out.println(">>> Campaign ID before save: " + campaign.getId());
 		applicationRepository.save(application);
 
+		// 3. 선정된 경우만 신청자 수 증가
 		if (event.isSelected()) {
-			Campaign campaign = campaignRepository.findById(event.getCampaignId())
-				.orElseThrow(() -> new CampaignException(ErrorCode.CAMPAIGN_NOT_FOUND));
-			campaign.increaseApplicant(); // DB의 신청자 수 증가
+			campaign.increaseApplicant(); // DB 반영
 		}
 	}
+
 }
