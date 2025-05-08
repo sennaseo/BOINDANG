@@ -25,16 +25,9 @@ eureka:
   instance:
     hostname: ${HOST_IP}
 
-springdoc:
-  swagger-ui:
-    path: /swagger-ui.html
-    urls:
-      - url: /image/v3/api-docs
-        name: image
-
 open-api:
   service:
-    url: http://3.34.141.11:8000/image
+    url: http://3.34.141.11:8000
 
 
 # S3

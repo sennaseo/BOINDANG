@@ -46,14 +46,6 @@ eureka:
 #  client:
 #    enabled: false
 
-springdoc:
-  api-docs:
-    enabled: true
-  swagger-ui:
-    enabled: true
-    path: /swagger-ui.html
-
-
 openapi:
   service:
     url: http://3.34.141.11:8000   # API Gateway 포트
