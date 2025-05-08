@@ -37,3 +37,7 @@ springdoc:
     path: /campaign/v3/api-docs
   swagger-ui:
     path: /campaign/swagger-ui.html
+
+openapi:
+  service:
+    url: http://3.34.141.11:8000
