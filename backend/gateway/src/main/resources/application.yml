@@ -5,6 +5,30 @@ spring:
     import: optional:file:.env_gateway[.properties]
   cloud:
     gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins:
+              - 'http://localhost:3000'
+              - 'https://localhost:3000'
+            allow-credentials: true
+            allowedHeaders:
+              - x-requested-with
+              - Authorization
+              - content-type
+              - credential
+              - X-AUTH-TOKEN
+            exposedHeaders:
+              - x-requested-with
+              - Authorization
+              - content-type
+              - credential
+              - X-AUTH-TOKEN
+            allowedMethods:
+              - PUT
+              - GET
+              - POST
+              - DELETE
       routes:
         - id: image-service
           uri: lb://IMAGE-SERVICE
@@ -16,6 +40,19 @@ spring:
             - Path=/encyclopedia/**
           filters:
             - RewritePath=/encyclopedia/(?<remaining>.*), /$\{remaining}
+
+springdoc:
+  enable-native-support: true
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    config-url: /v3/api-docs/swagger-config
+    urls:
+      - url: /encyclopedia/v3/api-docs
+        name: Encyclopedia
+
 eureka:
   client:
     enabled: true
