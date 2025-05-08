@@ -32,22 +32,28 @@ spring:
       ddl-auto: update # 또는 update (DDL 자동 생성 여부)
     open-in-view: false
 
-#eureka:
-#  client:
-#    enabled: true
-#    fetch-registry: true
-#    register-with-eureka: true
-#    service-url:
-#      defaultZone: ${EUREKA_URL}
-#  instance:
-#    hostname: ${HOST_IP}
-
 eureka:
   client:
-    enabled: false
+    enabled: true
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+      defaultZone: ${EUREKA_URL}
+  instance:
+    hostname: ${HOST_IP}
+
+#eureka:
+#  client:
+#    enabled: false
 
 springdoc:
   api-docs:
-    path: /encyclopedia/v3/api-docs
+    enabled: true
   swagger-ui:
-    path: /encyclopedia/swagger-ui.html
+    enabled: true
+    path: /swagger-ui.html
+
+
+openapi:
+  service:
+    url: http://3.34.141.11:8000   # API Gateway 포트

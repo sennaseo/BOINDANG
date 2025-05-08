@@ -216,7 +216,7 @@ public interface EncyclopediaApi {
     })
     @GetMapping("/category")
     BaseResponse<List<EncyclopediaSearchResponse>> getIngredientsByCategory(
-            @Parameter(description = "성분 유형", required = true) @RequestParam String type,
+            @Parameter(description = "성분 유형", required = true) @RequestParam String category,
             @Parameter(description = "정렬 기준 (gi | sweetness)") @RequestParam(required = false) String sort,
             @Parameter(description = "정렬 방향 (asc | desc)") @RequestParam(defaultValue = "desc") String order,
             @Parameter(description = "조회 개수") @RequestParam(defaultValue = "20") int size

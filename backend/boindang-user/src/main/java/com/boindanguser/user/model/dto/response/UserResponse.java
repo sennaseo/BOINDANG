@@ -11,8 +11,19 @@ public class UserResponse {
     private String username;
     private String nickname;
     private String userType;
+    private String gender;
+    private Double height;
+    private Double weight;
 
     public static UserResponse from(User user) {
-        return new UserResponse(user.getId(), user.getUsername(), user.getNickname(), user.getUserType());
+        return new UserResponse(
+                user.getId(),
+                user.getUsername(),
+                user.getNickname(),
+                user.getUserType().name(), // enum → 문자열
+                user.getGender(),
+                user.getHeight(),
+                user.getWeight()
+        );
     }
 }

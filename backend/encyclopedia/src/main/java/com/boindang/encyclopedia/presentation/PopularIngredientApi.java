@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.List;
 
 @Tag(name = "백과사전_인기검색어", description = "실시간 인기 검색어 관련 API입니다.")
-@RequestMapping("/api/popular")
+@RequestMapping("/encyclopedia/popular")
 public interface PopularIngredientApi {
 
     @Operation(
