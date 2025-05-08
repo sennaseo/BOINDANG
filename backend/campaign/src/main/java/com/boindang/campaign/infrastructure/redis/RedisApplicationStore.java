@@ -1,57 +1,42 @@
 package com.boindang.campaign.infrastructure.redis;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.RedisTemplate;
+import java.time.Duration;
+
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
-import java.time.Duration;
+import com.boindang.campaign.common.exception.CampaignException;
+import com.boindang.campaign.common.exception.ErrorCode;
+
+import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class RedisApplicationStore { // Redis를 통해 신청자 수 관리와 중복 신청 방지를 담당하는 인프라 계층
+public class RedisApplicationStore {
 
-    private final RedisTemplate<String, String> redisTemplate;
+	private final StringRedisTemplate redisTemplate;
 
-    /**
-     * 이미 신청한 유저인지 Redis 키로 확인
-     */
-    public boolean isAlreadyApplied(Long campaignId, Long userId) {
-        String userKey = buildUserKey(campaignId, userId);
-        return Boolean.TRUE.equals(redisTemplate.hasKey(userKey));
-    }
+	public boolean tryApply(Long campaignId, Long userId, long limit, Duration ttl) {
+		String userKey = "apply:users:" + campaignId;
+		String countKey = "apply:count:" + campaignId;
 
-    /**
-     * Redis에 신청자 수 증가 + 중복 방지 키 등록 (TTL 포함)
-     */
-    public boolean tryApply(Long campaignId, Long userId, int capacity, Duration ttl) {
-        String countKey = buildCountKey(campaignId);
-        String userKey = buildUserKey(campaignId, userId);
+		// 1. ttl 유효성 체크
+		if (ttl == null || ttl.isNegative() || ttl.isZero()) {
+			throw new CampaignException(ErrorCode.CAMPAIGN_NOT_AVAILABLE); // 캠페인 종료됨
+		}
 
-        Long current = redisTemplate.opsForValue().increment(countKey);
+		// 2. 중복 신청 여부 확인
+		Long added = redisTemplate.opsForSet().add(userKey, userId.toString());
+		if (added == 0L) {
+			throw new CampaignException(ErrorCode.ALREADY_APPLIED);
+		}
 
-        // Redis INCR 실패하거나 정원 초과 시 컷오프
-        if (current == null || current > capacity) {
-            redisTemplate.opsForValue().decrement(countKey); // 롤백
-            return false;
-        }
+		// 3. TTL 설정
+		redisTemplate.expire(userKey, ttl);
+		redisTemplate.expire(countKey, ttl);
 
-        // 중복 방지용 유저 키 등록
-        redisTemplate.opsForValue().set(userKey, "1", ttl);
-        return true;
-    }
-
-    /**
-     * Redis 카운터 초기화 (필요 시 관리 기능에 사용)
-     */
-    public void resetCounter(Long campaignId) {
-        redisTemplate.delete(buildCountKey(campaignId));
-    }
-
-    private String buildCountKey(Long campaignId) {
-        return "campaign:apply:count:" + campaignId;
-    }
-
-    private String buildUserKey(Long campaignId, Long userId) {
-        return "campaign:applied:" + campaignId + ":" + userId;
-    }
+		// 4. 현재 신청 수 증가 (atomic)
+		Long currentCount = redisTemplate.opsForValue().increment(countKey);
+		return currentCount <= limit;
+	}
 }

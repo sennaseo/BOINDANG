@@ -1,7 +1,11 @@
 package com.boindang.campaign.presentation.dto.response;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
-public record ApplyResultResponse(
-	Long campaignId,
-	boolean isSelected
-) {}
+@Data
+@AllArgsConstructor
+public class ApplyResultResponse {
+	private Long campaignId;
+	private boolean isSelected;
+}
