@@ -15,7 +15,6 @@ import java.util.Map;
 
 @Slf4j
 @RestController
-@RequestMapping("/encyclopedia/ingredients")
 @RequiredArgsConstructor
 @Tag(name = "백과사전", description = "영양 성분 백과사전 관련 API입니다.")
 public class EncyclopediaController implements EncyclopediaApi {
