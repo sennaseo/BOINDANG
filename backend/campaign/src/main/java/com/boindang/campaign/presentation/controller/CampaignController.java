@@ -14,6 +14,7 @@ import com.boindang.campaign.application.CampaignService;
 import com.boindang.campaign.common.response.BaseResponse;
 import com.boindang.campaign.infrastructure.kafka.producer.KafkaProducerService;
 import com.boindang.campaign.presentation.dto.response.ApplyResultResponse;
+import com.boindang.campaign.presentation.dto.response.CampaignDetailResponse;
 import com.boindang.campaign.presentation.dto.response.CampaignSummaryResponse;
 
 import io.swagger.v3.oas.annotations.Parameter;
@@ -40,7 +41,13 @@ public class CampaignController implements CampaignApi {
 	}
 
 	@Override
-	public BaseResponse<ApplyResultResponse> apply(@PathVariable Long campaignId, @RequestParam Long userId) {
+	public BaseResponse<CampaignDetailResponse> getCampaignDetail(Long campaignId) {
+		CampaignDetailResponse result = campaignService.getCampaignDetail(campaignId);
+		return BaseResponse.success(200, "체험단 상세 조회가 완료되었습니다.", result);
+	}
+
+	@Override
+	public BaseResponse<ApplyResultResponse> apply(Long campaignId, Long userId) {
 		ApplyResultResponse result = applyService.apply(campaignId, userId);
 		String message = result.isSelected() ? "체험단 신청이 완료되었습니다." : "정원이 마감되었습니다.";
 		return BaseResponse.success(result.isSelected() ? 201 : 200, message, result);

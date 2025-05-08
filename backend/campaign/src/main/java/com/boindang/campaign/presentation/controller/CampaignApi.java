@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.boindang.campaign.common.response.BaseResponse;
 import com.boindang.campaign.presentation.dto.response.ApplyResultResponse;
+import com.boindang.campaign.presentation.dto.response.CampaignDetailResponse;
 import com.boindang.campaign.presentation.dto.response.CampaignSummaryResponse;
 
 @Tag(name = "체험단", description = "체험단 관련 API입니다.")
@@ -36,10 +37,17 @@ public interface CampaignApi {
 					  "data": [
 					    {
 					      "id": 1,
-					      "title": "제로콜라 체험단 모집",
-					      "imageURL": "https://...",
-					      "deadline": "2025-05-10",
-				          "status": "진행중"
+					      "name": "코카콜라 제로 190ml",
+					      "content": "제로칼로리 탄산음료입니다.",
+					      "imageUrl": "https://example.com/coke.jpg",
+					      "deadline": "2025-05-20",
+					      "status": "모집중",
+					      "capacity": 3,
+					      "hashtags": [
+					        "제로",
+					        "무설탕",
+					        "탄산"
+					      ]
 				        }
 		  		      ]
 					}
@@ -67,7 +75,58 @@ public interface CampaignApi {
 		@RequestParam(defaultValue = "0") int page
 	);
 
-	@Operation(summary = "체험단 신청 API", description = "선착순 체험단에 신청합니다.")
+	@Operation(summary = "체험단 상세 조회", description = "체험단 공고의 상세 내용을 모두 조회합니다. 로그인 없이 접근 가능하지만, 내가 신청했는지 여부는 로그인 상태에서만 확인이 가능합니다.")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "체험단 상세 조회가 완료되었습니다.",
+			content = @Content(mediaType = "application/json",
+				examples = @ExampleObject(value = """
+                    {
+					  "isSuccess": true,
+					  "code": 200,
+					  "message": "체험단 상세 조회가 완료되었습니다.",
+					  "data": {
+					    "id": 1,
+					    "name": "코카콜라 제로 190ml",
+					    "content": "제로칼로리 탄산음료입니다.",
+					    "mainCategory": "음료",
+					    "subCategory": "탄산음료",
+					    "imageUrl": "https://example.com/coke.jpg",
+					    "startDate": "2025-05-01",
+					    "deadline": "2025-05-20",
+					    "status": "모집중",
+					    "capacity": 3,
+					    "applicantCount": 1,
+					    "hashtags": [
+					      "제로",
+					      "무설탕",
+					      "탄산"
+					    ],
+					    "notices": [
+					      "냉장 보관 필수",
+					      "음용 전 흔들지 마세요",
+					      "마감 후 배송까지 최대 7일 소요될 수 있습니다."
+					    ]
+					  }
+					}
+                """))),
+		@ApiResponse(responseCode = "404", description = "존재하지 않는 캠페인입니다.",
+			content = @Content(mediaType = "application/json",
+				examples = @ExampleObject(value = """
+                    {
+					  "isSuccess": false,
+					  "code": 404,
+					  "message": "존재하지 않는 캠페인입니다.",
+					  "data": null
+					}
+                """)))
+	})
+	@GetMapping("/{campaignId}")
+	BaseResponse<CampaignDetailResponse> getCampaignDetail(
+		@Parameter(description = "캠페인 ID", required = true)
+		@PathVariable("campaignId") Long campaignId
+	);
+
+	@Operation(summary = "체험단 신청 API", description = "선착순 체험단에 신청합니다. 이 서비스는 로그인이 되어야만 사용할 수 있는 서비스입니다.")
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "201", description = "체험단 신청이 완료되었습니다.",
 			content = @Content(mediaType = "application/json",
@@ -105,8 +164,26 @@ public interface CampaignApi {
                       "data": null
                     }
                 """))),
-		@ApiResponse(responseCode = "404", description = "존재하지 않는 캠페인입니다."),
-		@ApiResponse(responseCode = "500", description = "Kafka 이벤트 전송 중 오류가 발생했습니다.")
+		@ApiResponse(responseCode = "404", description = "존재하지 않는 캠페인입니다.",
+			content = @Content(mediaType = "application/json",
+				examples = @ExampleObject(value = """
+                    {
+                      "isSuccess": false,
+                      "code": 404,
+                      "message": "존재하지 않는 캠페인입니다.",
+                      "data": null
+                    }
+                """))),
+		@ApiResponse(responseCode = "500", description = "Kafka 이벤트 전송 중 오류가 발생했습니다.",
+			content = @Content(mediaType = "application/json",
+				examples = @ExampleObject(value = """
+                    {
+                      "isSuccess": false,
+                      "code": 500,
+                      "message": "Kafka 이벤트 전송 중 오류가 발생했습니다.",
+                      "data": null
+                    }
+                """)))
 	})
 	@PostMapping("/{campaignId}/apply")
 	BaseResponse<ApplyResultResponse> apply(
