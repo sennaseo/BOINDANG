@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: campaign-service
+    name: campaign
 
   web:
     resources:
