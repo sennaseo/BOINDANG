@@ -1,5 +1,7 @@
 package com.boindang.campaign.domain.model;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -21,12 +23,14 @@ public class CampaignApplication {
     private Long campaignId;
     private Long userId;
     private boolean isSelected;
+    private LocalDateTime appliedAt;
 
     public static CampaignApplication of(ApplyEvent event) {
         CampaignApplication app = new CampaignApplication();
         app.campaignId = event.getCampaignId();
         app.userId = event.getUserId();
         app.isSelected = event.isSelected();
+        app.appliedAt = LocalDateTime.now();
         return app;
     }
 
