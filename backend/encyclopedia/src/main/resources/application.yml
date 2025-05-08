@@ -6,7 +6,7 @@ spring:
     name: encyclopedia
 
   elasticsearch:
-    uris: http://${Elasticsearch_URL}:9200
+    uris: http://${ELASTICSEARCH_URL}:9200
     connection-timeout: 3s
     socket-timeout: 3s
     index:
