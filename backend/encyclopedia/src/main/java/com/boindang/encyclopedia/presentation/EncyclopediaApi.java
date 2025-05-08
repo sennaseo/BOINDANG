@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.List;
 import java.util.Map;
 
+@RequestMapping("/encyclopedia/ingredients")
 @Tag(name = "백과사전", description = "영양 성분 백과사전 관련 API입니다.")
 public interface EncyclopediaApi {
 
