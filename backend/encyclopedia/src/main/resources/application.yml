@@ -48,6 +48,12 @@ eureka:
 
 springdoc:
   api-docs:
-    path: /encyclopedia/v3/api-docs
+    enabled: true
   swagger-ui:
-    path: /encyclopedia/swagger-ui.html
+    enabled: true
+    path: /swagger-ui.html
+
+
+openapi:
+  service:
+    url: http://3.34.141.11:8000   # API Gateway 포트
