@@ -20,6 +20,7 @@ import com.boindang.campaign.common.response.BaseResponse;
 import com.boindang.campaign.presentation.dto.response.ApplyResultResponse;
 import com.boindang.campaign.presentation.dto.response.CampaignDetailResponse;
 import com.boindang.campaign.presentation.dto.response.CampaignSummaryResponse;
+import com.boindang.campaign.presentation.dto.response.MyApplicationResponse;
 
 @Tag(name = "체험단", description = "체험단 관련 API입니다.")
 @RequestMapping("/campaigns")
@@ -193,5 +194,45 @@ public interface CampaignApi {
 		@Parameter(description = "사용자 ID", required = true)
 		@RequestParam Long userId
 	);
+
+	@Operation(
+		summary = "내 체험단 신청 내역 조회 API",
+		description = "로그인한 사용자의 체험단 신청 내역을 조회합니다. (마이페이지에서 사용됨)"
+	)
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "내 신청 내역 조회 성공",
+			content = @Content(mediaType = "application/json",
+				examples = @ExampleObject(value = """
+                {
+                  "isSuccess": true,
+                  "code": 200,
+                  "message": "내 신청 내역 조회 성공",
+                  "data": [
+                    {
+                      "campaignId": 1,
+                      "title": "제로콜라 체험단 모집",
+                      "isSelected": true,
+                      "appliedAt": "2025-04-29T10:12:00"
+                    }
+                  ]
+                }
+            """))),
+		@ApiResponse(responseCode = "400", description = "잘못된 요청입니다.",
+			content = @Content(mediaType = "application/json",
+				examples = @ExampleObject(value = """
+                {
+                  "isSuccess": false,
+                  "code": 400,
+                  "message": "userId는 필수입니다.",
+                  "data": null
+                }
+            """)))
+	})
+	@GetMapping("/my-applications")
+	BaseResponse<List<MyApplicationResponse>> getMyApplications(
+		@Parameter(description = "사용자 ID", required = true)
+		@RequestParam Long userId
+	);
+
 }
 

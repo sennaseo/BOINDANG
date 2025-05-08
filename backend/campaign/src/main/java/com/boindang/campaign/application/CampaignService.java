@@ -4,9 +4,11 @@ import com.boindang.campaign.common.exception.CampaignException;
 import com.boindang.campaign.common.exception.ErrorCode;
 import com.boindang.campaign.domain.model.Campaign;
 import com.boindang.campaign.domain.model.CampaignStatus;
+import com.boindang.campaign.infrastructure.repository.CampaignApplicationRepository;
 import com.boindang.campaign.infrastructure.repository.CampaignRepository;
 import com.boindang.campaign.presentation.dto.response.CampaignDetailResponse;
 import com.boindang.campaign.presentation.dto.response.CampaignSummaryResponse;
+import com.boindang.campaign.presentation.dto.response.MyApplicationResponse;
 
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,7 @@ import java.util.stream.Collectors;
 public class CampaignService {
 
 	private final CampaignRepository campaignRepository;
+	private final CampaignApplicationRepository applicationRepository;
 
 	public List<CampaignSummaryResponse> getCampaigns(String status, int size, int page) {
 		List<Campaign> campaigns;
@@ -52,6 +55,17 @@ public class CampaignService {
 
 		campaign.updateStatusByDate(); // 상태 자동 갱신 (선택)
 		return CampaignDetailResponse.from(campaign);
+	}
+
+	public List<MyApplicationResponse> getMyApplications(Long userId) {
+		return applicationRepository.findWithCampaignByUserId(userId).stream()
+			.map(app -> new MyApplicationResponse(
+				app.getCampaign().getId(),
+				app.getCampaign().getName(),
+				app.isSelected(),
+				app.getAppliedAt()
+			))
+			.collect(Collectors.toList());
 	}
 
 }
