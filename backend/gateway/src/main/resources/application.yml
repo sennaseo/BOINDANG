@@ -28,6 +28,7 @@ springdoc:
         name: Image
       - url: /encyclopedia/v3/api-docs
         name: Encyclopedia
+
 eureka:
   client:
     enabled: true
