@@ -5,6 +5,10 @@ spring:
   application:
     name: campaign
 
+  web:
+    resources:
+      add-mappings: false
+
   data:
     redis:
       host: localhost
@@ -32,8 +36,23 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
+eureka:
+  client:
+    enabled: true
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+      defaultZone: ${EUREKA_URL}
+  instance:
+    hostname: ${HOST_IP}
+
+#eureka:
+#  client:
+#    enabled: false
+
 springdoc:
   api-docs:
-    path: /campaign/v3/api-docs
+    enabled: true
   swagger-ui:
     path: /campaign/swagger-ui.html
+
