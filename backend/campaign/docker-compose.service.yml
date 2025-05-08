@@ -6,7 +6,7 @@ services:
     image: kimhwidong/boindang-repo:campaign-service
     container_name: campaign-service
     environment:
-      DB_URL: jdbc:mysql://campaign-db:3306/${DB_NAME}
+      DB_URL: jdbc:mysql://campaign-db:3307/${DB_NAME}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
       BOOTSTRAP_SERVER: ${BOOTSTRAP_SERVER}
