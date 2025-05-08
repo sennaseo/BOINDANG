@@ -27,10 +27,7 @@ eureka:
 
 springdoc:
   swagger-ui:
-    path: /swagger-ui.html
-    urls:
-      - url: /image/v3/api-docs
-        name: image
+    path: /image/swagger-ui
 
 open-api:
   service:
