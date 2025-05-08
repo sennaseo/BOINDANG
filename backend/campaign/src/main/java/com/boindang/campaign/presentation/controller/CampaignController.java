@@ -16,6 +16,7 @@ import com.boindang.campaign.infrastructure.kafka.producer.KafkaProducerService;
 import com.boindang.campaign.presentation.dto.response.ApplyResultResponse;
 import com.boindang.campaign.presentation.dto.response.CampaignDetailResponse;
 import com.boindang.campaign.presentation.dto.response.CampaignSummaryResponse;
+import com.boindang.campaign.presentation.dto.response.MyApplicationResponse;
 
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
@@ -36,14 +37,14 @@ public class CampaignController implements CampaignApi {
 
 	@Override
 	public BaseResponse<List<CampaignSummaryResponse>> getCampaigns(String status, int size, int page){
-		List<CampaignSummaryResponse> result = campaignService.getCampaigns(status, size, page);
-		return BaseResponse.success(200, "체험단 목록 조회가 완료되었습니다.", result);
+		return BaseResponse.success(200, "체험단 목록 조회가 완료되었습니다."
+			, campaignService.getCampaigns(status, size, page));
 	}
 
 	@Override
 	public BaseResponse<CampaignDetailResponse> getCampaignDetail(Long campaignId) {
-		CampaignDetailResponse result = campaignService.getCampaignDetail(campaignId);
-		return BaseResponse.success(200, "체험단 상세 조회가 완료되었습니다.", result);
+		return BaseResponse.success(200, "체험단 상세 조회가 완료되었습니다."
+			, campaignService.getCampaignDetail(campaignId));
 	}
 
 	@Override
@@ -51,6 +52,12 @@ public class CampaignController implements CampaignApi {
 		ApplyResultResponse result = applyService.apply(campaignId, userId);
 		String message = result.isSelected() ? "체험단 신청이 완료되었습니다." : "정원이 마감되었습니다.";
 		return BaseResponse.success(result.isSelected() ? 201 : 200, message, result);
+	}
+
+	@Override
+	public BaseResponse<List<MyApplicationResponse>> getMyApplications(Long userId) {
+		return BaseResponse.success(200, "나의 체험단 신청 내역 조회가 왼료되었습니다."
+			, campaignService.getMyApplications(userId));
 	}
 }
 
