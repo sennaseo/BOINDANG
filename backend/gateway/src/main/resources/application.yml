@@ -34,6 +34,7 @@ spring:
           uri: lb://IMAGE-SERVICE
           predicates:
             - Path=/image/**
+            - RewritePath=/image/(?<remaining>.*), /$\{remaining}
         - id: encyclopedia
           uri: lb://ENCYCLOPEDIA
           predicates:
@@ -50,9 +51,10 @@ springdoc:
     path: /swagger-ui.html
     config-url: /v3/api-docs/swagger-config
     urls:
+      - url: /image/v3/api-docs
+        name: Image
       - url: /encyclopedia/v3/api-docs
         name: Encyclopedia
-
 eureka:
   client:
     enabled: true
