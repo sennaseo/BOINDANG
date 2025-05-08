@@ -31,7 +31,7 @@ springdoc:
 
 open-api:
   service:
-    url: http://3.34.141.11:8000/image
+    url: http://3.34.141.11:8000
 
 
 # S3
