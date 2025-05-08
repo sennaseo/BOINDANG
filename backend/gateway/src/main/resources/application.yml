@@ -24,14 +24,5 @@ eureka:
     service-url:
       defaultZone: ${EUREKA_URL}
 
-springdoc:
-  swagger-ui:
-    urls[0]:
-      name: Encyclopedia API
-      url: http://게이트웨이 주소//encyclopedia/v3/api-docs
-    urls[1]:
-      name: Advisor API
-      url: http://게이트웨이 주소/api/advisor/v3/api-docs
-    urls[2]:
 server:
   port: 8000
