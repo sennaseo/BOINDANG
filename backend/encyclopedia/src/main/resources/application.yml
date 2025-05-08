@@ -47,11 +47,8 @@ eureka:
 #    enabled: false
 
 springdoc:
-  api-docs:
-    enabled: true
   swagger-ui:
-    enabled: true
-    path: /swagger-ui.html
+    path: /encyclopedia/swagger-ui
 
 
 openapi:
