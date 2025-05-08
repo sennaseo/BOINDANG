@@ -1,0 +1,68 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.4.5'
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.boindang'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	// Spring Boot 기본 웹 MVC + REST API 지원
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+	// JPA (Hibernate) 기반 ORM + 트랜잭션 처리 지원
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+	// Redis 연동 (캐시, 세션, 동시성 제어 등 활용 가능)
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+	// Bean Validation (ex. @Valid, @NotNull 등)
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+	// Kafka 프로듀서 & 컨슈머를 위한 Spring Kafka 연동
+	implementation 'org.springframework.kafka:spring-kafka'
+
+	// 개발 편의성 향상 (Live Reload 등)
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+	// MySQL JDBC 드라이버 (MySQL 연결 시 필요)
+	runtimeOnly 'com.mysql:mysql-connector-j'
+
+	// OpenAPI 3.0 기반 Swagger 문서 자동 생성 도구
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5'
+
+	// Lombok - getter/setter 등 코드 자동 생성
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+
+	// 단위 테스트를 위한 Spring Boot Test 지원
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+	// Kafka 컨슈머/프로듀서 테스트를 위한 유틸 제공
+	testImplementation 'org.springframework.kafka:spring-kafka-test'
+
+	// JUnit Platform 런처 (testRuntimeOnly로 지정)
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
