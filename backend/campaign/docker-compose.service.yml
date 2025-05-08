@@ -12,8 +12,6 @@ services:
       BOOTSTRAP_SERVER: ${BOOTSTRAP_SERVER}
       EUREKA_URL: ${EUREKA_URL}
       HOST_IP: ${HOST_IP}
-    env_file:
-      - .campaign
     ports:
       - "8082:8082"
     restart: always
