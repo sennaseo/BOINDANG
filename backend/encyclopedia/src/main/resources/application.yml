@@ -48,6 +48,7 @@ eureka:
 
 springdoc:
   api-docs:
-    path: /encyclopedia/v3/api-docs
+    path: /v3/api-docs
   swagger-ui:
-    path: /encyclopedia/swagger-ui.html
+    path: /swagger-ui.html
+    url: /encyclopedia/v3/api-docs  # 이걸 명시해야 Swagger UI에서 올바른 docs 요청함
