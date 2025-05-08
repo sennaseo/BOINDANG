@@ -36,19 +36,19 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
-eureka:
-  client:
-    enabled: true
-    fetch-registry: true
-    register-with-eureka: true
-    service-url:
-      defaultZone: ${EUREKA_URL}
-  instance:
-    hostname: ${HOST_IP}
-
 #eureka:
 #  client:
-#    enabled: false
+#    enabled: true
+#    fetch-registry: true
+#    register-with-eureka: true
+#    service-url:
+#      defaultZone: ${EUREKA_URL}
+#  instance:
+#    hostname: ${HOST_IP}
+
+eureka:
+  client:
+    enabled: false
 
 springdoc:
   api-docs:
@@ -60,5 +60,5 @@ springdoc:
 
 openapi:
   service:
-    url: http://3.34.141.11:8000   # API Gateway 포트
-    #url: http://localhost:8082
+    #url: http://3.34.141.11:8000   # API Gateway 포트
+    url: http://localhost:8082

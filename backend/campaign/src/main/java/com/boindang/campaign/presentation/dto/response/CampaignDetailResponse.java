@@ -8,31 +8,41 @@ import com.boindang.campaign.domain.model.CampaignStatus;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 
-@Getter
+@Data
 @Builder
 @AllArgsConstructor
-public class CampaignSummaryResponse {
+public class CampaignDetailResponse {
 	private Long id;
 	private String name;
 	private String content;
+	private String mainCategory;
+	private String subCategory;
 	private String imageUrl;
+	private LocalDate startDate;
 	private LocalDate deadline;
-	private String status; // 모집 예정, 진행중, 종료
+	private String status;
 	private int capacity;
+	private int applicantCount;
 	private List<String> hashtags;
+	private List<String> notices;
 
-	public static CampaignSummaryResponse from(Campaign campaign) {
-		return CampaignSummaryResponse.builder()
+	public static CampaignDetailResponse from(Campaign campaign) {
+		return CampaignDetailResponse.builder()
 			.id(campaign.getId())
 			.name(campaign.getName())
 			.content(campaign.getDescription())
+			.mainCategory(campaign.getMainCategory())
+			.subCategory(campaign.getSubCategory())
 			.imageUrl(campaign.getImageUrl())
+			.startDate(campaign.getStartDate().toLocalDate())
 			.deadline(campaign.getEndDate().toLocalDate())
 			.status(convertStatusToLabel(campaign.getStatus()))
 			.capacity(campaign.getCapacity())
+			.applicantCount(campaign.getCurrentApplicants())
 			.hashtags(campaign.getHashtags())
+			.notices(campaign.getNotices())
 			.build();
 	}
 
