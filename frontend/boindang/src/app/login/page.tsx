@@ -192,7 +192,7 @@ export default function LoginPage() {
     <div className="flex flex-col items-center px-6 py-8">
       {/* 뒤로가기 버튼 */}
       <div className="self-start mb-10">
-        <Link href="/" className="text-2xl" aria-label="홈으로 돌아가기">
+        <Link href="/onboarding" className="text-2xl" aria-label="홈으로 돌아가기">
           <CaretLeft size={24} weight="bold" />
         </Link>
       </div>
