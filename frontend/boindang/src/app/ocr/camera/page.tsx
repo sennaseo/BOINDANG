@@ -101,7 +101,7 @@ export default function OcrCameraPage() {
 
   // 'X' 버튼 클릭 핸들러 (뒤로 가기)
   const handleCloseClick = () => {
-    router.back();
+    router.push('/');
   };
 
   return (
