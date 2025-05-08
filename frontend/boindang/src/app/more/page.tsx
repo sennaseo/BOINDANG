@@ -3,12 +3,19 @@
 import BottomNavBar from "@/components/navigation/BottomNavBar";
 import { DotsThreeVertical, List } from "@phosphor-icons/react";
 import { motion } from "framer-motion";
+import Image from 'next/image';
 
 export default function MorePage() {
     return (
         <div className="flex flex-col mx-5 pt-15 pb-20 min-h-screen justify-between">
             <div className="flex flex-row justify-between items-center">
-                <img className="w-auto h-8" src="/assets/more/더보기.png" alt="더보기" />
+                <Image  
+                    src="/assets/more/더보기.png" 
+                    alt="더보기"
+                    width={500}
+                    height={300}
+                    layout="responsive"
+                />
                 <DotsThreeVertical size={24} weight="bold" fill="#363636" />
             </div>
             
@@ -31,7 +38,13 @@ export default function MorePage() {
                         <span className="text-xl font-semibold">초코초코케이크</span>
                     </div>
                     <div className="absolute right-0 mr-6 -top-6">
-                        <img className="w-32" src="/assets/more/말풍선.png" alt="말풍선" />
+                        <Image 
+                            src="/assets/more/말풍선.png" 
+                            alt="말풍선"
+                            width={500}
+                            height={300}
+                            layout="responsive"
+                        />
                         <span className="absolute flex items-center justify-center text-center w-32 h-8 inset-0 text-xs font-semibold text-[#363636]">나의 분석 기록 더보기</span>
                     </div>
                     <List size={24} weight="bold" fill="#363636" />

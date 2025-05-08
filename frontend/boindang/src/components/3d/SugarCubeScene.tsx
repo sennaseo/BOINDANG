@@ -15,7 +15,6 @@ import React, { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, PresentationControls, Environment, Center, ContactShadows, BakeShadows, useGLTF } from '@react-three/drei';
 import { Vector3Tuple } from 'three';
-import * as THREE from 'three';
 
 // GlbModel 컴포넌트의 속성 타입 정의
 interface GlbModelProps {
