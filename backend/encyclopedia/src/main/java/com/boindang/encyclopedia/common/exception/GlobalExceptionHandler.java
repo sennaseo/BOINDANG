@@ -2,7 +2,6 @@ package com.boindang.encyclopedia.common.exception;
 
 import com.boindang.encyclopedia.common.response.BaseResponse;
 
-import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 

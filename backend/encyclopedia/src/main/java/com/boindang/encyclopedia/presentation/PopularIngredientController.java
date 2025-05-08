@@ -14,7 +14,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/ingredients")
+@RequestMapping("/encyclopedia/ingredients")
 public class PopularIngredientController implements PopularIngredientApi {
 
     private final PopularIngredientService popularIngredientService;

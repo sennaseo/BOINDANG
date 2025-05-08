@@ -6,7 +6,7 @@ spring:
     name: encyclopedia
 
   elasticsearch:
-    uris: http://elasticsearch:9200
+    uris: http://localhost:9200
     connection-timeout: 3s
     socket-timeout: 3s
     index:
@@ -39,5 +39,9 @@ eureka:
     hostname: ${HOST_IP}
 
 springdoc:
+  api-docs:
+    path: /encyclopedia/v3/api-docs
   swagger-ui:
-    path: /swagger-ui.html
+    path: /encyclopedia/swagger-ui.html
+    url: /encyclopedia/v3/api-docs
+
