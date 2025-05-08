@@ -16,7 +16,8 @@ spring:
             - Path=/encyclopedia/**
           filters:
             - RewritePath=/encyclopedia/(?<segment>.*), /$\{segment}
-            - ForwardedHeadersFilter
+            - SetRequestHeader=Host, encyclopedia:8081
+
 eureka:
   client:
     enabled: true
