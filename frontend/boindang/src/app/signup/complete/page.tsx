@@ -7,7 +7,7 @@ export default function SignUpComplete() {
   const router = useRouter();
 
   const goToHome = () => {
-    router.push('/login');
+    router.push('/');
   };
 
   return (
