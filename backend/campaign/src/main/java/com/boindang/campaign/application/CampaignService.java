@@ -1,10 +1,14 @@
 package com.boindang.campaign.application;
 
+import com.boindang.campaign.common.exception.CampaignException;
+import com.boindang.campaign.common.exception.ErrorCode;
 import com.boindang.campaign.domain.model.Campaign;
 import com.boindang.campaign.domain.model.CampaignStatus;
 import com.boindang.campaign.infrastructure.repository.CampaignRepository;
+import com.boindang.campaign.presentation.dto.response.CampaignDetailResponse;
 import com.boindang.campaign.presentation.dto.response.CampaignSummaryResponse;
 
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -37,5 +41,18 @@ public class CampaignService {
 			.map(CampaignSummaryResponse::from)
 			.collect(Collectors.toList());
 	}
+
+	@Transactional(readOnly = true)
+	public CampaignDetailResponse getCampaignDetail(Long campaignId) {
+		Campaign campaign = campaignRepository.findById(campaignId)
+			.orElseThrow(() -> new CampaignException(ErrorCode.CAMPAIGN_NOT_FOUND));
+
+		// Lazy 초기화 트리거 ✅
+		campaign.getNotices().size();
+
+		campaign.updateStatusByDate(); // 상태 자동 갱신 (선택)
+		return CampaignDetailResponse.from(campaign);
+	}
+
 }
 
