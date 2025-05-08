@@ -15,7 +15,6 @@ spring:
           predicates:
             - Path=/encyclopedia/**
           filters:
-            - RewritePath=/encyclopedia/(?<segment>.*), /$\{segment}
             - SetRequestHeader=Host, encyclopedia:8081
 
 eureka:
