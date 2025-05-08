@@ -32,6 +32,8 @@ export const metadata: Metadata = {
   applicationName: "보인당",
 };
 
+
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -42,7 +44,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${pretendard.variable} antialiased font-pretendard`}
       >
-        <div className="w-full md:mx-auto md:max-w-[440px] min-h-screen bg-white border border-gray-200 shadow-lg">
+        <div className="w-full md:mx-auto md:max-w-[440px] min-h-screen bg-white shadow-xl border-x-2 border-gray-100">
           <main>
             {children}
           </main>
