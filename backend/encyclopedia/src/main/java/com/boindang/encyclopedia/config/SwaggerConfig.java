@@ -17,7 +17,6 @@ public class SwaggerConfig {
     @Bean
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
-                .servers(List.of(new Server().url(url)))
                 .info(new Info().title("Encyclopedia Service API")
                         .version("v0.0.1"));
     }
