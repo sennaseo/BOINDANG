@@ -10,6 +10,12 @@ spring:
           uri: lb://IMAGE-SERVICE
           predicates:
             - Path=/image/**
+        - id: encyclopedia
+          uri: lb://ENCYCLOPEDIA
+          predicates:
+            - Path=/encyclopedia/**
+          filters:
+            - RewritePath=/encyclopedia/(?<segment>.*), /$\{segment}
 
 eureka:
   client:
