@@ -1,27 +1,28 @@
 services:
-  campain-service:
+  campaign-service:
     build:
       context: /
       dockerfile: Dockerfile
-    image: kimhwidong/boindang-repo:campain-service
-    container_name: campain-service
+    image: kimhwidong/boindang-repo:campaign-service
+    container_name: campaign-service
     environment:
-      DB_URL: jdbc:mysql://campain-db:3306/${DB_NAME}
+      DB_URL: jdbc:mysql://campaign-db:3306/${DB_NAME}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
+      BOOTSTRAP_SERVER: ${BOOTSTRAP_SERVER}
       EUREKA_URL: ${EUREKA_URL}
       HOST_IP: ${HOST_IP}
     env_file:
-      - .env_campain
+      - .campaign
     ports:
-      - "8081:8081"
+      - "8082:8082"
     restart: always
     networks:
-      - campain-network
+      - campaign-network
 
 volumes:
   mysql_data:
 
 networks:
-  campain-network:
+  campaign-network:
     external: true
