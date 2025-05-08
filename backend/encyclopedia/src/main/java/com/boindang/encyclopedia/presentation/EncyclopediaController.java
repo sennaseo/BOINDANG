@@ -1,7 +1,6 @@
 package com.boindang.encyclopedia.presentation;
 
 import com.boindang.encyclopedia.application.EncyclopediaService;
-import com.boindang.encyclopedia.application.PopularIngredientService;
 import com.boindang.encyclopedia.common.response.BaseResponse;
 import com.boindang.encyclopedia.presentation.dto.EncyclopediaDetailResponse;
 import com.boindang.encyclopedia.presentation.dto.EncyclopediaSearchResponse;
@@ -9,7 +8,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,7 +15,7 @@ import java.util.Map;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/ingredients")
+@RequestMapping("/encyclopedia/ingredients")
 @RequiredArgsConstructor
 @Tag(name = "백과사전", description = "영양 성분 백과사전 관련 API입니다.")
 public class EncyclopediaController implements EncyclopediaApi {
