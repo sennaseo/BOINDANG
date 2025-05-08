@@ -20,9 +20,9 @@ services:
     networks:
       - encyclopedia-network
 
-  encyclopedia-redis:
+  redis:
     image: redis:8.0
-    container_name: encyclopedia-redis
+    container_name: redis
     ports:
       - "6379:6379"
     healthcheck:
