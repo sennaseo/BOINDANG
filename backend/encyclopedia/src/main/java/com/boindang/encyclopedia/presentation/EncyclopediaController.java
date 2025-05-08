@@ -29,7 +29,7 @@ public class EncyclopediaController implements EncyclopediaApi {
             @RequestParam String query,
             @RequestParam Boolean suggested
     ) {
-        log.info("searchIngredients called with query={}, suggested={}", query, suggested);
+        log.info("🩵 성분 검색 with query={}, suggested={}", query, suggested);
         if (query == null || query.trim().isEmpty()) {
             return BaseResponse.fail(400, "검색어를 입력하세요.");
         }

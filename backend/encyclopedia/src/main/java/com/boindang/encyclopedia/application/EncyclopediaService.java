@@ -39,7 +39,7 @@ public class EncyclopediaService {
     private static final Set<String> VALID_TYPES = Set.of("감미료", "보존제", "산화방지제", "착향료", "탄수화물");
 
     public Map<String, Object> searchWithSuggestion(String query, boolean suggested) {
-        log.info("Elasticsearch 검색 실행: query={}, suggested={}", query, suggested);
+        log.info("🩵 Elasticsearch 검색 실행: query={}, suggested={}", query, suggested);
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("originalQuery", query);  // 항상 포함
 
@@ -96,7 +96,7 @@ public class EncyclopediaService {
             return result;
 
         } catch (Exception e) {
-            log.error("Elasticsearch 검색 중 오류 발생", e);  // 전체 스택 찍기
+            log.error("🩷 Elasticsearch 검색 중 오류 발생", e);  // 전체 스택 찍기
             throw new IngredientException(ErrorCode.INGREDIENT_NOT_FOUND);
         }
     }
