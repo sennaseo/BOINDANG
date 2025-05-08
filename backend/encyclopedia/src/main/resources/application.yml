@@ -6,7 +6,7 @@ spring:
     name: encyclopedia
 
   elasticsearch:
-    uris: http://localhost:9200
+    uris: http://${Elasticsearch_URL}:9200
     connection-timeout: 3s
     socket-timeout: 3s
     index:
@@ -28,15 +28,15 @@ spring:
       ddl-auto: update # 또는 update (DDL 자동 생성 여부)
     open-in-view: false
 
-eureka:
-  client:
-    enabled: true
-    fetch-registry: true
-    register-with-eureka: true
-    service-url:
-      defaultZone: ${EUREKA_URL}
-  instance:
-    hostname: ${HOST_IP}
+#eureka:
+#  client:
+#    enabled: true
+#    fetch-registry: true
+#    register-with-eureka: true
+#    service-url:
+#      defaultZone: ${EUREKA_URL}
+#  instance:
+#    hostname: ${HOST_IP}
 
 springdoc:
   api-docs:
