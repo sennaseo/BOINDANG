@@ -13,7 +13,7 @@ spring:
         - id: encyclopedia
           uri: lb://ENCYCLOPEDIA
           predicates:
-            - Path=/api/**
+            - Path=/encyclopedia/**
 eureka:
   client:
     enabled: true
