@@ -15,7 +15,7 @@ import java.util.List;
 public class SwaggerConfig {
 
     @Bean
-    public OpenAPI customOpenAPI(@Value("${openapi.service.url}") String url) {
+    public OpenAPI customOpenAPI() {
         return new OpenAPI()
                 .servers(List.of(new Server().url(url)))
                 .info(new Info().title("Encyclopedia Service API")
