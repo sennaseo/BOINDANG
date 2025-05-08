@@ -6,6 +6,8 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.boindang.campaign.common.response.BaseResponse;
 import com.boindang.campaign.presentation.dto.response.ApplyResultResponse;
 
+@Tag(name = "체험단", description = "체험단 관련 API입니다.")
 @RequestMapping("/campaigns")
 public interface CampaignApi {
 
