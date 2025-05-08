@@ -15,8 +15,7 @@ spring:
           predicates:
             - Path=/encyclopedia/**
           filters:
-            - SetRequestHeader=Host, encyclopedia:8081
-
+            - RewritePath=/encyclopedia/(?<remaining>.*), /$\{remaining}
 eureka:
   client:
     enabled: true
