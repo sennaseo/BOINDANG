@@ -22,10 +22,7 @@ public class EncyclopediaController implements EncyclopediaApi {
     private final EncyclopediaService encyclopediaService;
 
     @Override
-    public BaseResponse<Map<String, Object>> searchIngredients(
-            @RequestParam String query,
-            @RequestParam Boolean suggested
-    ) {
+    public BaseResponse<Map<String, Object>> searchIngredients(String query, Boolean suggested) {
         log.info("🩵 성분 검색 with query={}, suggested={}", query, suggested);
         if (query == null || query.trim().isEmpty()) {
             return BaseResponse.fail(400, "검색어를 입력하세요.");
