@@ -1,0 +1,298 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import BottomNavBar from '@/components/navigation/BottomNavBar';
+import { ArrowLeft, WarningCircle, ChartBar, Fire, Cookie, CheckCircle, XCircle, Spinner } from '@phosphor-icons/react';
+
+// Import Tab Components
+import OverviewTab from './OverviewTab';
+import HealthImpactTab from './HealthImpactTab';
+import UserSpecificTab from './UserSpecificTab';
+import MoreInfoTab from './MoreInfoTab';
+
+// Import API Types
+import { IngredientDetailApiResponse, IngredientDetailData, ApiErrorResponse } from '@/types/api/ingredients';
+
+// 프론트엔드에서 사용할 가공된 성분 상세 데이터 타입 (탭 컴포넌트들의 props 타입에 맞게)
+interface ProcessedIngredientDetail {
+  id: string;
+  name: string;
+  engName?: string;
+  category: string;
+  type: string;
+  riskLevel: '안심' | '주의' | '위험';
+  gi: number;
+  calories: number;
+  sweetness: number;
+  description: string;
+  examples: string[];
+  references: Array<{ text: string; url: string }>; // OverviewTab 용
+  healthEffects: HealthImpactTabProps['effects']; // HealthImpactTab 용
+  userConsiderations: UserSpecificTabProps['considerations']; // UserSpecificTab 용
+  moreInfo: MoreInfoTabProps['info']; // MoreInfoTab 용
+}
+
+// Helper function to transform API data to frontend structure
+const transformApiDataToFrontend = (apiData: IngredientDetailData): ProcessedIngredientDetail => {
+  return {
+    id: apiData.id,
+    name: apiData.name,
+    engName: apiData.engName,
+    category: apiData.category,
+    type: apiData.type,
+    riskLevel: apiData.riskLevel,
+    gi: apiData.gi,
+    calories: apiData.calories,
+    sweetness: apiData.sweetness,
+    description: apiData.description,
+    examples: apiData.examples,
+    references: apiData.references.map(ref => ({ text: ref, url: '#' })), // API는 string[], 프론트는 객체 배열
+    healthEffects: {
+      bloodSugar: apiData.bloodResponse,
+      digestive: apiData.digestEffect,
+      dental: apiData.toothEffect,
+      pros: apiData.pros,
+      cons: apiData.cons,
+    },
+    userConsiderations: {
+      diabetes: apiData.diabetic.join('\n'), // 배열을 개행 문자로 연결된 문자열로
+      kidney: apiData.kidneyPatient.join('\n'),
+      diet: apiData.dieter.join('\n'),
+      exercise: apiData.muscleBuilder.join('\n'),
+    },
+    moreInfo: {
+      safetyRegulation: `일일권장섭취량: ${apiData.recommendedDailyIntake || '정보 없음'}mg (API 명세에 g 단위이나, 일반적 표기는 mg/kg이므로 확인 필요. 우선 mg으로 표시)\n규제 현황: ${apiData.regulatory}\n관련 이슈: ${apiData.issue || '특이사항 없음'}`,
+      comparison: apiData.compareTable.map(item => ({ ...item, gi: item.gi.toString(), calories: item.calories.toString(), sweetness: item.sweetness.toString()})), // MoreInfoTab은 문자열을 받을 수 있으므로 변환
+    }
+  };
+};
+
+export default function IngredientDetailPage({ params }: { params: { ingredientName: string } }) {
+  const [activeTab, setActiveTab] = useState('개요');
+  const [ingredientDetail, setIngredientDetail] = useState<ProcessedIngredientDetail | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchIngredientData = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        // 실제 API 호출 시 /api 프록시 경로 또는 전체 URL 사용
+        const response = await fetch(`http://k12d206.p.ssafy.io:8081/api/ingredients/${params.ingredientName}`); 
+        if (!response.ok) {
+          const errorData: ApiErrorResponse = await response.json();
+          throw new Error(errorData.message || `Error ${response.status}: ${response.statusText}`);
+        }
+        const result: IngredientDetailApiResponse = await response.json();
+        if (result.isSuccess && result.data) {
+          setIngredientDetail(transformApiDataToFrontend(result.data));
+        } else {
+          throw new Error(result.message || 'Failed to fetch ingredient data');
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An unknown error occurred');
+        console.error("Failed to fetch ingredient details:", err);
+      }
+      setIsLoading(false);
+    };
+
+    if (params.ingredientName) {
+      fetchIngredientData();
+    }
+  }, [params.ingredientName]);
+
+  // 로딩 중 UI
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center">
+        <Spinner size={48} className="text-purple-500 animate-spin mb-4" />
+        <p className="text-slate-600">성분 정보를 불러오는 중...</p>
+      </div>
+    );
+  }
+
+  // 오류 발생 UI
+  if (error) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
+         <header className="sticky top-0 z-40 bg-white p-4 flex items-center border-b border-slate-200 gap-x-3 w-full max-w-md mb-4">
+          <button onClick={() => window.history.back()} className="p-1">
+            <ArrowLeft size={24} className="text-slate-700" />
+          </button>
+          <h1 className="text-lg font-semibold text-slate-800">오류</h1>
+        </header>
+        <div className="bg-white p-6 rounded-lg shadow-md text-center w-full max-w-md">
+          <WarningCircle size={48} className="text-red-500 mx-auto mb-4" />
+          <p className="text-red-600 font-semibold mb-2">데이터를 불러오는데 실패했습니다.</p>
+          <p className="text-sm text-slate-600">오류 메시지: {error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-6 bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-150 ease-in-out"
+          >
+            다시 시도
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // 데이터 로드 실패 또는 데이터가 없는 경우 (ingredientDetail이 null인 경우)
+  if (!ingredientDetail) {
+    // 이 경우는 fetch 성공 후 result.data가 없거나 transform 실패 시 이론적으로 발생 가능하나,
+    // 위 error 처리에서 대부분 걸러지므로, 간단한 메시지 또는 에러 페이지로 리다이렉트도 고려.
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center">
+        <WarningCircle size={48} className="text-yellow-500 mb-4" />
+        <p className="text-slate-600">성분 정보를 찾을 수 없습니다.</p>
+      </div>
+    );
+  }
+
+  // 이하 코드는 ingredientDetail이 존재함을 보장받고 진행
+  // safetyLevel에 따른 아이콘 및 스타일 반환 함수 (Props 타입을 ProcessedIngredientDetail로 변경)
+  const getSafetyLevelAppearance = (level: ProcessedIngredientDetail['riskLevel']) => {
+    switch (level) {
+      case '안심':
+        return {
+          icon: <CheckCircle size={20} className="mr-1.5 flex-shrink-0" weight="bold" />,
+          className: 'bg-green-100 text-green-700 border-green-200',
+        };
+      case '주의':
+        return {
+          icon: <WarningCircle size={20} className="mr-1.5 flex-shrink-0" weight="bold" />,
+          className: 'bg-yellow-100 text-yellow-700 border-yellow-200',
+        };
+      case '위험':
+        return {
+          icon: <XCircle size={20} className="mr-1.5 flex-shrink-0" weight="bold"/>,
+          className: 'bg-red-100 text-red-700 border-red-200',
+        };
+      // default는 ProcessedIngredientDetail의 riskLevel 타입에 의해 발생하지 않아야 함
+    }
+  };
+
+  const safetyAppearance = getSafetyLevelAppearance(ingredientDetail.riskLevel);
+
+  // 최종적으로 UI에 사용될 데이터 (ProcessedIngredientDetail 기반)
+  const displayData = {
+    name: ingredientDetail.name,
+    type: `${ingredientDetail.category} - ${ingredientDetail.type}`,
+    safetyLevel: ingredientDetail.riskLevel,
+    stats: [
+      { icon: <ChartBar size={32} className="text-purple-500 mb-1" />, value: ingredientDetail.gi.toString(), label: '혈당 지수 (GI)' },
+      { icon: <Fire size={32} className="text-orange-500 mb-1" />, value: ingredientDetail.calories.toString(), label: '칼로리 (kcal/g)' },
+      { icon: <Cookie size={32} className="text-yellow-600 mb-1" />, value: `설탕 대비 ${ingredientDetail.sweetness}배`, label: '상대 감미도' },
+    ],
+    tabs: ['개요', '건강 영향', '사용자별', '더보기'],
+    disclaimer: '본 정보는 참고용이며 전문가의 진단 및 상담을 대체할 수 없습니다. 개인의 건강 상태에 따라 영향이 다를 수 있으므로, 특정 건강 상태나 질환이 있는 경우 의료 전문가와 상담하시기 바랍니다.',
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50">
+      <div className="max-w-md mx-auto bg-white shadow-lg pb-[80px]">
+        <header className="sticky top-0 z-40 bg-white p-4 flex items-center border-b border-slate-200 gap-x-3">
+          <button onClick={() => window.history.back()} className="p-1">
+            <ArrowLeft size={24} className="text-slate-700" />
+          </button>
+          <h1 className="text-lg font-semibold text-slate-800">{displayData.name} {ingredientDetail.engName ? `(${ingredientDetail.engName})` : ''}</h1>
+        </header>
+
+        <main className="p-4">
+          <section className="mb-6 p-4 border border-slate-200 rounded-lg bg-white">
+            <p className="text-lg font-semibold text-slate-800 mb-2">{displayData.type}</p>
+            {displayData.safetyLevel && (
+              <div className="mt-3">
+                <div className={`inline-flex items-center text-sm font-bold px-3 py-1.5 rounded-full border ${safetyAppearance.className}`}>
+                  {safetyAppearance.icon}
+                  {displayData.safetyLevel}
+                </div>
+              </div>
+            )}
+          </section>
+
+          <section className="grid grid-cols-3 gap-4 mb-8">
+            {displayData.stats.map((stat) => (
+              <div key={stat.label} className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col items-center text-center border border-slate-100">
+                <div className="mb-2">{stat.icon}</div>
+                <p className="text-2xl font-bold text-slate-800">{stat.value}</p>
+                <p className="text-sm text-slate-600 mt-1 whitespace-nowrap">{stat.label}</p>
+              </div>
+            ))}
+          </section>
+
+          <nav className="flex justify-evenly mb-6 bg-slate-100 p-1 rounded-lg">
+            {displayData.tabs.map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`flex-1 py-2.5 px-4 text-sm font-medium rounded-md focus:outline-none transition-colors duration-200 ${
+                  activeTab === tab
+                    ? 'bg-white shadow text-purple-600'
+                    : 'text-slate-600 hover:bg-slate-200 hover:text-slate-800'
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
+          </nav>
+
+          <div className="mt-6">
+            {activeTab === '개요' && 
+              <OverviewTab 
+                details={ingredientDetail.description} 
+                mainFoods={ingredientDetail.examples} 
+                references={ingredientDetail.references} 
+              />}
+            {activeTab === '건강 영향' && <HealthImpactTab effects={ingredientDetail.healthEffects} />}
+            {activeTab === '사용자별' && <UserSpecificTab considerations={ingredientDetail.userConsiderations} />}
+            {activeTab === '더보기' && <MoreInfoTab info={ingredientDetail.moreInfo} />}
+          </div>
+
+          <footer className="mt-10 pt-6 border-t border-slate-200">
+            <p className="text-xs text-slate-500 text-center leading-relaxed">
+              {displayData.disclaimer}
+            </p>
+          </footer>
+        </main>
+      </div>
+
+      <div className="fixed bottom-0 left-0 right-0 z-50 max-w-md mx-auto border-t border-slate-200">
+        <BottomNavBar />
+      </div>
+    </div>
+  );
+}
+
+// Helper interfaces for Tab props (to avoid direct import if not needed, or for clarity)
+interface HealthImpactTabProps {
+  effects: {
+    bloodSugar: string;
+    digestive: string;
+    dental: string;
+    pros: string[];
+    cons: string[];
+  };
+}
+
+interface UserSpecificTabProps {
+  considerations: {
+    diabetes: string;
+    kidney: string;
+    diet: string;
+    exercise: string;
+  };
+}
+
+interface MoreInfoTabProps {
+  info: {
+    safetyRegulation: string;
+    comparison: Array<{
+      name: string;
+      gi: string; // Was number | string, now string for display consistency from transform
+      calories: string; // Was number | string
+      sweetness: string; // Was number | string
+      note: string;
+    }>;
+  };
+} 
