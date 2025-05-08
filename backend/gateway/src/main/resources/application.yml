@@ -34,6 +34,7 @@ spring:
           uri: lb://IMAGE-SERVICE
           predicates:
             - Path=/image/**
+          filters:
             - RewritePath=/image/(?<remaining>.*), /$\{remaining}
         - id: encyclopedia
           uri: lb://ENCYCLOPEDIA
