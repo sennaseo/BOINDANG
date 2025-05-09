@@ -10,6 +10,7 @@ import com.nutritionservice.nutrition.model.dto.external.UserInfo;
 import com.nutritionservice.nutrition.repository.NutritionReportRepository;
 import com.nutritionservice.nutrition.repository.ProductNutritionRepository;
 import lombok.RequiredArgsConstructor;
+import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -33,7 +34,7 @@ public class NutritionService {
         System.out.println("전체 제품 목록:");
         productRepo.findAll().forEach(p -> System.out.println(p.getId() + " - " + p.getName()));
 
-        ProductNutrition product = productRepo.findById(productId)
+        ProductNutrition product = productRepo.findById(String.valueOf(new ObjectId(productId)))
                 .orElseThrow(() -> new RuntimeException("해당 제품 없음"));
 
         // ✅ result → nutrition_analysis → nutritionSummary
@@ -55,10 +56,13 @@ public class NutritionService {
         List<String> userTypeWarnings = List.of("지방 섭취 주의");
         String summary = "단백질은 적절하나 지방은 높습니다.";
 
+
+        productRepo.findAll().forEach(p -> System.out.println("ID: " + p.getId()));
+
         // 4. 리포트 저장
         NutritionReport report = NutritionReport.builder()
                 .userId(userId)
-                .productId(product.getId())
+                .productId(product.getId().toHexString())
                 .productName(product.getName())
                 .analyzedAt(LocalDateTime.now())
                 .ratios(ratios)

@@ -3,7 +3,7 @@ package com.nutritionservice.nutrition.model.document;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-
+import org.bson.types.ObjectId;
 
 @Getter
 @Setter
@@ -11,11 +11,11 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @AllArgsConstructor
 @Builder
 //@Document("product_nutrition")
-@Document("analysis")
+@Document("product")
 public class ProductNutrition {
 
     @Id
-    private String id;
+    private ObjectId id;
 
     private String name;
 

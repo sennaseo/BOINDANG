@@ -12,5 +12,6 @@ public class NutritionSummary {
     private Nutrient protein;
     private Nutrient carbohydrate;
     private Nutrient fat;
-    private Nutrient sodium; // optional
+    private Nutrient sodium;
+    private Nutrient cholesterol;
 }
