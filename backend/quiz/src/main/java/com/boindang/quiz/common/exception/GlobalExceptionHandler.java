@@ -9,7 +9,7 @@ import com.boindang.quiz.common.response.BaseResponse;
 public class GlobalExceptionHandler {
 
 	@ExceptionHandler(QuizException.class)
-	public BaseResponse<?> handleIngredientException(QuizException e) {
+	public BaseResponse<?> handleQuizException(QuizException e) {
 		return BaseResponse.fail(e.getCode(), e.getMessage());
 	}
 

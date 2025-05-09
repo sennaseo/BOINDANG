@@ -128,7 +128,7 @@ public interface QuizApi {
 				{
 				  "userId": 1,
 				  "quizId": 3,
-				  "selectedOption": "말티톨"
+				  "selectedOptionId": 1
 				}
 				""")
 			)
