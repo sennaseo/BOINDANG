@@ -42,18 +42,8 @@ eureka:
   instance:
     hostname: ${HOST_IP}
 
-#eureka:
-#  client:
-#    enabled: false
-
 springdoc:
-  api-docs:
-    enabled: true
   swagger-ui:
-    enabled: true
-    path: /swagger-ui.html
-
-
-openapi:
-  service:
-    url: http://3.34.141.11:8000   # API Gateway 포트
+    path: /encyclopedia/swagger-ui
+  api-docs:
+    path: /encyclopedia/v3/api-docs
