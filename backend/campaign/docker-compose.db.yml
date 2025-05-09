@@ -8,7 +8,7 @@ services:
       MYSQL_USER: ${DB_USERNAME}
       MYSQL_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "3307:3306"
+      - "3307:3307"
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
@@ -43,7 +43,7 @@ services:
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
       KAFKA_LOG_RETENTION_HOURS: 168
       KAFKA_LOG_RETENTION_BYTES: 1073741824
-      KAFKA_AUTO_CREATE_CLUSTER_ID: "true"
+      KAFKA_CLUSTER_ID: "LQ4uqTmOQteR31bEqSsRBw"
     command:
       - bash
       - -c
