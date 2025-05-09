@@ -41,8 +41,8 @@ public class EncyclopediaController implements EncyclopediaApi {
     }
 
     @Override
-    @GetMapping("/ingredient/{id}")
-    public BaseResponse<EncyclopediaDetailResponse> getDetail(@PathVariable String id) {
+    @GetMapping("/ingredient")
+    public BaseResponse<EncyclopediaDetailResponse> getDetail(@RequestParam String id) {
         return BaseResponse.success(encyclopediaService.getIngredientDetail(id));
     }
 
