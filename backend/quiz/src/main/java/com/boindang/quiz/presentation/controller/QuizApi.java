@@ -25,7 +25,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "영양퀴즈", description = "영양퀴즈 관련 API입니다.")
-@RequestMapping("/quiz")
 public interface QuizApi {
 
 	@Operation(summary = "퀴즈 5문제 출제", description = "사용자가 아직 풀지 않은 퀴즈 중 무작위로 5문제를 출제합니다.")
@@ -181,7 +180,6 @@ public interface QuizApi {
 		@RequestParam Long userId
 	);
 
-	@GetMapping("/statistics")
 	@Operation(summary = "퀴즈 통계 조회", description = "총 풀이 수, 정답/오답 수, 정확도(%)를 반환합니다.")
 	@ApiResponses({
 		@ApiResponse(responseCode = "200", description = "퀴즈 통계 조회에 성공하였습니다.",
@@ -208,6 +206,7 @@ public interface QuizApi {
             }
         """)))
 	})
+	@GetMapping("/statistics")
 	BaseResponse<QuizStatisticsResponse> getStatistics(
 		@Parameter(description = "사용자 ID", required = true)
 		@RequestParam Long userId
