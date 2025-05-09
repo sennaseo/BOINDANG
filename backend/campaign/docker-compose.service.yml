@@ -9,7 +9,7 @@ services:
       DB_URL: jdbc:mysql://campaign-db:3306/${DB_NAME}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
-      BOOTSTRAP_SERVER: ${BOOTSTRAP_SERVER}
+      BOOTSTRAP_SERVER: campaign-kafka:9092
       REDIS_HOST: redis
       EUREKA_URL: ${EUREKA_URL}
       HOST_IP: ${HOST_IP}
