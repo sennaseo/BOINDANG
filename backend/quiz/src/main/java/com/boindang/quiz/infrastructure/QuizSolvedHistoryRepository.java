@@ -11,6 +11,15 @@ import com.boindang.quiz.domain.QuizSolvedHistory;
 public interface QuizSolvedHistoryRepository extends JpaRepository<QuizSolvedHistory, Long> {
 	@Query("SELECT h.quiz.id FROM QuizSolvedHistory h WHERE h.userId = :userId")
 	List<Long> findQuizIdsByUserId(@Param("userId") Long userId);
-	List<QuizSolvedHistory> findByUserIdAndIsCorrectFalse(Long userId);  // 오답노트용
+
+	@Query("""
+		SELECT h
+		FROM QuizSolvedHistory h
+		JOIN FETCH h.quiz q
+		JOIN FETCH q.options
+		WHERE h.userId = :userId AND h.isCorrect = false
+	""")
+	List<QuizSolvedHistory> findWrongAnswersByUserId(@Param("userId") Long userId);
+
 }
 
