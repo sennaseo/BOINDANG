@@ -15,11 +15,11 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("")
-public class PopularIngredientController {
+public class PopularIngredientController implements PopularIngredientApi {
 
     private final PopularIngredientService popularIngredientService;
 
-    //@Override
+    @Override
     @GetMapping("/popular")
     public BaseResponse<List<PopularIngredientResponse>> getPopularIngredients(
         @RequestParam(defaultValue = "3") int limit
