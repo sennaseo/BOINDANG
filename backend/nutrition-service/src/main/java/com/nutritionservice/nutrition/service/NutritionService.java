@@ -74,7 +74,20 @@ public class NutritionService {
                 .summary(summary)
                 .build();
 
-        return reportRepo.save(report);
+        System.out.println("🚀 리포트 저장 시작 - 제품: " + product.getName());
+        System.out.println("⚠ 성분 경고: " + warningIngredients);
+        System.out.println("⚠ 사용자 경고: " + userTypeWarnings);
+
+        try {
+            NutritionReport saved = reportRepo.save(report);
+            System.out.println("✅ 리포트 저장 완료 - ID: " + saved.getId());
+            return saved;
+        } catch (Exception e) {
+            System.err.println("❌ 리포트 저장 실패: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Mongo 저장 실패", e);
+        }
+
     }
 
 }
