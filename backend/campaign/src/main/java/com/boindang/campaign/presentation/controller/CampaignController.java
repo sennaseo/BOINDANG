@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -23,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/campaigns")
 public class CampaignController implements CampaignApi {
 
 	private final KafkaProducerService kafkaProducer;
@@ -36,26 +38,37 @@ public class CampaignController implements CampaignApi {
 	}
 
 	@Override
-	public BaseResponse<List<CampaignSummaryResponse>> getCampaigns(String status, int size, int page){
+	@GetMapping
+	public BaseResponse<List<CampaignSummaryResponse>> getCampaigns(
+		@RequestParam(required = false) String status,
+		@RequestParam(defaultValue = "10") int size,
+		@RequestParam(defaultValue = "0") int page
+	){
 		return BaseResponse.success(200, "체험단 목록 조회가 완료되었습니다."
 			, campaignService.getCampaigns(status, size, page));
 	}
 
 	@Override
-	public BaseResponse<CampaignDetailResponse> getCampaignDetail(Long campaignId) {
+	@GetMapping("/{campaignId}")
+	public BaseResponse<CampaignDetailResponse> getCampaignDetail(@PathVariable("campaignId") Long campaignId) {
 		return BaseResponse.success(200, "체험단 상세 조회가 완료되었습니다."
 			, campaignService.getCampaignDetail(campaignId));
 	}
 
 	@Override
-	public BaseResponse<ApplyResultResponse> apply(Long campaignId, Long userId) {
+	@PostMapping("/{campaignId}/apply")
+	public BaseResponse<ApplyResultResponse> apply(
+		@PathVariable("campaignId") Long campaignId,
+		@RequestParam Long userId
+	) {
 		ApplyResultResponse result = applyService.apply(campaignId, userId);
 		String message = result.isSelected() ? "체험단 신청이 완료되었습니다." : "정원이 마감되었습니다.";
 		return BaseResponse.success(result.isSelected() ? 201 : 200, message, result);
 	}
 
 	@Override
-	public BaseResponse<List<MyApplicationResponse>> getMyApplications(Long userId) {
+	@GetMapping("/my-applications")
+	public BaseResponse<List<MyApplicationResponse>> getMyApplications(@RequestParam Long userId) {
 		return BaseResponse.success(200, "나의 체험단 신청 내역 조회가 왼료되었습니다."
 			, campaignService.getMyApplications(userId));
 	}
