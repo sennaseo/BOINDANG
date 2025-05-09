@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
-@Document("nutrition_report")
+@Document("report")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -27,7 +27,7 @@ public class NutritionReport {
 
     private Map<String, NutrientResult> ratios;
 
-    private List<String> warningIngredients;
+    private Map<String, String> warningIngredients;
     private List<String> userTypeWarnings;
 
     private String summary;

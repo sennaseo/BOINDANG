@@ -8,7 +8,7 @@ spring:
   data:
     mongodb:
       uri: mongodb://localhost:27017
-      database: ingredient_db
+      database: nutrition_db
 
 #  logging:
 #    level:
