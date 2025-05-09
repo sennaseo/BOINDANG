@@ -5,12 +5,18 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.boindang.quiz.common.exception.ErrorCode;
+import com.boindang.quiz.common.exception.QuizException;
 import com.boindang.quiz.domain.Quiz;
 import com.boindang.quiz.domain.QuizOption;
+import com.boindang.quiz.domain.QuizSolvedHistory;
 import com.boindang.quiz.infrastructure.QuizRepository;
 import com.boindang.quiz.infrastructure.QuizSolvedHistoryRepository;
-import com.boindang.quiz.presentation.dto.QuizResponse;
+import com.boindang.quiz.presentation.dto.request.AnswerRequest;
+import com.boindang.quiz.presentation.dto.response.QuizAnswerResponse;
+import com.boindang.quiz.presentation.dto.response.QuizResponse;
 
 import lombok.RequiredArgsConstructor;
 
@@ -47,4 +53,28 @@ public class QuizService {
 			})
 			.toList();
 	}
+
+	@Transactional
+	public QuizAnswerResponse submitAnswer(AnswerRequest request) {
+		Quiz quiz = quizRepository.findById(request.quizId())
+			.orElseThrow(() -> new QuizException(ErrorCode.QUIZ_NOT_FOUND));
+
+		boolean isCorrect = quiz.isCorrect(request.selectedOption());
+
+		// 선택한 보기의 해설 찾기
+		String explanation = quiz.getOptions().stream()
+			.filter(opt -> opt.getContent().equalsIgnoreCase(request.selectedOption()))
+			.findFirst()
+			.map(QuizOption::getExplanation)
+			.orElse("해설을 찾을 수 없습니다.");
+
+		// 풀이 이력 저장
+		QuizSolvedHistory history = new QuizSolvedHistory(
+			request.userId(), quiz, isCorrect
+		);
+		historyRepository.save(history);
+
+		return new QuizAnswerResponse(isCorrect, explanation);
+	}
+
 }
