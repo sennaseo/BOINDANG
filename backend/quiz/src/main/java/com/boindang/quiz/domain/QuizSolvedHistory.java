@@ -2,13 +2,7 @@ package com.boindang.quiz.domain;
 
 import java.time.LocalDateTime;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,12 +24,15 @@ public class QuizSolvedHistory {
 
 	private boolean isCorrect;
 
+	private Long selectedOptionId;
+
 	private LocalDateTime solvedAt;
 
-	public QuizSolvedHistory(Long userId, Quiz quiz, boolean isCorrect) {
+	public QuizSolvedHistory(Long userId, Quiz quiz, boolean isCorrect, Long selectedOptionId) {
 		this.userId = userId;
 		this.quiz = quiz;
 		this.isCorrect = isCorrect;
+		this.selectedOptionId = selectedOptionId;
 		this.solvedAt = LocalDateTime.now();
 	}
 }
