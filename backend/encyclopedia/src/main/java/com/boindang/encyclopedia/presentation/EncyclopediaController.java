@@ -22,6 +22,7 @@ public class EncyclopediaController implements EncyclopediaApi {
     private final EncyclopediaService encyclopediaService;
 
     @Override
+    @GetMapping("/search")
     public BaseResponse<Map<String, Object>> searchIngredients(String query, Boolean suggested) {
         log.info("🩵 성분 검색 with query={}, suggested={}", query, suggested);
         if (query == null || query.trim().isEmpty()) {
@@ -36,11 +37,13 @@ public class EncyclopediaController implements EncyclopediaApi {
     }
 
     @Override
+    @GetMapping("/{id}")
     public BaseResponse<EncyclopediaDetailResponse> getDetail(String id) {
         return BaseResponse.success(encyclopediaService.getIngredientDetail(id));
     }
 
     @Override
+    @GetMapping("/category")
     public BaseResponse<List<EncyclopediaSearchResponse>> getIngredientsByCategory(String category, String sort, String order, int size) {
         List<EncyclopediaSearchResponse> result = encyclopediaService.getIngredientsByType(category, sort, order, size);
         return BaseResponse.success(result);
