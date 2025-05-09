@@ -23,6 +23,10 @@ repositories {
 	mavenCentral()
 }
 
+ext {
+	set('springCloudVersion', "2024.0.1")
+}
+
 dependencies {
 	// Spring Boot 기본 웹 MVC + REST API 지원
 	implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -53,6 +57,12 @@ dependencies {
 
 	// JUnit Platform 런처 (testRuntimeOnly로 지정)
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+	}
 }
 
 tasks.named('test') {
