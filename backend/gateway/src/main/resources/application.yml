@@ -15,11 +15,11 @@ spring:
           predicates:
             - Path=/encyclopedia/**
         - id: campaign-service
-          uri: lb://CAMPAIGN-SERVICE
+          uri: lb://CAMPAIGN
           predicates:
             - Path=/campaign/**
         - id: ocr-service
-          uri: lb://OCR-SERVICE
+          uri: lb://OCR
           predicates:
             - Path=/ocr/**
 springdoc:
