@@ -4,8 +4,6 @@ import com.boindang.encyclopedia.application.EncyclopediaService;
 import com.boindang.encyclopedia.common.response.BaseResponse;
 import com.boindang.encyclopedia.presentation.dto.EncyclopediaDetailResponse;
 import com.boindang.encyclopedia.presentation.dto.EncyclopediaSearchResponse;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -16,7 +14,7 @@ import java.util.Map;
 
 @Slf4j
 @RestController
-@RequestMapping("")
+@RequestMapping("/ingredient")
 @RequiredArgsConstructor
 public class EncyclopediaController implements EncyclopediaApi {
 
@@ -41,8 +39,8 @@ public class EncyclopediaController implements EncyclopediaApi {
     }
 
     @Override
-    @GetMapping("/ingredient")
-    public BaseResponse<EncyclopediaDetailResponse> getDetail(@RequestParam String id) {
+    @GetMapping("/{id}")
+    public BaseResponse<EncyclopediaDetailResponse> getDetail(@PathVariable String id) {
         return BaseResponse.success(encyclopediaService.getIngredientDetail(id));
     }
 
