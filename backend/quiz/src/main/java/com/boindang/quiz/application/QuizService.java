@@ -17,6 +17,7 @@ import com.boindang.quiz.infrastructure.QuizSolvedHistoryRepository;
 import com.boindang.quiz.presentation.dto.request.AnswerRequest;
 import com.boindang.quiz.presentation.dto.response.QuizAnswerResponse;
 import com.boindang.quiz.presentation.dto.response.QuizResponse;
+import com.boindang.quiz.presentation.dto.response.WrongAnswerResponse;
 
 import lombok.RequiredArgsConstructor;
 
@@ -78,7 +79,8 @@ public class QuizService {
 		QuizSolvedHistory history = new QuizSolvedHistory(
 			request.userId(),
 			quiz,
-			isCorrect
+			isCorrect,
+			request.selectedOptionId()
 		);
 		historyRepository.save(history);
 
@@ -87,6 +89,42 @@ public class QuizService {
 			isCorrect,
 			selectedOption.getExplanation()
 		);
+	}
+
+	public List<WrongAnswerResponse> getWrongAnswers(Long userId) {
+		List<QuizSolvedHistory> histories = historyRepository.findWrongAnswersByUserId(userId);
+
+		return histories.stream().map(history -> {
+			Quiz quiz = history.getQuiz();
+			Long selectedId = history.getSelectedOptionId();
+			Long answerId = quiz.getAnswerOptionId();
+
+			List<String> optionTexts = quiz.getOptions().stream()
+				.map(QuizOption::getContent)
+				.collect(Collectors.toList());
+
+			String explanation = quiz.getOptions().stream()
+				.filter(opt -> opt.getId().equals(answerId))
+				.map(QuizOption::getExplanation)
+				.findFirst()
+				.orElse("정답 해설이 없습니다.");
+
+			String selectedExplanation = quiz.getOptions().stream()
+				.filter(opt -> opt.getId().equals(selectedId))
+				.map(QuizOption::getExplanation)
+				.findFirst()
+				.orElse("오답 해설이 없습니다.");
+
+			return new WrongAnswerResponse(
+				quiz.getId(),
+				quiz.getQuestion(),
+				optionTexts,
+				answerId,
+				selectedId,
+				explanation,
+				selectedExplanation
+			);
+		}).toList();
 	}
 
 }

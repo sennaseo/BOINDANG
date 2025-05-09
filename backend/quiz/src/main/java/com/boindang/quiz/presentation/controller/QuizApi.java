@@ -12,11 +12,13 @@ import com.boindang.quiz.common.response.BaseResponse;
 import com.boindang.quiz.presentation.dto.request.AnswerRequest;
 import com.boindang.quiz.presentation.dto.response.QuizAnswerResponse;
 import com.boindang.quiz.presentation.dto.response.QuizResponse;
+import com.boindang.quiz.presentation.dto.response.WrongAnswerResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -134,6 +136,48 @@ public interface QuizApi {
 			)
 		)
 		@RequestBody AnswerRequest request
+	);
+
+	@Operation(summary = "오답노트 조회", description = "사용자의 퀴즈 풀이 이력 중 오답만 조회합니다.")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "오답노트 조회에 성공하였습니다.",
+			content = @Content(mediaType = "application/json",
+				schema = @Schema(implementation = WrongAnswerResponse.class),
+				examples = @ExampleObject(value = """
+                {
+                  "isSuccess": true,
+                  "code": 200,
+                  "message": "오답노트 조회에 성공하였습니다.",
+                  "data": [
+                    {
+                      "quizId": 12,
+                      "question": "GI가 높은 감미료는 무엇인가요?",
+                      "options": ["에리스리톨", "자일리톨", "말티톨", "스테비아"],
+                      "answerId": 2,
+                      "selectedId": 1,
+                      "explanation": "말티톨은 GI 수치가 높은 편으로, 당뇨환자에게 주의가 필요합니다.",
+                      "selectedExplanation": "자일리톨은 비교적 낮은 GI를 가지고 있어 정답이 아닙니다."
+                    }
+                  ]
+                }
+            """))
+		),
+		@ApiResponse(responseCode = "401", description = "인증되지 않은 사용자",
+			content = @Content(mediaType = "application/json",
+				examples = @ExampleObject(value = """
+                {
+                  "isSuccess": false,
+                  "code": 401,
+                  "message": "로그인이 필요합니다.",
+                  "data": null
+                }
+            """))
+		)
+	})
+	@GetMapping("/wrong-answers")
+	BaseResponse<List<WrongAnswerResponse>> getWrongAnswers(
+		@Parameter(description = "사용자 ID", required = true)
+		@RequestParam Long userId
 	);
 
 }
