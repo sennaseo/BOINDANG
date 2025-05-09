@@ -16,7 +16,7 @@ import java.util.Map;
 
 @Slf4j
 @RestController
-@RequestMapping("/encyclopedia/ingredients")
+@RequestMapping("")
 @RequiredArgsConstructor
 public class EncyclopediaController implements EncyclopediaApi {
 
@@ -42,13 +42,18 @@ public class EncyclopediaController implements EncyclopediaApi {
 
     @Override
     @GetMapping("/{id}")
-    public BaseResponse<EncyclopediaDetailResponse> getDetail(String id) {
+    public BaseResponse<EncyclopediaDetailResponse> getDetail(@PathVariable String id) {
         return BaseResponse.success(encyclopediaService.getIngredientDetail(id));
     }
 
     @Override
     @GetMapping("/category")
-    public BaseResponse<List<EncyclopediaSearchResponse>> getIngredientsByCategory(String category, String sort, String order, int size) {
+    public BaseResponse<List<EncyclopediaSearchResponse>> getIngredientsByCategory(
+        @RequestParam String category,
+        @RequestParam(required = false) String sort,
+        @RequestParam(defaultValue = "desc") String order,
+        @RequestParam(defaultValue = "20") int size
+    ) {
         List<EncyclopediaSearchResponse> result = encyclopediaService.getIngredientsByType(category, sort, order, size);
         return BaseResponse.success(result);
     }
