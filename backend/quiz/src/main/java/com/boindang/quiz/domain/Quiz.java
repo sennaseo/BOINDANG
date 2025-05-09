@@ -3,14 +3,15 @@ package com.boindang.quiz.domain;
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.persistence.CollectionTable;
-import jakarta.persistence.ElementCollection;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
+
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,21 +29,26 @@ public class Quiz {
 
 	private String question;
 
-	private String answer;  // 정답은 서버 내부에서만 사용
+	@Column(name = "answer")
+	private Long answerOptionId;
 
-	@ElementCollection(fetch = FetchType.EAGER)
-	@CollectionTable(name = "quiz_option", joinColumns = @JoinColumn(name = "quiz_id"))
+	@OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private List<QuizOption> options = new ArrayList<>();
 
-	public Quiz(String title, String question, String answer, List<QuizOption> options) {
+	public Quiz(String title, String question, Long answerOptionId) {
 		this.title = title;
 		this.question = question;
-		this.answer = answer;
-		this.options = options;
+		this.answerOptionId = answerOptionId;
 	}
 
-	public boolean isCorrect(String userInput) {
-		return answer.equalsIgnoreCase(userInput);
+	// 도메인 책임: 정답 판별
+	public boolean isCorrect(Long selectedOptionId) {
+		return answerOptionId != null && answerOptionId.equals(selectedOptionId);
+	}
+
+	// 도메인 책임: 보기 포함 여부 검증
+	public boolean hasOption(Long optionId) {
+		return options.stream()
+			.anyMatch(option -> option.getId().equals(optionId));
 	}
 }
-
