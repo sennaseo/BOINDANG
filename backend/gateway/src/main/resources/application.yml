@@ -23,19 +23,23 @@ spring:
           predicates:
             - Path=/ocr/**
 springdoc:
-  enable-native-support: true
   api-docs:
+    version: openapi_3_1
     enabled: true
+    path: /image/v3/api-docs, /encyclopedia/v3/api-docs, /campaign/v3/api-docs
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
   swagger-ui:
-    enabled: true
-    path: /swagger-ui.html
-    urls:
-      - url: http://3.34.141.11:8000/image/v3/api-docs
-        name: Image
-      - url: http://3.34.141.11:8000/encyclopedia/v3/api-docs
-        name: Encyclopedia
-      - url: http://3.34.141.11:8000/campaign/v3/api-docs
-        name: Campaign
+    use-root-path: true
+    urls[0]:
+      name: 이미지 서비스
+      url: http://3.34.141.11:8000/image/v3/api-docs
+    urls[1]:
+      name: 백과사전 서비스
+      url: http://3.34.141.11:8000/encyclopedia/v3/api-docs
+    urls[2]:
+      name: 체험단 서비스
+      url: http://3.34.141.11:8000/campaign/v3/api-docs
 
 eureka:
   client:
