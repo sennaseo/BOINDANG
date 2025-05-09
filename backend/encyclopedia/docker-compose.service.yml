@@ -6,20 +6,24 @@ services:
     image: kimhwidong/boindang-repo:encyclopedia-service
     container_name: encyclopedia-service
     environment:
+      ELASTICSEARCH_URL: ${ELASTICSEARCH_URL}
       DB_URL: jdbc:mysql://encyclopedia-db:3306/${DB_NAME}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
-    env_file:
-      - .env_encyclopedia
+      EUREKA_URL: ${EUREKA_URL}
+      HOST_IP: ${HOST_IP}
     ports:
       - "8081:8081"
     restart: always
     networks:
       - encyclopedia-network
+      - redis-network
 
 volumes:
   mysql_data:
 
 networks:
   encyclopedia-network:
+    external: true
+  redis-network:
     external: true
