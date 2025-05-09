@@ -13,7 +13,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.boindang.campaign.common.response.BaseResponse;
@@ -23,7 +22,6 @@ import com.boindang.campaign.presentation.dto.response.CampaignSummaryResponse;
 import com.boindang.campaign.presentation.dto.response.MyApplicationResponse;
 
 @Tag(name = "체험단", description = "체험단 관련 API입니다.")
-@RequestMapping("/campaigns")
 public interface CampaignApi {
 
 	@Operation(summary = "체험단 목록 조회", description = "전체 체험단 목록을 상태 기준으로 조회합니다. 상태(status)는 '모집 예정', '진행중', '종료' 중 선택 가능합니다.")
