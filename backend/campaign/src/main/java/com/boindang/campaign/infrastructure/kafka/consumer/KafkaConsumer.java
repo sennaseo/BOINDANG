@@ -20,9 +20,15 @@ public class KafkaConsumer {
 
 	@KafkaListener(topics = "apply-campaign", groupId = "campaign-group")
 	public void consume(String message) {
+		log.info("📥 Kafka 메시지 수신됨: {}", message);
+
 		try {
 			ApplyEvent event = objectMapper.readValue(message, ApplyEvent.class);
+			log.info("✅ 메시지 역직렬화 완료: {}", event);
+
 			saveService.save(event);
+			log.info("✅ Campaign 신청 저장 성공: campaignId={}, userId={}", event.getCampaignId(), event.getUserId());
+
 		} catch (Exception e) {
 			log.error("Kafka 소비 중 예외 발생", e);
 		}

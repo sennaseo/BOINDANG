@@ -1,5 +1,7 @@
 package com.boindang.campaign.domain.model;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -18,24 +20,22 @@ public class CampaignApplication {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long campaignId;
     private Long userId;
     private boolean isSelected;
+    private LocalDateTime appliedAt;
 
-    public static CampaignApplication of(ApplyEvent event) {
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "campaign_id")
+    private Campaign campaign;
+
+    public static CampaignApplication of(ApplyEvent event, Campaign campaign) {
         CampaignApplication app = new CampaignApplication();
-        app.campaignId = event.getCampaignId();
+        app.campaign = campaign;
         app.userId = event.getUserId();
         app.isSelected = event.isSelected();
+        app.appliedAt = LocalDateTime.now();
         return app;
     }
 
-    public static CampaignApplication create(Campaign campaign, Long userId) {
-        CampaignApplication app = new CampaignApplication();
-        app.campaignId = campaign.getId();
-        app.userId = userId;
-        app.isSelected = true;  // 기본은 선정된 경우 (이벤트 발행 없이 저장할 경우 등)
-        return app;
-    }
 }
 

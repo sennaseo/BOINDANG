@@ -26,7 +26,7 @@ public class Campaign {
     private String mainCategory;          // 제품 대분류
     private String subCategory;          // 제품 소분류
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "campaign_hashtags", joinColumns = @JoinColumn(name = "campaign_id"))
     @Column(name = "hashtag")
     private List<String> hashtags = new ArrayList<>();

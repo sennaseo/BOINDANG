@@ -1,0 +1,27 @@
+services:
+  campaign-service:
+    build:
+      context: /
+      dockerfile: Dockerfile
+    image: kimhwidong/boindang-repo:campaign-service
+    container_name: campaign-service
+    environment:
+      DB_URL: jdbc:mysql://campaign-db:3307/${DB_NAME}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      BOOTSTRAP_SERVER: ${BOOTSTRAP_SERVER}
+      REDIS_HOST: redis
+      EUREKA_URL: ${EUREKA_URL}
+      HOST_IP: ${HOST_IP}
+    ports:
+      - "8082:8082"
+    restart: always
+    networks:
+      - campaign-network
+
+volumes:
+  mysql_data:
+
+networks:
+  campaign-network:
+    external: true
