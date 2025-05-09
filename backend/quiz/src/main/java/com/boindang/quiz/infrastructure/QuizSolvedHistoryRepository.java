@@ -21,5 +21,9 @@ public interface QuizSolvedHistoryRepository extends JpaRepository<QuizSolvedHis
 	""")
 	List<QuizSolvedHistory> findWrongAnswersByUserId(@Param("userId") Long userId);
 
+	int countByUserId(Long userId);
+
+	int countByUserIdAndIsCorrectTrue(Long userId);
+
 }
 

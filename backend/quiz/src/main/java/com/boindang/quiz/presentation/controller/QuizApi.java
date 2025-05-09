@@ -12,6 +12,7 @@ import com.boindang.quiz.common.response.BaseResponse;
 import com.boindang.quiz.presentation.dto.request.AnswerRequest;
 import com.boindang.quiz.presentation.dto.response.QuizAnswerResponse;
 import com.boindang.quiz.presentation.dto.response.QuizResponse;
+import com.boindang.quiz.presentation.dto.response.QuizStatisticsResponse;
 import com.boindang.quiz.presentation.dto.response.WrongAnswerResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -180,4 +181,35 @@ public interface QuizApi {
 		@RequestParam Long userId
 	);
 
+	@GetMapping("/statistics")
+	@Operation(summary = "퀴즈 통계 조회", description = "총 풀이 수, 정답/오답 수, 정확도(%)를 반환합니다.")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "퀴즈 통계 조회에 성공하였습니다.",
+			content = @Content(examples = @ExampleObject(value = """
+            {
+              "isSuccess": true,
+              "code": 200,
+              "message": "퀴즈 통계 조회에 성공하였습니다.",
+              "data": {
+                "totalSolved": 42,
+                "correctCount": 31,
+                "wrongCount": 11,
+                "accuracy": 73.8
+              }
+            }
+        """))),
+		@ApiResponse(responseCode = "401", description = "로그인이 필요한 서비스입니다.",
+			content = @Content(examples = @ExampleObject(value = """
+            {
+              "isSuccess": false,
+              "code": 401,
+              "message": "로그인이 필요한 서비스입니다.",
+              "data": null
+            }
+        """)))
+	})
+	BaseResponse<QuizStatisticsResponse> getStatistics(
+		@Parameter(description = "사용자 ID", required = true)
+		@RequestParam Long userId
+	);
 }

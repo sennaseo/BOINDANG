@@ -10,6 +10,7 @@ import com.boindang.quiz.common.response.BaseResponse;
 import com.boindang.quiz.presentation.dto.request.AnswerRequest;
 import com.boindang.quiz.presentation.dto.response.QuizAnswerResponse;
 import com.boindang.quiz.presentation.dto.response.QuizResponse;
+import com.boindang.quiz.presentation.dto.response.QuizStatisticsResponse;
 import com.boindang.quiz.presentation.dto.response.WrongAnswerResponse;
 
 import lombok.RequiredArgsConstructor;
@@ -36,6 +37,12 @@ public class QuizController implements QuizApi {
 	public BaseResponse<List<WrongAnswerResponse>> getWrongAnswers(Long userId) {
 		return BaseResponse.success(200, "오답노트 조회에 성공하였습니다."
 			, quizService.getWrongAnswers(userId));
+	}
+
+	@Override
+	public BaseResponse<QuizStatisticsResponse> getStatistics(Long userId) {
+		return BaseResponse.success(200, "퀴즈 통계 조회에 성공하였습니다."
+			, quizService.getStatistics(userId));
 	}
 
 }
