@@ -14,7 +14,14 @@ spring:
           uri: lb://ENCYCLOPEDIA
           predicates:
             - Path=/encyclopedia/**
-
+        - id: campaign-service
+          uri: lb://CAMPAIGN-SERVICE
+          predicates:
+            - Path=/campaign/**
+        - id: ocr-service
+          uri: lb://OCR-SERVICE
+          predicates:
+            - Path=/ocr/**
 springdoc:
   enable-native-support: true
   api-docs:
@@ -28,6 +35,8 @@ springdoc:
         name: Image
       - url: /encyclopedia/v3/api-docs
         name: Encyclopedia
+      - url: /campaign/v3/api-docs
+        name: Campaign
 
 eureka:
   client:
