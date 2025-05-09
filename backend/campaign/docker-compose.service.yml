@@ -18,10 +18,13 @@ services:
     restart: always
     networks:
       - campaign-network
+      - redis-network
 
 volumes:
   mysql_data:
 
 networks:
   campaign-network:
+    external: true
+  redis-network:
     external: true
