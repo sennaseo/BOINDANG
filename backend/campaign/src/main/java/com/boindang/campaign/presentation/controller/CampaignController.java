@@ -24,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/campaign")
+@RequestMapping("")
 public class CampaignController implements CampaignApi {
 
 	private final KafkaProducerService kafkaProducer;
