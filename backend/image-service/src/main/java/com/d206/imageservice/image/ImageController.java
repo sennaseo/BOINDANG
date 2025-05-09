@@ -13,7 +13,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("")
+@RequestMapping("image")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*") // 모든 출처 허용 (개발 단계에서만 사용)
 public class ImageController {
