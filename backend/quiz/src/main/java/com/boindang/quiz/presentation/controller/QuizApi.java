@@ -3,11 +3,15 @@ package com.boindang.quiz.presentation.controller;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.boindang.quiz.common.response.BaseResponse;
-import com.boindang.quiz.presentation.dto.QuizResponse;
+import com.boindang.quiz.presentation.dto.request.AnswerRequest;
+import com.boindang.quiz.presentation.dto.response.QuizAnswerResponse;
+import com.boindang.quiz.presentation.dto.response.QuizResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -82,4 +86,54 @@ public interface QuizApi {
 		@Parameter(description = "사용자 ID", required = true, example = "1")
 		@RequestParam Long userId
 	);
+
+	@Operation(summary = "퀴즈 정답 제출", description = "사용자가 선택한 보기와 퀴즈 ID를 전달하면 정답 여부와 해설을 반환합니다.")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "정답 제출 결과 반환이 완료되었습니다.",
+			content = @Content(mediaType = "application/json",
+				examples = @ExampleObject(value = """
+				{
+				  "isSuccess": true,
+				  "code": 200,
+				  "message": "정답 제출 완료",
+				  "data": {
+					"isCorrect": false,
+					"explanation": "말티톨은 당알코올이지만 GI가 높아 혈당을 크게 올릴 수 있습니다."
+				  }
+				}
+				""")
+			)
+		),
+		@ApiResponse(responseCode = "404", description = "해당 퀴즈를 찾을 수 없음",
+			content = @Content(mediaType = "application/json",
+				examples = @ExampleObject(value = """
+				{
+				  "isSuccess": false,
+				  "code": 404,
+				  "message": "해당 퀴즈를 찾을 수 없습니다.",
+				  "data": null
+				}
+				""")
+			)
+		)
+	})
+	@PostMapping("/submit")
+	BaseResponse<QuizAnswerResponse> submitAnswer(
+		@io.swagger.v3.oas.annotations.parameters.RequestBody(
+			description = "정답 제출 형식",
+			required = true,
+			content = @Content(
+				mediaType = "application/json",
+				examples = @ExampleObject(value = """
+				{
+				  "userId": 1,
+				  "quizId": 3,
+				  "selectedOption": "말티톨"
+				}
+				""")
+			)
+		)
+		@RequestBody AnswerRequest request
+	);
+
 }

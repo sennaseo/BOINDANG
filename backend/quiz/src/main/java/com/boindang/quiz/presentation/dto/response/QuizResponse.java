@@ -1,4 +1,4 @@
-package com.boindang.quiz.presentation.dto;
+package com.boindang.quiz.presentation.dto.response;
 
 import java.util.List;
 
