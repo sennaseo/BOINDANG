@@ -43,13 +43,12 @@ services:
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
       KAFKA_LOG_RETENTION_HOURS: 168
       KAFKA_LOG_RETENTION_BYTES: 1073741824
+      KAFKA_AUTO_CREATE_CLUSTER_ID: "true"
     command:
       - bash
       - -c
       - |
-        if [ ! -d "/tmp/kraft-storage" ]; then
-          /bin/kafka-storage.sh format -t $$(/bin/kafka-storage.sh random-uuid) -c /etc/kafka/kafka.properties
-        fi
+        # Confluent 이미지는 KAFKA_CLUSTER_ID가 설정되어 있으면 포맷 작업을 자동으로 처리함.
         /etc/confluent/docker/run
     networks:
       - campaign-network
