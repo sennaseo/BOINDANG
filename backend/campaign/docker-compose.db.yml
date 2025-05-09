@@ -2,6 +2,8 @@ services:
   campaign-db:
     image: mysql:8.0
     container_name: campaign-db
+    env_file:
+      - .env_campaign
     environment:
       MYSQL_DATABASE: ${DB_NAME}
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
@@ -26,12 +28,13 @@ services:
     container_name: campaign-kafka
     ports:
       - "9092:9092"
+      - "9093:9093"
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://${HOST_IP}:9092
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@campaign-kafka:9093
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
@@ -43,14 +46,7 @@ services:
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
       KAFKA_LOG_RETENTION_HOURS: 168
       KAFKA_LOG_RETENTION_BYTES: 1073741824
-    command:
-      - bash
-      - -c
-      - |
-        if [ ! -d "/tmp/kraft-storage" ]; then
-          /bin/kafka-storage.sh format -t $$(/bin/kafka-storage.sh random-uuid) -c /etc/kafka/kafka.properties
-        fi
-        /etc/confluent/docker/run
+      CLUSTER_ID: "LQ4uqTmOQteR31bEqSsRBw"
     networks:
       - campaign-network
 
