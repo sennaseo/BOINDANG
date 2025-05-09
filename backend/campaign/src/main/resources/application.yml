@@ -1,13 +1,17 @@
 server:
-  port: 8080
+  port: 8082
 
 spring:
   application:
     name: campaign
 
+  web:
+    resources:
+      add-mappings: false
+
   data:
     redis:
-      host: localhost
+      host: ${REDIS_HOST}
       port: 6379
 
   datasource:
@@ -32,8 +36,29 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
+eureka:
+  client:
+    enabled: true
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+      defaultZone: ${EUREKA_URL}
+  instance:
+    hostname: ${HOST_IP}
+
+#eureka:
+#  client:
+#    enabled: false
+
 springdoc:
   api-docs:
-    path: /campaign/v3/api-docs
+    enabled: true
   swagger-ui:
-    path: /campaign/swagger-ui.html
+    enabled: true
+    path: /swagger-ui.html
+
+
+openapi:
+  service:
+    url: http://3.34.141.11:8000   # API Gateway 포트
+    #url: http://localhost:8082
