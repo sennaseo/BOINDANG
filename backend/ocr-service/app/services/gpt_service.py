@@ -98,12 +98,11 @@ async def ask_gpt_nutrition(nutrition_text: str) -> dict:
     - fat은 sub 항목(saturatedFat, transFat, unsaturatedFat) 포함 가능
 
     아래 형식의 JSON만 반환하라:
-
     {
       "nutritionSummary": {
-          "Kcal": ...,
-        "carbohydrate": { "gram": ..., "ratio": ...},
-        "protein": { "gram": ..., "ratio": ...},
+        "Kcal": ...,
+        "carbohydrate": { "gram": ..., "ratio": ... },
+        "protein": { "gram": ..., "ratio": ... },
         "fat": {
           "gram": ..., "ratio": ...,
           "sub": {
@@ -111,7 +110,9 @@ async def ask_gpt_nutrition(nutrition_text: str) -> dict:
             "transFat": { "gram": ..., "ratio": ... },
             "unsaturatedFat": { "gram": ..., "ratio": ... }
           }
-        }
+        },
+        "sodium": { "mg": ..., "ratio": ... },
+        "cholesterol": { "mg": ..., "ratio": ... }
       }
     }
     """
