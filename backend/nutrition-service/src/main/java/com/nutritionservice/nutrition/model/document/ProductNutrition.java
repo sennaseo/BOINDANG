@@ -16,8 +16,6 @@ public class ProductNutrition {
 
     @Id
     private ObjectId id;
-
     private String name;
-
-    private ProductResult result; // ✅ result 필드 추가
+    private ProductResult result;
 }
