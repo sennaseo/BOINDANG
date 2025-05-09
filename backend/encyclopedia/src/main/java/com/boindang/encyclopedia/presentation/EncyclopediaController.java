@@ -4,6 +4,7 @@ import com.boindang.encyclopedia.application.EncyclopediaService;
 import com.boindang.encyclopedia.common.response.BaseResponse;
 import com.boindang.encyclopedia.presentation.dto.EncyclopediaDetailResponse;
 import com.boindang.encyclopedia.presentation.dto.EncyclopediaSearchResponse;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +24,10 @@ public class EncyclopediaController implements EncyclopediaApi {
 
     @Override
     @GetMapping("/search")
-    public BaseResponse<Map<String, Object>> searchIngredients(String query, Boolean suggested) {
+    public BaseResponse<Map<String, Object>> searchIngredients(
+            @RequestParam String query,
+            @RequestParam(required = false) Boolean suggested
+    ) {
         log.info("🩵 성분 검색 with query={}, suggested={}", query, suggested);
         if (query == null || query.trim().isEmpty()) {
             return BaseResponse.fail(400, "검색어를 입력하세요.");
