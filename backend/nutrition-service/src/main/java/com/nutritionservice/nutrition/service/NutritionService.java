@@ -17,8 +17,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
-import static com.nutritionservice.nutrition.service.AnalysisHelper.calculateRatios;
-
 @Service
 @RequiredArgsConstructor
 public class NutritionService {
