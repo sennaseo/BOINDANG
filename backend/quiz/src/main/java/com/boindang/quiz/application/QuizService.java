@@ -56,25 +56,37 @@ public class QuizService {
 
 	@Transactional
 	public QuizAnswerResponse submitAnswer(AnswerRequest request) {
+		// 1. 퀴즈 조회
 		Quiz quiz = quizRepository.findById(request.quizId())
 			.orElseThrow(() -> new QuizException(ErrorCode.QUIZ_NOT_FOUND));
 
-		boolean isCorrect = quiz.isCorrect(request.selectedOption());
+		// 2. 보기 ID 유효성 검증 (도메인 책임)
+		if (!quiz.hasOption(request.selectedOptionId())) {
+			throw new QuizException(ErrorCode.OPTION_QUIZ_MISMATCH);
+		}
 
-		// 선택한 보기의 해설 찾기
-		String explanation = quiz.getOptions().stream()
-			.filter(opt -> opt.getContent().equalsIgnoreCase(request.selectedOption()))
+		// 3. 선택한 보기 엔티티 조회
+		QuizOption selectedOption = quiz.getOptions().stream()
+			.filter(option -> option.getId().equals(request.selectedOptionId()))
 			.findFirst()
-			.map(QuizOption::getExplanation)
-			.orElse("해설을 찾을 수 없습니다.");
+			.orElseThrow(() -> new QuizException(ErrorCode.OPTION_NOT_FOUND)); // 방어적 처리
 
-		// 풀이 이력 저장
+		// 4. 정답 판별 (도메인 책임)
+		boolean isCorrect = quiz.isCorrect(selectedOption.getId());
+
+		// 5. 풀이 이력 저장
 		QuizSolvedHistory history = new QuizSolvedHistory(
-			request.userId(), quiz, isCorrect
+			request.userId(),
+			quiz,
+			isCorrect
 		);
 		historyRepository.save(history);
 
-		return new QuizAnswerResponse(isCorrect, explanation);
+		// 6. 응답 반환
+		return new QuizAnswerResponse(
+			isCorrect,
+			selectedOption.getExplanation()
+		);
 	}
 
 }
