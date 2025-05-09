@@ -6,10 +6,10 @@ settings = get_settings()
 MONGODB_URI = settings.MONGODB_URI
 
 client = MongoClient(MONGODB_URI)
-db = client["ingredient_db"]
+db = client["nutrition_db"]
 
-def save_analysis(product_name, result):
-    db.analysis.insert_one({
+def save_product(product_name, result):
+    db.product.insert_one({
         "name": product_name,
         "result": result
     })
