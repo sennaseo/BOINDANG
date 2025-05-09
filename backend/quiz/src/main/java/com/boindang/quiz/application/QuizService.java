@@ -18,6 +18,7 @@ import com.boindang.quiz.presentation.dto.request.AnswerRequest;
 import com.boindang.quiz.presentation.dto.response.QuizAnswerResponse;
 import com.boindang.quiz.presentation.dto.response.QuizResponse;
 import com.boindang.quiz.presentation.dto.response.WrongAnswerResponse;
+import com.boindang.quiz.presentation.dto.response.QuizStatisticsResponse;
 
 import lombok.RequiredArgsConstructor;
 
@@ -125,6 +126,15 @@ public class QuizService {
 				selectedExplanation
 			);
 		}).toList();
+	}
+
+	public QuizStatisticsResponse getStatistics(Long userId) {
+		int total = historyRepository.countByUserId(userId);
+		int correct = historyRepository.countByUserIdAndIsCorrectTrue(userId);
+		int wrong = total - correct;
+		double accuracy = (total == 0) ? 0.0 : Math.round(((double) correct / total) * 1000) / 10.0;
+
+		return new QuizStatisticsResponse(total, correct, wrong, accuracy);
 	}
 
 }
