@@ -27,7 +27,7 @@ public class NutritionReport {
 
     private Map<String, NutrientResult> ratios;
 
-    private List<String> warningIngredients;
+    private Map<String, String> warningIngredients;
     private List<String> userTypeWarnings;
 
     private String summary;
