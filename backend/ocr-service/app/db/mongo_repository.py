@@ -2,20 +2,20 @@ from pymongo import MongoClient
 from app.config import get_settings
 
 settings = get_settings()
+
 MONGODB_URI = settings.MONGODB_URI
 
 client = MongoClient(MONGODB_URI)
-db = client["ingredient_db"]
+db = client["nutrition_db"]
 
-def save_analysis(product_name, result):
-    print(f"📝 MongoDB 저장 시도 - 제품명: {product_name}")
+print("Mongo URI:", settings.MONGODB_URI)
+print("DB name:", db.name)
 
-    existing = db.analysis.find_one({"name": product_name})
-    if existing:
-        print(f"⚠️ 이미 존재하는 제품명: {product_name}")
-        return  # 또는 덮어쓰기(update), 무시 등
-
-    db.analysis.insert_one({
+def save_product(product_name, result):
+    print("🧪 save_product() 함수 시작")  # 제일 위에 추가해봐
+    db.product.insert_one({
         "name": product_name,
         "result": result
     })
+
+
