@@ -15,6 +15,7 @@ import java.util.Map;
 
 @Slf4j
 @RestController
+@RequestMapping("/ingredients")
 @RequiredArgsConstructor
 public class EncyclopediaController implements EncyclopediaApi {
 
