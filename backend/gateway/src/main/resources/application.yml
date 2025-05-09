@@ -16,6 +16,8 @@ spring:
           uri: lb://ENCYCLOPEDIA
           predicates:
             - Path=/encyclopedia/**
+          filters:
+            - StripPrefix=1
         - id: campaign-service
           uri: lb://CAMPAIGN
           predicates:
