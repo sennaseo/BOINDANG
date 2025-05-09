@@ -28,14 +28,13 @@ springdoc:
     enabled: true
   swagger-ui:
     enabled: true
-    path: /v3/swagger-ui.html
-    config-url: /v3/api-docs/swagger-config
+    path: /swagger-ui.html
     urls:
-      - url: /image/v3/api-docs
+      - url: http://3.34.141.11:8000/image/v3/api-docs
         name: Image
-      - url: /encyclopedia/v3/api-docs
+      - url: http://3.34.141.11:8000/encyclopedia/v3/api-docs
         name: Encyclopedia
-      - url: /campaign/v3/api-docs
+      - url: http://3.34.141.11:8000/campaign/v3/api-docs
         name: Campaign
 
 eureka:
