@@ -14,7 +14,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public BaseResponse<?> handleUnexpected(Exception e) {
-        return BaseResponse.fail(500, "서버 내부 오류가 발생했습니다.");
+        return BaseResponse.fail(500, e.getMessage());
     }
 
 }
