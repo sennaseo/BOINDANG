@@ -167,9 +167,9 @@ public interface EncyclopediaApi {
                         """)
             ))
     })
-    @GetMapping("/ingredient")
+    @GetMapping("/{ingredientId}")
     BaseResponse<EncyclopediaDetailResponse> getDetail(
-            @Parameter(description = "성분 ID", required = true) @RequestParam String id);
+            @Parameter(description = "성분 ID", required = true) @PathVariable String ingredientId);
 
     @Operation(summary = "카테고리별 성분 조회", description = "성분 유형(감미료, 보존제 등)에 따라 필터링하고 GI 또는 감미도 정렬을 지원합니다.")
     @ApiResponses(value = {
