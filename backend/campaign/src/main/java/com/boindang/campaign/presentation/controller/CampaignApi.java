@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.boindang.campaign.common.response.BaseResponse;
@@ -190,7 +191,7 @@ public interface CampaignApi {
 		@PathVariable("campaignId") Long campaignId,
 
 		@Parameter(description = "사용자 ID", required = true)
-		@RequestParam Long userId
+		@RequestHeader("X-USER-ID") String userId
 	);
 
 	@Operation(
@@ -229,7 +230,7 @@ public interface CampaignApi {
 	@GetMapping("/my-applications")
 	BaseResponse<List<MyApplicationResponse>> getMyApplications(
 		@Parameter(description = "사용자 ID", required = true)
-		@RequestParam Long userId
+		@RequestHeader("X-USER-ID") String userId
 	);
 
 }
