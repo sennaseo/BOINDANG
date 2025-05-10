@@ -24,30 +24,48 @@ spring:
             - Path=/campaign/**
           filters:
             - StripPrefix=1
+        - id: user-service
+          uri: lb://BOINDANG-USER
+          predicates:
+            - Path=/user/**
+          filters:
+            - StripPrefix=1
+        - id: auth-service
+          uri: lb://AUTH
+          predicates:
+            - Path=/auth/**
+          filters:
+            - StripPrefix=1
+        - id: nutrition-service
+          uri: lb://NUTRITION-SERVICE
+          predicates:
+            - Path=/nutrition/**
+          filters:
+            - StripPrefix=1
         - id: ocr-service
           uri: lb://OCR
           predicates:
             - Path=/ocr/**
           filters:
             - StripPrefix=1
-springdoc:
-  api-docs:
-    version: openapi_3_1
-    enabled: true
-    path: /image/v3/api-docs, /encyclopedia/v3/api-docs, /campaign/v3/api-docs
-  default-consumes-media-type: application/json
-  default-produces-media-type: application/json
-  swagger-ui:
-    use-root-path: true
-    urls[0]:
-      name: 이미지 서비스
-      url: http://3.34.141.11:8000/image/v3/api-docs
-    urls[1]:
-      name: 백과사전 서비스
-      url: http://3.34.141.11:8000/encyclopedia/v3/api-docs
-    urls[2]:
-      name: 체험단 서비스
-      url: http://3.34.141.11:8000/campaign/v3/api-docs
+#springdoc:
+#  api-docs:
+#    version: openapi_3_1
+#    enabled: true
+#    path: /image/v3/api-docs, /encyclopedia/v3/api-docs, /campaign/v3/api-docs
+#  default-consumes-media-type: application/json
+#  default-produces-media-type: application/json
+#  swagger-ui:
+#    use-root-path: true
+#    urls[0]:
+#      name: 이미지 서비스
+#      url: http://3.34.141.11:8000/image/v3/api-docs
+#    urls[1]:
+#      name: 백과사전 서비스
+#      url: http://3.34.141.11:8000/encyclopedia/v3/api-docs
+#    urls[2]:
+#      name: 체험단 서비스
+#      url: http://3.34.141.11:8000/campaign/v3/api-docs
 
 eureka:
   client:
@@ -56,13 +74,6 @@ eureka:
     register-with-eureka: false
     service-url:
       defaultZone: ${EUREKA_URL}
-
-jwt:
-  secret: ${JWT_SECRET}
-  access-token:
-    expire-time: 259200000 # 3일
-  refresh-token:
-    expire-time: 604800000 # 7일
 
 server:
   port: 8000
