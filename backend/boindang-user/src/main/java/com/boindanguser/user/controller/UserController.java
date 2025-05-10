@@ -1,6 +1,7 @@
 package com.boindanguser.user.controller;
 
 import com.boindanguser.common.model.dto.ApiResponse;
+import com.boindanguser.user.model.dto.JwtTokenDto;
 import com.boindanguser.user.model.dto.request.ChangeNicknameRequest;
 import com.boindanguser.user.model.dto.request.UpdateUserRequest;
 import com.boindanguser.user.model.dto.request.UserLoginRequest;
@@ -24,7 +25,7 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ApiResponse<UserResponse> login(@RequestBody @Valid UserLoginRequest request) {
+    public ApiResponse<JwtTokenDto> login(@RequestBody @Valid UserLoginRequest request) {
         // 여기서 성공하면 인증서버로 요청
         return ApiResponse.success(userService.login(request));
     }
