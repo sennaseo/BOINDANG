@@ -57,7 +57,7 @@ public class QuizService {
 	}
 
 	@Transactional
-	public QuizAnswerResponse submitAnswer(AnswerRequest request) {
+	public QuizAnswerResponse submitAnswer(Long userId, AnswerRequest request) {
 		// 1. 퀴즈 조회
 		Quiz quiz = quizRepository.findById(request.quizId())
 			.orElseThrow(() -> new QuizException(ErrorCode.QUIZ_NOT_FOUND));
@@ -78,7 +78,7 @@ public class QuizService {
 
 		// 5. 풀이 이력 저장
 		QuizSolvedHistory history = new QuizSolvedHistory(
-			request.userId(),
+			userId,
 			quiz,
 			isCorrect,
 			request.selectedOptionId()
