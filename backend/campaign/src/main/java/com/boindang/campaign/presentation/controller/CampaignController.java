@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,15 +28,8 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("")
 public class CampaignController implements CampaignApi {
 
-	private final KafkaProducerService kafkaProducer;
 	private final CampaignApplyService applyService;
 	private final CampaignService campaignService;
-
-	@GetMapping("/send")
-	public ResponseEntity<String> sendMessage(@RequestParam String message) {
-		kafkaProducer.send("test-topic", message);
-		return ResponseEntity.ok("✅ 메시지 전송 완료!");
-	}
 
 	@Override
 	@GetMapping
@@ -59,18 +53,18 @@ public class CampaignController implements CampaignApi {
 	@PostMapping("/{campaignId}/apply")
 	public BaseResponse<ApplyResultResponse> apply(
 		@PathVariable("campaignId") Long campaignId,
-		@RequestParam Long userId
+		@RequestHeader("X-USER-ID") String userId
 	) {
-		ApplyResultResponse result = applyService.apply(campaignId, userId);
+		ApplyResultResponse result = applyService.apply(campaignId, Long.parseLong(userId));
 		String message = result.isSelected() ? "체험단 신청이 완료되었습니다." : "정원이 마감되었습니다.";
 		return BaseResponse.success(result.isSelected() ? 201 : 200, message, result);
 	}
 
 	@Override
 	@GetMapping("/my-applications")
-	public BaseResponse<List<MyApplicationResponse>> getMyApplications(@RequestParam Long userId) {
+	public BaseResponse<List<MyApplicationResponse>> getMyApplications(@RequestHeader("X-USER-ID") String userId) {
 		return BaseResponse.success(200, "나의 체험단 신청 내역 조회가 왼료되었습니다."
-			, campaignService.getMyApplications(userId));
+			, campaignService.getMyApplications(Long.parseLong(userId)));
 	}
 }
 
