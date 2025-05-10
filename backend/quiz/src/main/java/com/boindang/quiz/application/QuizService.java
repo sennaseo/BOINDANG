@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import com.boindang.quiz.common.exception.ErrorCode;
 import com.boindang.quiz.common.exception.QuizException;
@@ -33,13 +34,16 @@ public class QuizService {
 		List<Long> solvedQuizIds = historyRepository.findQuizIdsByUserId(userId);
 
 		List<Quiz> quizzes;
-		if (solvedQuizIds == null || solvedQuizIds.isEmpty()) {
-			quizzes = quizRepository.findFiveRandomQuizzes();
+		List<Long> quiz_index;
+		if (CollectionUtils.isEmpty(solvedQuizIds)) {
+			quiz_index = quizRepository.findRandomQuizIds();
+			quizzes = quizRepository.findAllByIdWithOptions(quiz_index);
 		} else {
-			quizzes = quizRepository.findFiveUnsolvedQuizzes(solvedQuizIds);
+			quiz_index = quizRepository.findUnsolvedRandomQuizIds(solvedQuizIds);
+			quizzes = quizRepository.findAllByIdWithOptions(quiz_index);
 		}
 
-		// 3. DTO 변환 (셔플 포함)
+		// DTO 변환 (셔플 포함)
 		return quizzes.stream()
 			.map(quiz -> {
 				List<String> options = quiz.getOptions().stream()
@@ -69,12 +73,12 @@ public class QuizService {
 
 		// 3. 선택한 보기 엔티티 조회
 		QuizOption selectedOption = quiz.getOptions().stream()
-			.filter(option -> option.getId().equals(request.selectedOptionId()))
+			.filter(option -> option.getOptionId() == request.selectedOptionId()) // ✅ int == int
 			.findFirst()
-			.orElseThrow(() -> new QuizException(ErrorCode.OPTION_NOT_FOUND)); // 방어적 처리
+			.orElseThrow(() -> new QuizException(ErrorCode.INVALID_QUIZ_OPTION)); // 방어적 처리
 
 		// 4. 정답 판별 (도메인 책임)
-		boolean isCorrect = quiz.isCorrect(selectedOption.getId());
+		boolean isCorrect = quiz.isCorrect(selectedOption.getOptionId());
 
 		// 5. 풀이 이력 저장
 		QuizSolvedHistory history = new QuizSolvedHistory(
@@ -97,8 +101,8 @@ public class QuizService {
 
 		return histories.stream().map(history -> {
 			Quiz quiz = history.getQuiz();
-			Long selectedId = history.getSelectedOptionId();
-			Long answerId = quiz.getAnswerOptionId();
+			int selectedId = history.getSelectedOptionId();
+			int answerId = quiz.getAnswerOptionId();
 
 			List<String> optionTexts = quiz.getOptions().stream()
 				.map(QuizOption::getContent)
