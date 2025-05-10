@@ -3,6 +3,7 @@ package com.d206.gateway.filter;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -12,8 +13,12 @@ import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
+import org.springframework.web.client.RestClient;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ServerWebExchange;
+
+import com.netflix.appinfo.InstanceInfo;
+import com.netflix.discovery.EurekaClient;
 
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +28,9 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class AuthenticationFilter implements GlobalFilter, Ordered {
 	private final WebClient.Builder webClientBuilder;
+	private final RestClient restClient;
+	@Autowired
+	private EurekaClient discoveryClient;
 
 	@Override
 	public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
@@ -41,7 +49,7 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
 		if (excludedPatterns.stream().anyMatch(pattern -> pathMatcher.match(pattern, path))) {
 			return chain.filter(exchange);
 		}
-		
+
 		// jwt 검증
 		String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 		if (!authHeader.startsWith("Bearer ")) {
@@ -53,7 +61,7 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
 
 		return webClientBuilder.build()
 			.post()
-			.uri("http://AUTH/validate")
+			.uri(getUrl("AUTH") + "auth/validate")
 			.contentType(MediaType.APPLICATION_JSON)
 			.bodyValue(requestBody)
 			.retrieve()
@@ -72,6 +80,11 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
 			});
 	}
 
+	public String getUrl(String service) {
+		InstanceInfo instance = discoveryClient.getNextServerFromEureka(service, false);
+		return instance.getHomePageUrl();
+	}
+
 	private Mono<Void> onError(ServerWebExchange exchange, String err, HttpStatus status) {
 		exchange.getResponse().setStatusCode(status);
 		return exchange.getResponse().setComplete();
@@ -81,6 +94,7 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
 	public int getOrder() {
 		return -1;
 	}
+
 	@Data
 	public static class AuthResponse {
 		private boolean success;
