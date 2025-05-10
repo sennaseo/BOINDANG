@@ -4,7 +4,6 @@ import com.boindang.encyclopedia.application.EncyclopediaService;
 import com.boindang.encyclopedia.common.response.BaseResponse;
 import com.boindang.encyclopedia.presentation.dto.EncyclopediaDetailResponse;
 import com.boindang.encyclopedia.presentation.dto.EncyclopediaSearchResponse;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -15,14 +14,18 @@ import java.util.Map;
 
 @Slf4j
 @RestController
+@RequestMapping("")
 @RequiredArgsConstructor
-@Tag(name = "백과사전", description = "영양 성분 백과사전 관련 API입니다.")
 public class EncyclopediaController implements EncyclopediaApi {
 
     private final EncyclopediaService encyclopediaService;
 
     @Override
-    public BaseResponse<Map<String, Object>> searchIngredients(String query, Boolean suggested) {
+    @GetMapping("/search")
+    public BaseResponse<Map<String, Object>> searchIngredients(
+            @RequestParam String query,
+            @RequestParam(required = false) Boolean suggested
+    ) {
         log.info("🩵 성분 검색 with query={}, suggested={}", query, suggested);
         if (query == null || query.trim().isEmpty()) {
             return BaseResponse.fail(400, "검색어를 입력하세요.");
@@ -36,12 +39,19 @@ public class EncyclopediaController implements EncyclopediaApi {
     }
 
     @Override
-    public BaseResponse<EncyclopediaDetailResponse> getDetail(String id) {
+    @GetMapping("/ingredient/{id}")
+    public BaseResponse<EncyclopediaDetailResponse> getDetail(@PathVariable String id) {
         return BaseResponse.success(encyclopediaService.getIngredientDetail(id));
     }
 
     @Override
-    public BaseResponse<List<EncyclopediaSearchResponse>> getIngredientsByCategory(String category, String sort, String order, int size) {
+    @GetMapping("/category")
+    public BaseResponse<List<EncyclopediaSearchResponse>> getIngredientsByCategory(
+        @RequestParam String category,
+        @RequestParam(required = false) String sort,
+        @RequestParam(defaultValue = "desc") String order,
+        @RequestParam(defaultValue = "20") int size
+    ) {
         List<EncyclopediaSearchResponse> result = encyclopediaService.getIngredientsByType(category, sort, order, size);
         return BaseResponse.success(result);
     }
