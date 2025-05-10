@@ -1,0 +1,44 @@
+package com.d206.imageservice.s3;
+
+import java.time.Duration;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Service;
+
+import lombok.RequiredArgsConstructor;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
+
+@Service
+@RequiredArgsConstructor
+public class S3Service {
+	private final S3Client s3Client;
+	private final S3Presigner s3Presigner;
+
+	@Autowired
+	private Environment env;
+
+	public String createPresignedPutUrl(String keyName, String contentType) {
+		String bucketName = env.getProperty("S3_BUCKET_NAME");
+
+		// presign request를 위한 정보 생성
+		PutObjectRequest objectRequest = PutObjectRequest.builder()
+			.bucket(bucketName)
+			.key(keyName)
+			.contentType(contentType)
+			.build();
+
+		// presign request 생성
+		PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
+			.signatureDuration(Duration.ofMinutes(1))  // 1분동안 사용 가능
+			.putObjectRequest(objectRequest)
+			.build();
+
+		PresignedPutObjectRequest presignedRequest = s3Presigner.presignPutObject(presignRequest);
+		return presignedRequest.url().toExternalForm();
+	}
+}

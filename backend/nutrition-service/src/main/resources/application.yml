@@ -1,0 +1,38 @@
+server:
+  port: 8082  # nutrition-service 고유 포트
+
+spring:
+  application:
+    name: nutrition-service
+
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017
+      database: nutrition_db
+
+#  logging:
+#    level:
+#      p6spy: info   # ? ??? ??? SQL? ??
+#      org.hibernate.SQL: info  # Hibernate ?? SQL ?? ???
+#      root: INFO
+#      com.monthlyzip: DEBUG  # ? ???? ???? ?? DEBUG ?? ??
+#    charset:
+#      console: UTF-8
+#      file: UTF-8
+
+#  mvc:
+#    pathmatch:
+#      matching-strategy: ant_path_matcher  # Swagger 오류 방지용 (Spring 2.6+)
+
+
+user-service:
+  url: http://localhost:8081 # 실제 user-service 주소
+
+feign:
+  client:
+    config:
+      userClient:
+        name: user-service
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000
