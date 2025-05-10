@@ -6,8 +6,8 @@ public record WrongAnswerResponse(
 	Long quizId,
 	String question,
 	List<String> options,
-	Long answerId,
-	Long selectedId,
+	int answerId,
+	int selectedId,
 	String explanation,
 	String selectedExplanation
 ) {}
