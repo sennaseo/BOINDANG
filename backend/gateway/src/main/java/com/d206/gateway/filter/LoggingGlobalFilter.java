@@ -42,7 +42,6 @@ public class LoggingGlobalFilter implements GlobalFilter {
                 }));
     }
 
-    // 기존의 logRequest 및 logResponse 메서드는 그대로 유지
     private void logRequest(ServerHttpRequest request) {
         URI uri = request.getURI();
         String method = request.getMethod().toString();
