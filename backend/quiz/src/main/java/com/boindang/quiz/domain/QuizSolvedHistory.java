@@ -24,11 +24,11 @@ public class QuizSolvedHistory {
 
 	private boolean isCorrect;
 
-	private Long selectedOptionId;
+	private int selectedOptionId;
 
 	private LocalDateTime solvedAt;
 
-	public QuizSolvedHistory(Long userId, Quiz quiz, boolean isCorrect, Long selectedOptionId) {
+	public QuizSolvedHistory(Long userId, Quiz quiz, boolean isCorrect, int selectedOptionId) {
 		this.userId = userId;
 		this.quiz = quiz;
 		this.isCorrect = isCorrect;
