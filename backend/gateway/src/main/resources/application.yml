@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: gateway
+  config:
+    import: optional:file:.env_gateway[.properties]
+  cloud:
+    gateway:
+      routes:
+        - id: image-service
+          uri: lb://IMAGE-SERVICE
+          predicates:
+            - Path=/image/**
+        - id: encyclopedia
+          uri: lb://ENCYCLOPEDIA
+          predicates:
+            - Path=/encyclopedia/**
+          filters:
+            - RewritePath=/encyclopedia/(?<segment>.*), /$\{segment}
+
+eureka:
+  client:
+    enabled: true
+    fetch-registry: true
+    register-with-eureka: false
+    service-url:
+      defaultZone: ${EUREKA_URL}
+
+server:
+  port: 8000
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG

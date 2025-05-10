@@ -1,0 +1,12 @@
+services:
+  gateway:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: kimhwidong/boindang-repo:gateway
+    container_name: gateway
+    ports:
+      - "8000:8000"
+    environment:
+      EUREKA_URL: ${EUREKA_URL}
+    restart: always
