@@ -52,7 +52,7 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
 
 		// jwt 검증
 		String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-		if (!authHeader.startsWith("Bearer ")) {
+		if (authHeader == null || !authHeader.startsWith("Bearer ")) {
 			return onError(exchange, "Missing or invalid Authorization header", HttpStatus.UNAUTHORIZED);
 		}
 
