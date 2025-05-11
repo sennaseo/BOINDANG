@@ -1,5 +1,4 @@
 import BottomNavBar from '@/components/navigation/BottomNavBar';
-import SugarCubeContainer from '@/components/3d/SugarCubeContainer';
 
 export default function Home() {
   return (
@@ -14,7 +13,6 @@ export default function Home() {
           - SugarCubeContainer: 클라이언트 컴포넌트로 Three.js 렌더링 처리
         */}
         <div className="w-full h-[400px] md:h-[500px]">
-          <SugarCubeContainer />
         </div>
       </main>
 
