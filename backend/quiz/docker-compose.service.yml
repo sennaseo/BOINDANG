@@ -9,6 +9,8 @@ services:
       DB_URL: jdbc:mysql://quiz-db:3308/${DB_NAME}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
+      EUREKA_URL: ${EUREKA_URL}
+      HOST_IP: ${HOST_IP}
     ports:
       - "8083:8083"
     restart: always
