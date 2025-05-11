@@ -50,6 +50,8 @@ dependencies {
 
 	// eureka client
 	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+
+
 	implementation 'com.github.ben-manes.caffeine:caffeine'
 
 	// 단위 테스트를 위한 Spring Boot Test 지원

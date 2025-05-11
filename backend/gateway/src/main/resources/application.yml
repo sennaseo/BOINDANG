@@ -10,12 +10,68 @@ spring:
           uri: lb://IMAGE-SERVICE
           predicates:
             - Path=/image/**
-        - id: encyclopedia
+          filters:
+            - StripPrefix=1
+        - id: encyclopedia-service
           uri: lb://ENCYCLOPEDIA
           predicates:
             - Path=/encyclopedia/**
           filters:
-            - RewritePath=/encyclopedia/(?<segment>.*), /$\{segment}
+            - StripPrefix=1
+        - id: campaign-service
+          uri: lb://CAMPAIGN
+          predicates:
+            - Path=/campaign/**
+          filters:
+            - StripPrefix=1
+        - id: user-service
+          uri: lb://BOINDANG-USER
+          predicates:
+            - Path=/user/**
+          filters:
+            - StripPrefix=1
+        - id: auth-service
+          uri: lb://AUTH
+          predicates:
+            - Path=/auth/**
+          filters:
+            - StripPrefix=1
+        - id: nutrition-service
+          uri: lb://NUTRITION-SERVICE
+          predicates:
+            - Path=/nutrition/**
+          filters:
+            - StripPrefix=1
+        - id: quiz-service
+          uri: lb://QUIZ
+          predicates:
+            - Path=/quiz/**
+          filters:
+            - StripPrefix=1
+        - id: ocr-service
+          uri: lb://OCR
+          predicates:
+            - Path=/ocr/**
+          filters:
+            - StripPrefix=1
+#springdoc:
+#  api-docs:
+#    version: openapi_3_1
+#    enabled: true
+#    path: /image/v3/api-docs, /encyclopedia/v3/api-docs, /campaign/v3/api-docs
+#  default-consumes-media-type: application/json
+#  default-produces-media-type: application/json
+#  swagger-ui:
+#    use-root-path: true
+#    urls[0]:
+#      name: 이미지 서비스
+#      url: http://3.34.141.11:8000/image/v3/api-docs
+#    urls[1]:
+#      name: 백과사전 서비스
+#      url: http://3.34.141.11:8000/encyclopedia/v3/api-docs
+#    urls[2]:
+#      name: 체험단 서비스
+#      url: http://3.34.141.11:8000/campaign/v3/api-docs
 
 eureka:
   client:
@@ -28,6 +84,3 @@ eureka:
 server:
   port: 8000
 
-logging:
-  level:
-    org.springframework.cloud.gateway: DEBUG

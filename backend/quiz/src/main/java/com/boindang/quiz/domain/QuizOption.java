@@ -20,15 +20,16 @@ public class QuizOption {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
+	private int optionId;
 	private String content;
-
 	private String explanation;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "quiz_id")
 	private Quiz quiz;
 
-	public QuizOption(String content, String explanation, Quiz quiz) {
+	public QuizOption(int optionId, String content, String explanation, Quiz quiz) {
+		this.optionId = optionId;
 		this.content = content;
 		this.explanation = explanation;
 		this.quiz = quiz;

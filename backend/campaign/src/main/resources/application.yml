@@ -46,8 +46,11 @@ eureka:
   instance:
     hostname: ${HOST_IP}
 
+#eureka:
+#  client:
+#    enabled: false
+
 springdoc:
   swagger-ui:
     enabled: true
     path: campaign/swagger-ui.html
-

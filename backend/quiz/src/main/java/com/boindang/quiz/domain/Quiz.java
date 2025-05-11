@@ -30,25 +30,25 @@ public class Quiz {
 	private String question;
 
 	@Column(name = "answer")
-	private Long answerOptionId;
+	private int answerOptionId;
 
 	@OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private List<QuizOption> options = new ArrayList<>();
 
-	public Quiz(String title, String question, Long answerOptionId) {
+	public Quiz(String title, String question, int answerOptionId) {
 		this.title = title;
 		this.question = question;
 		this.answerOptionId = answerOptionId;
 	}
 
 	// 도메인 책임: 정답 판별
-	public boolean isCorrect(Long selectedOptionId) {
-		return answerOptionId != null && answerOptionId.equals(selectedOptionId);
+	public boolean isCorrect(int selectedOptionId) {
+		return this.answerOptionId == selectedOptionId;
 	}
 
 	// 도메인 책임: 보기 포함 여부 검증
-	public boolean hasOption(Long optionId) {
+	public boolean hasOption(int optionId) {
 		return options.stream()
-			.anyMatch(option -> option.getId().equals(optionId));
+			.anyMatch(option -> option.getOptionId() == optionId);
 	}
 }
