@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -34,7 +35,7 @@ public interface QuizApi {
 			description = "퀴즈 5문제 출제가 완료되었습니다.",
 			content = @Content(
 				mediaType = "application/json",
-				examples = @ExampleObject(name = "퀴즈 응답 예시", value = """
+				examples = @ExampleObject(value = """
                 {
                   "isSuccess": true,
                   "code": 200,
@@ -86,7 +87,7 @@ public interface QuizApi {
 	@GetMapping
 	BaseResponse<List<QuizResponse>> getBatchQuiz(
 		@Parameter(description = "사용자 ID", required = true, example = "1")
-		@RequestParam Long userId
+		@RequestHeader("X-USER-ID") String userId
 	);
 
 	@Operation(summary = "퀴즈 정답 제출", description = "사용자가 선택한 보기와 퀴즈 ID를 전달하면 정답 여부와 해설을 반환합니다.")
@@ -121,6 +122,9 @@ public interface QuizApi {
 	})
 	@PostMapping("/submit")
 	BaseResponse<QuizAnswerResponse> submitAnswer(
+		@Parameter(description = "사용자 ID", required = true, example = "1")
+		@RequestHeader("X-USER-ID") String userId,
+
 		@io.swagger.v3.oas.annotations.parameters.RequestBody(
 			description = "정답 제출 형식",
 			required = true,
@@ -128,7 +132,6 @@ public interface QuizApi {
 				mediaType = "application/json",
 				examples = @ExampleObject(value = """
 				{
-				  "userId": 1,
 				  "quizId": 3,
 				  "selectedOptionId": 1
 				}
@@ -176,8 +179,8 @@ public interface QuizApi {
 	})
 	@GetMapping("/wrong-answers")
 	BaseResponse<List<WrongAnswerResponse>> getWrongAnswers(
-		@Parameter(description = "사용자 ID", required = true)
-		@RequestParam Long userId
+		@Parameter(description = "사용자 ID", required = true, example = "1")
+		@RequestHeader("X-USER-ID") String userId
 	);
 
 	@Operation(summary = "퀴즈 통계 조회", description = "총 풀이 수, 정답/오답 수, 정확도(%)를 반환합니다.")
@@ -208,7 +211,7 @@ public interface QuizApi {
 	})
 	@GetMapping("/statistics")
 	BaseResponse<QuizStatisticsResponse> getStatistics(
-		@Parameter(description = "사용자 ID", required = true)
-		@RequestParam Long userId
+		@Parameter(description = "사용자 ID", required = true, example = "1")
+		@RequestHeader("X-USER-ID") String userId
 	);
 }

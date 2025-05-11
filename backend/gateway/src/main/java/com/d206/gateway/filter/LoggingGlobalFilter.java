@@ -1,4 +1,4 @@
-package com.d206.gateway;
+package com.d206.gateway.filter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +42,6 @@ public class LoggingGlobalFilter implements GlobalFilter {
                 }));
     }
 
-    // 기존의 logRequest 및 logResponse 메서드는 그대로 유지
     private void logRequest(ServerHttpRequest request) {
         URI uri = request.getURI();
         String method = request.getMethod().toString();
