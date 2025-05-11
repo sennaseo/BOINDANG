@@ -6,7 +6,7 @@ services:
     image: kimhwidong/boindang-repo:quiz-service
     container_name: quiz-service
     environment:
-      DB_URL: jdbc:mysql://quiz-db:3306/${DB_NAME}
+      DB_URL: jdbc:mysql://quiz-db:3308/${DB_NAME}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
     ports:
