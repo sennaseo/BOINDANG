@@ -30,16 +30,7 @@ eureka:
   instance:
     hostname: ${HOST_IP}
 
-#eureka:
-#  client:
-#    enabled: false
-
 springdoc:
   swagger-ui:
     enabled: true
     path: quiz/swagger-ui.html
-
-openapi:
-  service:
-    url: http://3.34.141.11:8000   # API Gateway ??
-    #url: http://localhost:8083
