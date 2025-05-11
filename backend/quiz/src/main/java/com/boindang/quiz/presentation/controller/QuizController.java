@@ -29,7 +29,7 @@ public class QuizController implements QuizApi {
 
 	@Override
 	@GetMapping
-	public BaseResponse<List<QuizResponse>> getBatchQuiz(@RequestHeader("X-USER-ID") String userId) {
+	public BaseResponse<List<QuizResponse>> getBatchQuiz(@RequestHeader("X-User-Id") String userId) {
 		return BaseResponse.success(200, "퀴즈 5문제 출제가 완료되었습니다."
 			, quizService.generateQuizzes(Long.parseLong(userId)));
 	}
@@ -37,7 +37,7 @@ public class QuizController implements QuizApi {
 	@Override
 	@PostMapping("/submit")
 	public BaseResponse<QuizAnswerResponse> submitAnswer(
-		@RequestHeader("X-USER-ID") String userId,
+		@RequestHeader("X-User-Id") String userId,
 		@RequestBody AnswerRequest request
 	) {
 		return BaseResponse.success(200, "정답 제출 결과 반환이 완료되었습니다."
@@ -46,14 +46,14 @@ public class QuizController implements QuizApi {
 
 	@Override
 	@GetMapping("/wrong-answers")
-	public BaseResponse<List<WrongAnswerResponse>> getWrongAnswers(@RequestHeader("X-USER-ID") String userId) {
+	public BaseResponse<List<WrongAnswerResponse>> getWrongAnswers(@RequestHeader("X-User-Id") String userId) {
 		return BaseResponse.success(200, "오답노트 조회에 성공하였습니다."
 			, quizService.getWrongAnswers(Long.parseLong(userId)));
 	}
 
 	@Override
 	@GetMapping("/statistics")
-	public BaseResponse<QuizStatisticsResponse> getStatistics(@RequestHeader("X-USER-ID") String userId) {
+	public BaseResponse<QuizStatisticsResponse> getStatistics(@RequestHeader("X-User-Id") String userId) {
 		return BaseResponse.success(200, "퀴즈 통계 조회에 성공하였습니다."
 			, quizService.getStatistics(Long.parseLong(userId)));
 	}
