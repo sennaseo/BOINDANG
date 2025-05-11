@@ -42,6 +42,12 @@ spring:
             - Path=/nutrition/**
           filters:
             - StripPrefix=1
+        - id: quiz-service
+          uri: lb://QUIZ
+          predicates:
+            - Path=/quiz/**
+          filters:
+            - StripPrefix=1
         - id: ocr-service
           uri: lb://OCR
           predicates:
