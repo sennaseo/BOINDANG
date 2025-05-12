@@ -15,3 +15,9 @@ services:
       MONGODB_URI: mongodb://ocr-db:27017
     volumes:
       - ./app:/code/app
+    networks:
+      - nutrition-network
+
+networks:
+  nutrition-network:
+    external: true
