@@ -26,49 +26,49 @@ spring:
           predicates:
             - Path=/image/**
           filters:
-            - StripPrefix=2
+            - StripPrefix=1
         - id: encyclopedia-service
           uri: lb://ENCYCLOPEDIA
           predicates:
             - Path=/encyclopedia/**
           filters:
-            - StripPrefix=2
+            - StripPrefix=1
         - id: campaign-service
           uri: lb://CAMPAIGN
           predicates:
             - Path=/campaign/**
           filters:
-            - StripPrefix=2
+            - StripPrefix=1
         - id: user-service
           uri: lb://BOINDANG-USER
           predicates:
             - Path=/user/**
           filters:
-            - StripPrefix=2
+            - StripPrefix=1
         - id: auth-service
           uri: lb://AUTH
           predicates:
             - Path=/auth/**
           filters:
-            - StripPrefix=2
+            - StripPrefix=1
         - id: nutrition-service
           uri: lb://NUTRITION-SERVICE
           predicates:
             - Path=/nutrition/**
           filters:
-            - StripPrefix=2
+            - StripPrefix=1
         - id: quiz-service
           uri: lb://QUIZ
           predicates:
             - Path=/quiz/**
           filters:
-            - StripPrefix=2
+            - StripPrefix=1
         - id: ocr-service
           uri: lb://OCR-SERVICE
           predicates:
             - Path=/ocr/**
           filters:
-            - StripPrefix=2
+            - StripPrefix=1
 
 eureka:
   client:
