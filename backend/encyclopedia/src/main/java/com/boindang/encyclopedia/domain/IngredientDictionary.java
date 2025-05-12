@@ -42,13 +42,14 @@ public class IngredientDictionary {
 
     private List<String> diabetic; // 당뇨 환자
     private List<String> kidneyPatient; // 신장 질환자
-    private List<String> Dieter; // 다이어터
+    private List<String> dieter; // 다이어터
     private List<String> muscleBuilder; // 운동인
 
-    private int recommendedDailyIntake; // 일일 권장섭취량
+    private String recommendedDailyIntake; // 일일 권장섭취량
     private String regulatory; // 규제 현황
     private String issue; // 관련 이슈
-    private List<CompareItem> compareTable; // 유사 성분 비교 표
+    private List<String> labels;
+    private CompareTable compareTable; // 유사 성분 비교 표
 
     @Getter
     @AllArgsConstructor
@@ -62,13 +63,19 @@ public class IngredientDictionary {
     }
 
     @Getter
-    @AllArgsConstructor
     @NoArgsConstructor
-    public static class CompareItem {
-        private String name;
-        private int gi;
-        private float calories;
-        private float sweetness;
-        private String note;
+    @AllArgsConstructor
+    @Builder
+    public static class CompareTable {
+        private List<Row> rows;
+
+        @Getter
+        @NoArgsConstructor
+        @AllArgsConstructor
+        @Builder
+        public static class Row {
+            private String name;
+            private List<String> values;
+        }
     }
 }
