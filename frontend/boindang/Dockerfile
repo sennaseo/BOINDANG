@@ -4,7 +4,6 @@ COPY package*.json ./
 RUN npm install
 COPY . .
 RUN npm run build
-RUN cp -r build/* /srv/react/
 
 
 FROM node:22-alpine AS runner
@@ -18,4 +17,4 @@ ENV PORT=3000
 
 EXPOSE 3000
 
-CMD ["npm", "start"]
+CMD ["npx", "next", "start"]
