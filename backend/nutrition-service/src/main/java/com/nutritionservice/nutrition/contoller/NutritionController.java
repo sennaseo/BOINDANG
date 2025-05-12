@@ -1,5 +1,6 @@
 package com.nutritionservice.nutrition.contoller;
 
+import com.nutritionservice.common.model.dto.ApiResponse;
 import com.nutritionservice.nutrition.mapper.NutritionReportMapper;
 import com.nutritionservice.nutrition.model.document.NutritionReport;
 import com.nutritionservice.nutrition.model.dto.external.UserInfo;
@@ -21,7 +22,7 @@ public class NutritionController {
     private final NutritionService nutritionService;
 
     @GetMapping("/analyze")
-    public ResponseEntity<NutritionReportResponse> analyze(
+    public ApiResponse<NutritionReportResponse> analyze(
             @RequestHeader("X-User-Id") String userId,
             @RequestParam String productId
     ) {
@@ -31,6 +32,6 @@ public class NutritionController {
         UserInfo mockUser = new UserInfo(userId, "F", 165, 60.0, "다이어트");
 
         NutritionReportResponse response = NutritionReportMapper.from(report, mockUser);
-        return ResponseEntity.ok(response);
+        return ApiResponse.success(response);
     }
 }

@@ -30,7 +30,7 @@ ext {
 dependencies {
 	// 기본 웹 + REST API
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-
+	implementation 'org.springframework.boot:spring-boot-starter-security'
 	// 개발 편의
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'

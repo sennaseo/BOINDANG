@@ -1,0 +1,24 @@
+version: "3.10"
+
+services:
+  ocr-service:
+    container_name: ocr-service
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: kimhwidong/boindang-repo:ocr-service
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8083 --reload
+    ports:
+      - 8083:8083
+    env_file:
+      - .env_ocr
+    environment:
+      MONGODB_URI: mongodb://ocr-db:27017
+    volumes:
+      - ./app:/code/app
+    networks:
+      - nutrition-network
+
+networks:
+  nutrition-network:
+    external: true

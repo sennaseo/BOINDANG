@@ -3,6 +3,7 @@ package com.boindang.quiz.application;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.Objects;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -104,18 +105,25 @@ public class QuizService {
 			int selectedId = history.getSelectedOptionId();
 			int answerId = quiz.getAnswerOptionId();
 
-			List<String> optionTexts = quiz.getOptions().stream()
-				.map(QuizOption::getContent)
-				.collect(Collectors.toList());
+			System.out.println("🧪 Quiz ID: " + quiz.getId());
+			System.out.println("🧪 Answer ID: " + answerId);
+			System.out.println("🧪 Selected ID: " + selectedId);
+			System.out.println("🧪 Options:");
+
+			quiz.getOptions().forEach(opt -> {
+				System.out.println(" - Option ID: " + opt.getOptionId());
+				System.out.println("   Content: " + opt.getContent());
+				System.out.println("   Explanation: " + opt.getExplanation());
+			});
 
 			String explanation = quiz.getOptions().stream()
-				.filter(opt -> opt.getId().equals(answerId))
+				.filter(opt -> opt.getOptionId() == answerId)
 				.map(QuizOption::getExplanation)
 				.findFirst()
 				.orElse("정답 해설이 없습니다.");
 
 			String selectedExplanation = quiz.getOptions().stream()
-				.filter(opt -> opt.getId().equals(selectedId))
+				.filter(opt -> opt.getOptionId() == selectedId)
 				.map(QuizOption::getExplanation)
 				.findFirst()
 				.orElse("오답 해설이 없습니다.");
@@ -123,7 +131,7 @@ public class QuizService {
 			return new WrongAnswerResponse(
 				quiz.getId(),
 				quiz.getQuestion(),
-				optionTexts,
+				quiz.getOptions().stream().map(QuizOption::getContent).toList(),
 				answerId,
 				selectedId,
 				explanation,
