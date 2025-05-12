@@ -1,0 +1,14 @@
+services:
+  user-service:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: kimhwidong/boindang-repo:auth-service
+    container_name: auth-service
+    environment:
+      EUREKA_URL: ${EUREKA_URL}
+      HOST_IP: ${HOST_IP}
+      JWT_SECRET: ${JWT_SECRET}
+    ports:
+      - "8080:8080"
+    restart: always

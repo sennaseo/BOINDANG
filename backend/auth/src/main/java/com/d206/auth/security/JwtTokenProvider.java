@@ -94,22 +94,25 @@ public class JwtTokenProvider {
                 .build()
                 .parseClaimsJws(token)// 만료확인
                 .getBody();
-
-            String auth = claims.get("auth", String.class);
-            log.info("auth={}", auth);
+            String auth = claims.get("sub", String.class);
+            log.info("sub={}", auth);
             return auth != null;
-        } catch (SignatureException e) {
-            log.error("Invalid JWT Signature");
-        } catch (SecurityException | MalformedJwtException e) {
-            log.warn("Invalid JWT Token", e);
-        } catch (ExpiredJwtException e) {
-            log.warn("Expired JWT Token", e);
-        } catch (UnsupportedJwtException e) {
-            log.warn("Unsupported JWT Token", e);
-        } catch (IllegalArgumentException e) {
-            log.warn("JWT claims string is empty", e);
-        }
-        return false;
+		} catch (SignatureException e) {
+			log.error("Invalid JWT Signature", e);
+			throw new JwtAuthenticationException("토큰이 올바르지 않습니다.");
+		} catch (SecurityException | MalformedJwtException e) {
+			log.warn("Invalid JWT Token", e);
+			throw new JwtAuthenticationException("유효하지 않은 토큰입니다.");
+		} catch (ExpiredJwtException e) {
+			log.warn("Expired JWT Token", e);
+			throw new JwtAuthenticationException("토큰이 만료되었습니다. 다시 로그인해주세요.");
+		} catch (UnsupportedJwtException e) {
+			log.warn("Unsupported JWT Token", e);
+			throw new JwtAuthenticationException("지원되지 않는 토큰 형식입니다.");
+		} catch (IllegalArgumentException e) {
+			log.warn("JWT claims string is empty", e);
+			throw new JwtAuthenticationException("토큰에 필요한 정보가 부족합니다.");
+		}
     }
 
     public Authentication getAuthentication(String token){
