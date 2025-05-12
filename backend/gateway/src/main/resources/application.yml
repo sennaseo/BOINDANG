@@ -49,7 +49,7 @@ spring:
           filters:
             - StripPrefix=1
         - id: ocr-service
-          uri: lb://OCR
+          uri: lb://OCR-SERVICE
           predicates:
             - Path=/ocr/**
           filters:
