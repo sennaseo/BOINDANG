@@ -68,8 +68,8 @@ public interface CampaignApi {
 		@Parameter(description = "체험단 상태 필터 ('모집 예정', '진행중', '종료')")
 		@RequestParam(required = false) String status,
 
-		@Parameter(description = "페이지 크기", example = "10")
-		@RequestParam(defaultValue = "10") int size,
+		@Parameter(description = "페이지 크기", example = "5")
+		@RequestParam(defaultValue = "5") int size,
 
 		@Parameter(description = "페이지 번호 (0부터 시작)", example = "0")
 		@RequestParam(defaultValue = "0") int page
