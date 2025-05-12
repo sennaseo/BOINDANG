@@ -30,7 +30,7 @@ ext {
 dependencies {
 	// Spring Boot 기본 웹 MVC + REST API 지원
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-
+	implementation 'org.springframework.boot:spring-boot-starter-security'
 	// JPA (Hibernate) + MySQL
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	runtimeOnly 'com.mysql:mysql-connector-j'
