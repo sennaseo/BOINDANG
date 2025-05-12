@@ -1,0 +1,17 @@
+version: "3.10"
+
+services:
+  ocr-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ocr-service
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8083 --reload
+    ports:
+      - 8083:8083
+    env_file:
+      - .env_ocr
+    environment:
+      MONGODB_URI: mongodb://ocr-db:27017
+    volumes:
+      - ./app:/code/app
