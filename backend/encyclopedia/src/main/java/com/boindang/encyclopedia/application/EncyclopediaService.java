@@ -113,7 +113,7 @@ public class EncyclopediaService {
         }
 
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery()
-                .filter(QueryBuilders.termQuery("category.keyword", category));
+                .filter(QueryBuilders.termQuery("category", category));
 
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder()
                 .query(boolQuery)
