@@ -1,12 +1,15 @@
 package com.nutritionservice.nutrition.service;
 
 import com.nutritionservice.nutrition.model.document.NutritionAnalysis;
+import com.nutritionservice.nutrition.model.document.NutritionReport;
 import com.nutritionservice.nutrition.model.document.NutritionSummary;
 import com.nutritionservice.nutrition.model.document.ProductNutrition;
 import com.nutritionservice.nutrition.model.dto.analysis.NutrientResult;
 import com.nutritionservice.nutrition.model.dto.external.UserInfo;
+import com.nutritionservice.nutrition.repository.NutritionReportRepository;
 import com.nutritionservice.nutrition.util.NutrientGradeRule;
 import com.nutritionservice.nutrition.util.NutrientGradeRule.UserType;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
 
@@ -18,22 +21,22 @@ public class AnalysisHelper {
 
         Map<String, NutrientResult> result = new HashMap<>();
 
-        result.put("protein", makeResult("protein", ns.getProtein().getGram(), ns.getProtein().getRatio(), userType));
-        result.put("fat", makeResult("fat", ns.getFat().getGram(), ns.getFat().getRatio(), userType));
-        result.put("carbohydrate", makeResult("carbohydrate", ns.getCarbohydrate().getGram(), ns.getCarbohydrate().getRatio(), userType));
+        result.put("단백질", makeResult("protein", ns.getProtein().getGram(), ns.getProtein().getRatio(), userType));
+        result.put("지방", makeResult("fat", ns.getFat().getGram(), ns.getFat().getRatio(), userType));
+        result.put("탄수화물", makeResult("carbohydrate", ns.getCarbohydrate().getGram(), ns.getCarbohydrate().getRatio(), userType));
 
         if (ns.getSodium() != null) {
             double sodiumGram = ns.getSodium().getMg() != null
                     ? ns.getSodium().getMg() / 1000.0
                     : ns.getSodium().getGram();
             double sodiumRatio = ns.getSodium().getRatio();
-            result.put("sodium", makeResult("sodium", sodiumGram, sodiumRatio, userType));
+            result.put("나트륨", makeResult("sodium", sodiumGram, sodiumRatio, userType));
         }
 
         if (ns.getCholesterol() != null && ns.getCholesterol().getMg() != null) {
             double cholesterolGram = ns.getCholesterol().getMg() / 1000.0;
             double cholesterolRatio = ns.getCholesterol().getRatio();
-            result.put("cholesterol", makeResult("cholesterol", cholesterolGram, cholesterolRatio, userType));
+            result.put("콜레스테롤", makeResult("cholesterol", cholesterolGram, cholesterolRatio, userType));
         }
 
         if (ns.getFat() != null && ns.getFat().getSub() != null) {
@@ -76,4 +79,5 @@ public class AnalysisHelper {
                 .grade(grade)
                 .build();
     }
+
 }
