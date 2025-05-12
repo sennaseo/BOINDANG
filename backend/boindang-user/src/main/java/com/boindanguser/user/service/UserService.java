@@ -110,4 +110,8 @@ public class UserService {
 		return UserResponse.from(user);
 	}
 
+	public boolean isUsernameTaken(String username) {
+		return userRepository.existsByUsername(username);
+	}
+
 }
