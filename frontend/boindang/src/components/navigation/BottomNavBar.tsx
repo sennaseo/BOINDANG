@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { House, Pill, Plus, ForkKnife, DotsThreeCircle } from '@phosphor-icons/react';
-import ActionMenu from './ActionMenu'; 
+import ActionMenu from './ActionMenu';
 
 
 const handImg = '/assets/sugarcube/sugar_hand.png';
