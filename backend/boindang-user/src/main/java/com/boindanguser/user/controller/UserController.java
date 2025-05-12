@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/user")
+@RequestMapping("")
 @RequiredArgsConstructor
 public class UserController {
 
@@ -59,5 +59,9 @@ public class UserController {
         return ApiResponse.success("닉네임이 성공적으로 변경되었습니다.");
     }
 
+    @GetMapping("/check-username")
+    public ApiResponse<Boolean> checkUsernameExists(@RequestParam String username) {
+        return ApiResponse.success(userService.isUsernameTaken(username));
+    }
 
 }

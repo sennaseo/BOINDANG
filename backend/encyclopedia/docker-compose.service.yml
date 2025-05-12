@@ -12,6 +12,7 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       EUREKA_URL: ${EUREKA_URL}
       HOST_IP: ${HOST_IP}
+      REDIS_HOST: redis
     ports:
       - "8081:8081"
     restart: always

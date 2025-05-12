@@ -16,28 +16,40 @@ public class NutritionReportMapper {
         return NutritionReportResponse.builder()
                 .productName(report.getProductName())
                 .totalKcal((int) Math.round(
-                        report.getRatios().get("carbohydrate").getValue() * 4 +
-                                report.getRatios().get("protein").getValue() * 4 +
-                                report.getRatios().get("fat").getValue() * 9))
-                .estimatedGi(58) // TODO: GI 계산 붙이면 교체
+                        getValue(report, "탄수화물") * 4 +
+                                getValue(report, "단백질") * 4 +
+                                getValue(report, "지방") * 9))
+                .estimatedGi(58)
                 .giGrade("위험")
                 .nutrientRatios(toRatios(report.getRatios()))
                 .nutrientDetails(toDetails(report.getRatios()))
-                .ingredientWarnings(List.of()) // TODO: 성분 정보 연동 시 채움
+                .ingredientWarnings(
+                        report.getWarningIngredients().entrySet().stream()
+                                .map(entry -> NutritionReportResponse.IngredientWarning.builder()
+                                        .name(entry.getKey())
+                                        .riskLevel(entry.getValue())
+                                        .type("")
+                                        .shortMessage("")
+                                        .build())
+                                .collect(Collectors.toList())
+                )
                 .userTypeWarnings(report.getUserTypeWarnings())
-                .topSensitiveIngredients(List.of()) // TODO: 1~3위 위험 성분 추출 시 채움
+                .topSensitiveIngredients(List.of())
                 .build();
     }
 
-    private static List<NutritionReportResponse.NutrientRatio> toRatios(Map<String, NutrientResult> ratios) {
-        double total = ratios.get("carbohydrate").getValue()
-                + ratios.get("protein").getValue()
-                + ratios.get("fat").getValue();
+    private static double getValue(NutritionReport report, String key) {
+        NutrientResult r = report.getRatios().get(key);
+        return r != null ? r.getValue() : 0.0;
+    }
 
-        return List.of("carbohydrate", "protein", "fat").stream()
+    private static List<NutritionReportResponse.NutrientRatio> toRatios(Map<String, NutrientResult> ratios) {
+        double total = getSafe(ratios, "탄수화물") + getSafe(ratios, "단백질") + getSafe(ratios, "지방");
+
+        return List.of("탄수화물", "단백질", "지방").stream()
                 .map(name -> NutritionReportResponse.NutrientRatio.builder()
-                        .name(mapLabel(name))
-                        .percent(Math.round(ratios.get(name).getValue() / total * 1000.0) / 10.0)
+                        .name(name)
+                        .percent(Math.round(getSafe(ratios, name) / total * 1000.0) / 10.0)
                         .build())
                 .collect(Collectors.toList());
     }
@@ -45,7 +57,7 @@ public class NutritionReportMapper {
     private static List<NutritionReportResponse.NutrientDetail> toDetails(Map<String, NutrientResult> ratios) {
         return ratios.entrySet().stream()
                 .map(entry -> NutritionReportResponse.NutrientDetail.builder()
-                        .name(mapLabel(entry.getKey()))
+                        .name(entry.getKey())
                         .value(entry.getValue().getValue())
                         .percent(entry.getValue().getPercent())
                         .grade(entry.getValue().getGrade())
@@ -53,14 +65,8 @@ public class NutritionReportMapper {
                 .collect(Collectors.toList());
     }
 
-    private static String mapLabel(String key) {
-        return switch (key) {
-            case "carbohydrate" -> "탄수화물";
-            case "protein" -> "단백질";
-            case "fat" -> "지방";
-            case "sodium" -> "나트륨";
-            case "cholesterol" -> "콜레스테롤";
-            default -> key;
-        };
+    private static double getSafe(Map<String, NutrientResult> ratios, String key) {
+        NutrientResult r = ratios.get(key);
+        return r != null ? r.getValue() : 0.0;
     }
 }
