@@ -36,7 +36,7 @@ public class EncyclopediaService {
     private final EncyclopediaRepository encyclopediaRepository;
     private final PopularIngredientService popularIngredientService;
 
-    private static final Set<String> VALID_TYPES = Set.of("감미료", "보존제", "산화방지제", "착향료", "탄수화물");
+    private static final Set<String> VALID_TYPES = Set.of("감미료", "식품첨가물", "단백질", "당류", "탄수화물", "식이섬유", "지방", "비타민", "미네랄");
 
     public Map<String, Object> searchWithSuggestion(String query, boolean suggested) {
         log.info("🩵 Elasticsearch 검색 실행: query={}, suggested={}", query, suggested);
