@@ -1,9 +1,12 @@
 spring:
-  config:
-    import: application-secret.yml
-
   application:
     name: boindang-user
+
+  datasource:
+    url: ${DB_URL}?serverTimezone=Asia/Seoul
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
 
   jpa:
     database: mysql
@@ -41,4 +44,4 @@ springdoc:
     path: /user/v3/api-docs
 
 server:
-  port: 8080
+  port: 8081
