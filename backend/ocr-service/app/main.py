@@ -19,7 +19,7 @@ async def lifespan(app_: FastAPI):
     host_ip = os.environ["HOST_IP"]
     eureka_url = os.environ["EUREKA_URL"]
     await eureka_client.init_async(
-        eureka_server="http://" + eureka_url + ":8761/eureka",
+        eureka_server= eureka_url,
         app_name="ocr-service",
         instance_port=8083,
         instance_host=host_ip,

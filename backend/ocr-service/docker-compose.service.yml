@@ -2,6 +2,7 @@ version: "3.10"
 
 services:
   ocr-service:
+    container_name: ocr-service
     build:
       context: .
       dockerfile: Dockerfile
