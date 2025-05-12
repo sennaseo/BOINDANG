@@ -40,3 +40,10 @@ export interface ApiErrorResponse {
   errors?: Array<{ field: string; message: string }>; // 필드별 에러 상세 (백엔드가 제공한다면)
 }
 
+// 아이디 중복 확인 성공 시 API 로부터 받는 전체 응답 데이터의 모양
+export interface CheckUsernameResponse {
+  success : boolean;
+  code : number;
+  message : string;
+  result : boolean; // true : 중복, false : 사용 가능
+}
