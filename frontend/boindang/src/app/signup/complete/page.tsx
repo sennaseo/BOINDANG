@@ -6,8 +6,8 @@ import Button from '@/components/common/Button';
 export default function SignUpComplete() {
   const router = useRouter();
 
-  const goToHome = () => {
-    router.push('/');
+  const goToLogin = () => {
+    router.push('/login');
   };
 
   return (
@@ -30,7 +30,7 @@ export default function SignUpComplete() {
         <Button
           type="button"
           text="네 좋아요!"
-          onClick={goToHome}
+          onClick={goToLogin}
         />
       </div>
     </div>
