@@ -3,9 +3,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Eye, EyeSlash, CaretLeft, Shuffle } from '@phosphor-icons/react';
+import { Eye, EyeSlash, CaretLeft, Shuffle, CheckCircle } from '@phosphor-icons/react'; // 아이콘 추가
 import { getRandomNickname } from '@woowa-babble/random-nickname';
 import Button from '@/components/common/Button';
+import { useCheckUsername } from '@/hooks/useAuthMutations';
 
 // 1. Zustand 스토어 import
 import { useSignUpStore } from '@/stores/signupStore';
@@ -42,6 +43,9 @@ export default function SignUp() {
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUsername(e.target.value);
     setUsernameError('');
+    // 아이디 변경 시, 중복 확인 상태 초기화
+    setIsUsernameChecked(false);
+    setIsUsernameAvailable(null);
   };
 
   const handleNicknameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -97,9 +101,16 @@ export default function SignUp() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (validateForm()) {
+    // 아이디 중복 확인이 완료되었고 사용 가능한(isUsernameAvailable === true) 경우에만 다음 단계로 진행
+    if (validateForm() && isUsernameChecked && isUsernameAvailable === true) {
       router.push('/signup/physical-info');
+    } else if (!isUsernameChecked || isUsernameAvailable !== true) {
+       // 사용자에게 아이디 중복 확인을 먼저 하도록 유도하거나, 에러 상태에 따라 다른 메시지 표시
+       // isUsernameAvailable === false (API 결과 true) -> 중복
+       // isUsernameAvailable === null -> 확인 안 함
+       setUsernameError(isUsernameAvailable === false ? '이미 사용 중인 아이디입니다.' : '아이디 중복 확인을 해주세요.');
     }
+    // validateForm() 에서 false가 반환된 경우는 해당 함수 내에서 에러가 설정됨
   };
 
   const validateForm = (): boolean => {
@@ -186,8 +197,57 @@ export default function SignUp() {
       nicknameError === '' &&
       passwordError === '' &&
       confirmPasswordError === '' &&
-      password === confirmPassword;
+      password === confirmPassword &&
+      isUsernameChecked && // 아이디 중복 확인을 했고
+      isUsernameAvailable === true; // 사용 가능해야 함
   };
+
+  // --- 아이디 중복 확인 로직 추가 ---
+  const checkUsernameMutation = useCheckUsername(); // 훅 인스턴스화
+  const [isUsernameChecked, setIsUsernameChecked] = useState(false); // 중복 확인 실행 여부 상태
+  const [isUsernameAvailable, setIsUsernameAvailable] = useState<boolean | null>(null); // 아이디 사용 가능 여부 상태 (null: 확인 전, true: 사용 가능, false: 사용 불가)
+  // --- 로직 추가 끝 ---
+
+  // --- 아이디 중복 확인 핸들러 함수 추가 ---
+  const handleCheckUsername = () => {
+    // 간단한 클라이언트 측 유효성 검사 (길이, 형식 등)
+    const trimmedUsername = username.trim();
+    if (!trimmedUsername) {
+      setUsernameError('아이디를 입력해주세요.');
+      return;
+    } else if (trimmedUsername.length < 4 || trimmedUsername.length > 15) {
+      setUsernameError('아이디는 4자 이상 15자 이하로 입력해주세요.');
+      return;
+    } else if (!/^[a-z0-9]+$/.test(trimmedUsername)) {
+      setUsernameError('아이디는 영문 소문자, 숫자만 사용 가능합니다.');
+      return;
+    }
+    setUsernameError(''); // 기존 에러 메시지 클리어
+
+    // 뮤테이션 실행
+    checkUsernameMutation.mutate(trimmedUsername, {
+      onSuccess: (data) => {
+        setIsUsernameChecked(true); // 확인 완료 표시
+        // API 응답 반대로 해석: true가 중복(사용 불가), false가 사용 가능
+        if (data.result) { // true 이면 중복
+          setIsUsernameAvailable(false);
+          setUsernameError('이미 사용 중인 아이디입니다.');
+        } else { // false 이면 사용 가능
+          setIsUsernameAvailable(true);
+          setUsernameError(''); // 사용 가능하면 에러 메시지 없음
+        }
+      },
+      onError: (error) => {
+        // AxiosError 타입 가드 활용하여 서버 에러 메시지 접근
+        const errorMessage =
+          error.response?.data?.message || '아이디 확인 중 오류가 발생했습니다.';
+        setUsernameError(errorMessage);
+        setIsUsernameChecked(false); // 에러 발생 시 확인 안 된 것으로 간주
+        setIsUsernameAvailable(null);
+      },
+    });
+  };
+  // --- 핸들러 함수 추가 끝 ---
 
   return (
     <div className="flex flex-col min-h-screen overflow-x-hidden">
@@ -205,16 +265,43 @@ export default function SignUp() {
           <div className="flex-1">
             <div className="mb-8">
               <p className="text-sm mb-2">아이디</p>
-              <input
-                type="text"
-                value={username}
-                onChange={handleUsernameChange}
-                className="w-full p-3 border border-gray-300 rounded-md focus:outline-none"
-                aria-describedby={usernameError ? "username-error" : undefined}
-              />
-              {usernameError && (
-                <p id="username-error" className="text-red-500 text-xs mt-1">{usernameError}</p>
-              )}
+              {/* --- 아이디 입력 필드 및 중복 확인 버튼 --- */}
+              <div className="flex items-start gap-2"> {/* Flex 컨테이너 추가 및 items-start */}
+                <div className="flex-1"> {/* Input + 에러 메시지 영역 */}
+                  <input
+                    type="text"
+                    value={username}
+                    onChange={handleUsernameChange}
+                    className={`w-full p-3 border rounded-md focus:outline-none ${
+                      // usernameError 상태가 있고, "확인 중"이 아닐 때만 빨간 테두리
+                      usernameError && !checkUsernameMutation.isPending ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    aria-describedby="username-feedback" // 설명 ID 변경
+                  />
+                  {/* --- 피드백 메시지 영역 (에러 또는 성공) --- */}
+                  <div id="username-feedback" className="mt-1 text-xs h-4"> {/* 높이 고정 */}
+                    {checkUsernameMutation.isPending ? (
+                      <p className="text-gray-500">확인 중...</p>
+                    ) : usernameError ? ( // 에러 메시지가 있으면 표시 (중복 포함)
+                      <p className="text-red-500">{usernameError}</p>
+                    ) : isUsernameChecked && isUsernameAvailable === true ? ( // 확인 완료되고 사용 가능할 때만 성공 메시지
+                      <p className="text-green-600 flex items-center gap-1">
+                        <CheckCircle size={14} weight="fill" /> 사용 가능한 아이디입니다.
+                      </p>
+                    ) : null}
+                  </div>
+                   {/* --- 피드백 메시지 영역 끝 --- */}
+                </div>
+                <button
+                  type="button"
+                  onClick={handleCheckUsername}
+                  disabled={checkUsernameMutation.isPending || !username.trim()} // 확인 중이거나 아이디가 비었으면 비활성화
+                  className="shrink-0 mt-[1px] py-3 px-4 bg-[#8652EE] text-white rounded-md hover:bg-[#6C2FF2] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm" // 비활성화 스타일 추가 및 색상 조정, 높이 미세 조정
+                >
+                  {checkUsernameMutation.isPending ? '확인중' : '중복확인'}
+                </button>
+              </div>
+              {/* --- 아이디 입력 필드 및 중복 확인 버튼 끝 --- */}
             </div>
 
             <div className="mb-8">

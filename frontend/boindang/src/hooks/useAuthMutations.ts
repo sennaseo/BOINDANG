@@ -1,9 +1,10 @@
 import { useMutation } from '@tanstack/react-query';
-import { postSignUp } from '@/api/auth';
+import { postSignUp, getCheckUsername } from '@/api/auth';
 import type {
   SignUpRequestPayload,
   SignUpResponse,
   ApiErrorResponse,
+  CheckUsernameResponse,
 } from '@/types/api/authTypes';
 import type { AxiosError } from 'axios';
 
@@ -29,5 +30,27 @@ export const useSignUp = () => {
     //   console.error('회원가입 실패 (useSignUp 훅):', error.response?.data?.message || error.message);
     //   // 예: alert(`회원가입 실패: ${error.response?.data?.message || error.message}`);
     // },
+  });
+};
+
+// 아이디 중복 확인 뮤테이션을 위한 커스텀 훅
+export const useCheckUsername = () => {
+  return useMutation<
+    CheckUsernameResponse,        // 성공 시 반환 타입
+    AxiosError<ApiErrorResponse>, // 에러 타입 (일관성을 위해 AxiosError 사용)
+    string                        // 뮤테이션 함수(mutate)에 전달될 변수 타입 (username)
+  >({
+    mutationFn: getCheckUsername, // 2단계에서 만든 API 호출 함수 연결
+
+    // 에러 처리 예시 (useSignUp 훅과 유사하게)
+    onError: (error) => {
+      console.error('아이디 중복 확인 실패:', error.response?.data?.message || error.message);
+      // 여기서 UI 피드백을 위한 상태 업데이트 등을 고려할 수 있습니다.
+      // 예를 들어, error.response?.data?.message 를 에러 상태에 저장
+    },
+    // 성공 시 특별한 처리가 필요하면 onSuccess 콜백 추가 가능
+    // onSuccess: (data, variables, context) => {
+    //   console.log('아이디 사용 가능 여부:', data.result);
+    // }
   });
 };
