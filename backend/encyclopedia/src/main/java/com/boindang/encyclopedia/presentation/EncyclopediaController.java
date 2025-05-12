@@ -14,7 +14,7 @@ import java.util.Map;
 
 @Slf4j
 @RestController
-@RequestMapping("/community")
+@RequestMapping("")
 @RequiredArgsConstructor
 public class EncyclopediaController implements EncyclopediaApi {
 
