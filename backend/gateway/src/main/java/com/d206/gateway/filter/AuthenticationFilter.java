@@ -42,6 +42,7 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
 		List<String> excludedPatterns = List.of(
 			"/user/login",
 			"/user/signup",
+			"/user/check-username",
 			"/**/swagger-ui/**",
 			"/favicon.ico"
 		);

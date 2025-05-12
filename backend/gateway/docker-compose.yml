@@ -11,3 +11,9 @@ services:
       EUREKA_URL: ${EUREKA_URL}
       JWT_SECRET: ${JWT_SECRET}
     restart: always
+    networks:
+      - nginx-network
+
+networks:
+  nginx-network:
+    external: true
