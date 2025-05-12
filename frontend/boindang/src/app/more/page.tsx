@@ -12,9 +12,8 @@ export default function MorePage() {
                 <Image  
                     src="/assets/more/더보기.png" 
                     alt="더보기"
-                    width={500}
-                    height={300}
-                    layout="responsive"
+                    width={116}
+                    height={38}
                 />
                 <DotsThreeVertical size={24} weight="bold" fill="#363636" />
             </div>
@@ -41,9 +40,8 @@ export default function MorePage() {
                         <Image 
                             src="/assets/more/말풍선.png" 
                             alt="말풍선"
-                            width={500}
-                            height={300}
-                            layout="responsive"
+                            width={126}
+                            height={40}
                         />
                         <span className="absolute flex items-center justify-center text-center w-32 h-8 inset-0 text-xs font-semibold text-[#363636]">나의 분석 기록 더보기</span>
                     </div>
