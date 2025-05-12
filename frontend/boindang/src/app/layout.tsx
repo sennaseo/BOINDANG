@@ -5,6 +5,7 @@ import localFont from "next/font/local";
 
 // QueryProvider import
 import QueryProvider from "@/components/providers/QueryProvider"; // 경로 확인!
+import AuthInitializer from "@/components/AuthInitializer"; // AuthInitializer 임포트 추가
 
 const pretendard = localFont({
   src: "../fonts/PretendardVariable.woff2",
@@ -49,11 +50,14 @@ export default function RootLayout({
       >
         {/* 새로 만든 QueryProvider로 children을 감싸줍니다. */}
         <QueryProvider>
-          <div className="w-full md:mx-auto md:max-w-[440px] min-h-screen bg-white shadow-xl border-x-2 border-gray-100">
-            <main>
-              {children}
-            </main>
-          </div>
+          {/* AuthInitializer로 감싸서 인증 상태 확인 */}
+          <AuthInitializer>
+            <div className="w-full md:mx-auto md:max-w-[440px] min-h-screen bg-white shadow-xl border-x-2 border-gray-100">
+              <main>
+                {children}
+              </main>
+            </div>
+          </AuthInitializer>
         </QueryProvider>
       </body>
     </html>

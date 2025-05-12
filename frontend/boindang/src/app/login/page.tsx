@@ -4,6 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect, FormEvent, ChangeEvent } from "react";
 import { Eye, EyeSlash, X, CaretLeft } from "@phosphor-icons/react";
+import { useRouter } from 'next/navigation';
+import { useLogin } from '@/hooks/useAuthMutations';
+import { useAuthStore } from '@/stores/authStore';
 
 // 타입 정의
 interface LoginFormData {
@@ -96,6 +99,10 @@ const InputField = ({
 };
 
 export default function LoginPage() {
+  const router = useRouter();
+  const loginMutation = useLogin();
+  const { login } = useAuthStore();
+
   // 상태 관리
   const [formData, setFormData] = useState<LoginFormData>({
     username: "",
@@ -103,7 +110,6 @@ export default function LoginPage() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // 입력 필드 변경 핸들러
@@ -143,6 +149,7 @@ export default function LoginPage() {
   // 폼 제출 핸들러
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    setError(null);
 
     // 입력값 검증
     if (!formData.username.trim()) {
@@ -155,24 +162,31 @@ export default function LoginPage() {
       return;
     }
 
-    // API 연동 시 로직
-    try {
-      setIsLoading(true);
-      setError(null);
+    // 로그인 뮤테이션 실행
+    loginMutation.mutate(formData, {
+      onSuccess: (data) => {
+        // 로그인 성공 시
+        console.log('로그인 성공:', data);
+        const { accessToken, refreshToken } = data.result;
 
-      // API 통신 코드가 들어갈 위치
-      console.log("로그인 시도:", formData);
+        // --- Zustand 스토어에 토큰 저장 ---
+        login(accessToken, refreshToken);
+        console.log('토큰이 Zustand 스토어에 저장되었습니다.');
 
-      // 로그인 성공 시 처리 (주석 처리)
-      // router.push('/main');
+        // 로그인 성공 후 메인 페이지 또는 대시보드로 이동
+        // router.push('/main'); // '/main' 경로가 실제 메인 페이지 경로라고 가정
+        router.push('/'); // 예시로 홈('/')으로 이동
+        // --- 저장 로직 끝 ---
 
-    } catch (err) {
-      // 실제 에러 처리
-      setError("로그인에 실패했습니다. 아이디와 비밀번호를 확인해주세요.");
-      console.error("로그인 오류:", err);
-    } finally {
-      setIsLoading(false);
-    }
+      },
+      onError: (error) => {
+        // 로그인 실패 시
+        // useLogin 훅의 onError에서 이미 콘솔 로그를 찍고 있습니다.
+        // 여기서는 사용자에게 보여줄 에러 메시지를 설정합니다.
+        const errorMessage = error.response?.data?.message || "로그인에 실패했습니다. 아이디 또는 비밀번호를 확인해주세요.";
+        setError(errorMessage);
+      }
+    });
   };
 
   // 키보드 이벤트 핸들러 (Enter 키로 제출)
@@ -262,11 +276,11 @@ export default function LoginPage() {
         {/* 로그인 버튼 */}
         <button
           type="submit"
-          className={`w-full p-3 rounded-md ${isLoading ? "bg-gray-400" : "bg-[#6C2FF2]"
+          className={`w-full p-3 rounded-md ${loginMutation.isPending ? "bg-gray-400 cursor-not-allowed" : "bg-[#6C2FF2]"
             } text-white font-medium`}
-          disabled={isLoading}
+          disabled={loginMutation.isPending}
         >
-          {isLoading ? "로그인 중..." : "로그인"}
+          {loginMutation.isPending ? "로그인 중..." : "로그인"}
         </button>
       </form>
 

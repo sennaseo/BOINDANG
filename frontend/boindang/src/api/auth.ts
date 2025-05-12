@@ -3,7 +3,9 @@ import type {
   SignUpRequestPayload,
   SignUpResponse,
   CheckUsernameResponse,
-} from  '@/types/api/authTypes';
+  LoginRequestPayload,
+  LoginResponse,
+} from '@/types/api/authTypes';
 
 /**
  * 회원가입 API 요청 함수
@@ -34,4 +36,19 @@ export const getCheckUsername = async (
     `/user/check-username?username=${username}`,
   );
   return response.data; // 응답 데이터를 반환합니다.
+};
+
+/**
+ * 로그인 API 요청 함수
+ * @param loginData 로그인에 필요한 사용자 데이터 (LoginRequestPayload 타입)
+ * @returns Promise<LoginResponse> API 응답 전체를 반환
+ */
+export const postLogin = async (
+  loginData: LoginRequestPayload,
+): Promise<LoginResponse> => {
+  // apiClient (우리 배)를 사용해서 '/user/login' 경로로 POST 요청을 보냅니다.
+  // loginData (아이디, 비밀번호)도 함께 보냅니다.
+  // 서버로부터 LoginResponse 형태의 응답을 기대합니다.
+  const response = await apiClient.post<LoginResponse>('/user/login', loginData);
+  return response.data; // axios는 실제 응답 데이터를 'data' 속에 담아줍니다.
 };

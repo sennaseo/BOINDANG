@@ -47,3 +47,31 @@ export interface CheckUsernameResponse {
   message : string;
   result : boolean; // true : 중복, false : 사용 가능
 }
+
+// 로그인 요청 시 API 로 보내는 데이터의 모양
+export interface LoginRequestPayload {
+  username: string; // 로그인 페이지의 state가 username을 사용하므로 username으로 정의
+  password: string;
+}
+
+// 로그인 성공 시 API 로부터 받는 응답 데이터 중 'result' 부분의 모양
+export interface LoginResult {
+  refreshToken: string;
+  accessToken: string;
+  // 명세 이미지의 표에는 userId도 있었지만, JSON 예시에는 없으므로 일단 토큰만 포함
+  // 필요하다면 userId: number; 추가 가능
+}
+
+// 로그인 성공 시 API 로부터 받는 전체 응답 데이터의 모양
+export interface LoginResponse {
+  success: boolean;
+  code: number;
+  message: string;
+  result: LoginResult; // 로그인 성공 시 토큰 정보 포함
+}
+
+// 로그인 실패 시 API 응답은 기존 ApiErrorResponse 타입으로 처리 가능할 것으로 보입니다.
+// ApiErrorResponse: { success?: boolean; code?: number; message: string; errors?: ... }
+// 명세 이미지의 401 예시: { isSuccess: false, code: 401, message: "..." }
+// 'isSuccess' 키 이름이 다르지만, success?: boolean 으로 커버 가능합니다.
+
