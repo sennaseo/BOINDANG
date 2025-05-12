@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str
 
     # model_config = SettingsConfigDict(env_file="../../.env")  # ✅ 여기 수정!
-    model_config = SettingsConfigDict(env_file=".env")
+    model_config = SettingsConfigDict(env_file=".env_ocr")
 
 
 
