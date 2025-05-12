@@ -111,19 +111,19 @@ public class QuizService {
 			System.out.println("🧪 Options:");
 
 			quiz.getOptions().forEach(opt -> {
-				System.out.println(" - Option ID: " + opt.getId());
+				System.out.println(" - Option ID: " + opt.getOptionId());
 				System.out.println("   Content: " + opt.getContent());
 				System.out.println("   Explanation: " + opt.getExplanation());
 			});
 
 			String explanation = quiz.getOptions().stream()
-				.filter(opt -> opt.getId().longValue() == answerId)
+				.filter(opt -> opt.getOptionId() == answerId)
 				.map(QuizOption::getExplanation)
 				.findFirst()
 				.orElse("정답 해설이 없습니다.");
 
 			String selectedExplanation = quiz.getOptions().stream()
-				.filter(opt -> opt.getId().longValue() == selectedId)
+				.filter(opt -> opt.getOptionId() == selectedId)
 				.map(QuizOption::getExplanation)
 				.findFirst()
 				.orElse("오답 해설이 없습니다.");
