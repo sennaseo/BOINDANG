@@ -1,30 +1,40 @@
 'use client';
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { CaretLeft } from '@phosphor-icons/react';
 import Button from '@/components/common/Button'; // 공용 버튼 컴포넌트 경로 확인 필요
 
+// 1. Zustand 스토어 import
+import { useSignUpStore } from '@/stores/signupStore';
+
 export default function PhysicalInfo() {
   const router = useRouter();
-  const [gender, setGender] = useState<'male' | 'female' | ''>('');
-  const [height, setHeight] = useState('');
-  const [weight, setWeight] = useState('');
 
-  const handleGenderChange = (selectedGender: 'male' | 'female') => {
+  // 2. Zustand 스토어에서 상태와 액션 가져오기
+  const {
+    gender,
+    height,
+    weight,
+    setGender,
+    setHeight,
+    setWeight
+  } = useSignUpStore();
+
+  const handleGenderChange = (selectedGender: 'M' | 'F') => {
+    // 3. 로컬 상태 대신 Zustand 액션 사용
     setGender(selectedGender);
   };
 
   const handleSubmit = () => {
     if (isFormValid()) {
-      // TODO: 입력된 신체 정보 저장 로직 (API 호출 등)
+      // 4. 폼 제출 시 상태는 이미 Zustand 스토어에 저장되어 있음
       console.log('신체 정보:', { gender, height, weight });
-      router.push('/signup/type'); // 다음 단계(타입 선택)로 이동
+      router.push('/signup/type');
     }
   };
 
-  // 키, 몸무게, 성별이 모두 입력되었는지 확인
+  // 5. Zustand 스토어의 상태로 유효성 검사
   const isFormValid = () => {
     return height.trim() !== '' && weight.trim() !== '' && gender !== '';
   };
@@ -51,8 +61,8 @@ export default function PhysicalInfo() {
               <div className="flex gap-3">
                 <button
                   type="button"
-                  onClick={() => handleGenderChange('male')}
-                  className={`flex-1 py-3 rounded-lg text-sm font-medium transition-colors ${gender === 'male'
+                  onClick={() => handleGenderChange('M')}
+                  className={`flex-1 py-3 rounded-lg text-sm font-medium transition-colors ${gender === 'M'
                     ? 'bg-[#6C2FF2] text-white shadow-sm'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
@@ -61,8 +71,8 @@ export default function PhysicalInfo() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleGenderChange('female')}
-                  className={`flex-1 py-3 rounded-lg text-sm font-medium transition-colors ${gender === 'female'
+                  onClick={() => handleGenderChange('F')}
+                  className={`flex-1 py-3 rounded-lg text-sm font-medium transition-colors ${gender === 'F'
                     ? 'bg-[#6C2FF2] text-white shadow-sm'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
