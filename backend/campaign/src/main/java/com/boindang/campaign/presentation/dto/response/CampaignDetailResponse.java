@@ -1,6 +1,7 @@
 package com.boindang.campaign.presentation.dto.response;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import com.boindang.campaign.domain.model.Campaign;
@@ -20,8 +21,8 @@ public class CampaignDetailResponse {
 	private String mainCategory;
 	private String subCategory;
 	private String imageUrl;
-	private LocalDate startDate;
-	private LocalDate deadline;
+	private LocalDateTime startDate;
+	private LocalDateTime deadline;
 	private String status;
 	private int capacity;
 	private int applicantCount;
@@ -36,8 +37,8 @@ public class CampaignDetailResponse {
 			.mainCategory(campaign.getMainCategory())
 			.subCategory(campaign.getSubCategory())
 			.imageUrl(campaign.getImageUrl())
-			.startDate(campaign.getStartDate().toLocalDate())
-			.deadline(campaign.getEndDate().toLocalDate())
+			.startDate(campaign.getStartDate())
+			.deadline(campaign.getEndDate())
 			.status(convertStatusToLabel(campaign.getStatus()))
 			.capacity(campaign.getCapacity())
 			.applicantCount(campaign.getCurrentApplicants())
