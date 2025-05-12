@@ -39,7 +39,7 @@ export default function UserTypePage() {
               </div>
             </div>
             <div className="ml-auto">
-              <Image src="/assets/report/skeleton.png" alt="skeleton" className="w-16 h-16" />
+              <Image src="/assets/report/skeleton.png" width={64} height={64} alt="skeleton" />
             </div>
           </div>
           {/* 2, 3위도 필요시 추가 */}
