@@ -1,4 +1,4 @@
-package com.d206.imageservice.config;
+package com.nutritionservice.common.config;
 
 import java.util.List;
 
