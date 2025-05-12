@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
+
 @Getter
 @Builder
 @AllArgsConstructor
@@ -18,6 +19,7 @@ public class CampaignSummaryResponse {
 	private String name;
 	private String content;
 	private String imageUrl;
+	private LocalDate startDate;
 	private LocalDate deadline;
 	private String status; // 모집 예정, 진행중, 종료
 	private int capacity;
@@ -29,6 +31,7 @@ public class CampaignSummaryResponse {
 			.name(campaign.getName())
 			.content(campaign.getDescription())
 			.imageUrl(campaign.getImageUrl())
+			.startDate(campaign.getStartDate().toLocalDate())
 			.deadline(campaign.getEndDate().toLocalDate())
 			.status(convertStatusToLabel(campaign.getStatus()))
 			.capacity(campaign.getCapacity())
