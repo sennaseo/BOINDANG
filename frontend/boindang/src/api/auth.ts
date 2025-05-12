@@ -2,6 +2,7 @@ import apiClient from '@/lib/apiClient';
 import type {
   SignUpRequestPayload,
   SignUpResponse,
+  CheckUsernameResponse,
 } from  '@/types/api/authTypes';
 
 /**
@@ -18,3 +19,19 @@ export const postSignUp = async (userData: SignUpRequestPayload) : Promise<SignU
   return response.data; // axios는 실제 응답 데이터를 'data' 속에 담아줍니다.
 }
 
+
+/**
+ * 아이디 중복 확인 API 요청 함수
+ * @param username 확인할 아이디 (string)
+ * @returns Promise<CheckUsernameResponse> API 응답 전체를 반환
+ */
+export const getCheckUsername = async (
+  username: string,
+): Promise<CheckUsernameResponse> => {
+  // apiClient를 사용해서 '/user/check-username' 경로로 GET 요청을 보냅니다.
+  // query parameter로 username을 전달합니다.
+  const response = await apiClient.get<CheckUsernameResponse>(
+    `/user/check-username?username=${username}`,
+  );
+  return response.data; // 응답 데이터를 반환합니다.
+};
