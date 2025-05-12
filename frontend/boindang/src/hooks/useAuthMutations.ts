@@ -1,10 +1,12 @@
 import { useMutation } from '@tanstack/react-query';
-import { postSignUp, getCheckUsername } from '@/api/auth';
+import { postSignUp, getCheckUsername, postLogin } from '@/api/auth';
 import type {
   SignUpRequestPayload,
   SignUpResponse,
   ApiErrorResponse,
   CheckUsernameResponse,
+  LoginRequestPayload,
+  LoginResponse,
 } from '@/types/api/authTypes';
 import type { AxiosError } from 'axios';
 
@@ -51,6 +53,30 @@ export const useCheckUsername = () => {
     // 성공 시 특별한 처리가 필요하면 onSuccess 콜백 추가 가능
     // onSuccess: (data, variables, context) => {
     //   console.log('아이디 사용 가능 여부:', data.result);
+    // }
+  });
+};
+
+// 로그인 뮤테이션을 위한 커스텀 훅
+export const useLogin = () => {
+  return useMutation<
+    LoginResponse,                // 성공 시 반환 타입
+    AxiosError<ApiErrorResponse>, // 에러 타입 (일관성 유지)
+    LoginRequestPayload           // 뮤테이션 함수(mutate)에 전달될 변수 타입
+  >({
+    mutationFn: postLogin, // 2단계에서 만든 API 호출 함수 연결
+
+    // 에러 처리 예시 (다른 훅들과 유사하게)
+    onError: (error) => {
+      console.error('로그인 실패:', error.response?.data?.message || error.message);
+      // 여기서 UI 피드백을 위한 로직을 추가할 수 있습니다.
+      // 예를 들어, 로그인 페이지의 에러 상태에 메시지를 설정
+    },
+    // 성공 시 토큰 저장 등의 로직을 여기에 추가하거나,
+    // 컴포넌트에서 mutate의 onSuccess 콜백으로 처리할 수 있습니다.
+    // onSuccess: (data, variables, context) => {
+    //   console.log('로그인 성공, 토큰:', data.result.accessToken);
+    //   // 예: localStorage 또는 상태 관리 라이브러리에 토큰 저장
     // }
   });
 };
