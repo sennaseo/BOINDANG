@@ -44,7 +44,6 @@ public class EncyclopediaService {
         result.put("originalQuery", query);  // 항상 포함
 
         if (!suggested) {
-            // suggestedName 무시하고 원 검색어 그대로 검색 (Fuzzy 없이 정확한 match만 적용 가능)
             List<EncyclopediaSearchResponse> exactResults = encyclopediaRepository.findByNameContaining(query)
                 .stream()
                 .map(EncyclopediaSearchResponse::from)
@@ -72,14 +71,13 @@ public class EncyclopediaService {
                 result.put("suggestedName", !accurateName.equalsIgnoreCase(query) ? accurateName : null);
                 result.put("results", results);
 
-                if (accurateName.equalsIgnoreCase(query)) {
-                    popularIngredientService.incrementSearchCount(accurateName);
-                }
+                // ✅ 무조건 추천 결과 기준으로 카운트 반영
+                popularIngredientService.incrementSearchCount(accurateName);
 
                 return result;
             }
 
-            // Fallback: prefix query
+            // fallback 처리
             SearchSourceBuilder fallbackBuilder = new SearchSourceBuilder()
                 .query(QueryBuilders.prefixQuery("name.keyword", query))
                 .size(20);
@@ -91,12 +89,12 @@ public class EncyclopediaService {
                 .map(hit -> EncyclopediaSearchResponse.from2(hit.getSourceAsMap()))
                 .collect(Collectors.toList());
 
-            result.put("suggestedName", null);  // fallback 시에도 명시적으로 null
+            result.put("suggestedName", null);
             result.put("results", fallbackResults);
             return result;
 
         } catch (Exception e) {
-            log.error("🩷 Elasticsearch 검색 중 오류 발생", e);  // 전체 스택 찍기
+            log.error("🩷 Elasticsearch 검색 중 오류 발생", e);
             throw new IngredientException(ErrorCode.INGREDIENT_NOT_FOUND);
         }
     }
