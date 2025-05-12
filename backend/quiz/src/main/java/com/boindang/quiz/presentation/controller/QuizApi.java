@@ -87,7 +87,7 @@ public interface QuizApi {
 	@GetMapping
 	BaseResponse<List<QuizResponse>> getBatchQuiz(
 		@Parameter(description = "사용자 ID", required = true, example = "1")
-		@RequestHeader("X-USER-ID") String userId
+		@RequestHeader("X-User-Id") String userId
 	);
 
 	@Operation(summary = "퀴즈 정답 제출", description = "사용자가 선택한 보기와 퀴즈 ID를 전달하면 정답 여부와 해설을 반환합니다.")
@@ -123,7 +123,7 @@ public interface QuizApi {
 	@PostMapping("/submit")
 	BaseResponse<QuizAnswerResponse> submitAnswer(
 		@Parameter(description = "사용자 ID", required = true, example = "1")
-		@RequestHeader("X-USER-ID") String userId,
+		@RequestHeader("X-User-Id") String userId,
 
 		@io.swagger.v3.oas.annotations.parameters.RequestBody(
 			description = "정답 제출 형식",
@@ -180,7 +180,7 @@ public interface QuizApi {
 	@GetMapping("/wrong-answers")
 	BaseResponse<List<WrongAnswerResponse>> getWrongAnswers(
 		@Parameter(description = "사용자 ID", required = true, example = "1")
-		@RequestHeader("X-USER-ID") String userId
+		@RequestHeader("X-User-Id") String userId
 	);
 
 	@Operation(summary = "퀴즈 통계 조회", description = "총 풀이 수, 정답/오답 수, 정확도(%)를 반환합니다.")
@@ -212,6 +212,6 @@ public interface QuizApi {
 	@GetMapping("/statistics")
 	BaseResponse<QuizStatisticsResponse> getStatistics(
 		@Parameter(description = "사용자 ID", required = true, example = "1")
-		@RequestHeader("X-USER-ID") String userId
+		@RequestHeader("X-User-Id") String userId
 	);
 }
