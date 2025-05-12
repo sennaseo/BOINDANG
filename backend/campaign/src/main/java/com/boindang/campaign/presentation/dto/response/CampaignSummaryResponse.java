@@ -1,6 +1,7 @@
 package com.boindang.campaign.presentation.dto.response;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import com.boindang.campaign.domain.model.Campaign;
@@ -19,8 +20,8 @@ public class CampaignSummaryResponse {
 	private String name;
 	private String content;
 	private String imageUrl;
-	private LocalDate startDate;
-	private LocalDate deadline;
+	private LocalDateTime startDate;
+	private LocalDateTime deadline;
 	private String status; // 모집 예정, 진행중, 종료
 	private int capacity;
 	private List<String> hashtags;
@@ -31,8 +32,8 @@ public class CampaignSummaryResponse {
 			.name(campaign.getName())
 			.content(campaign.getDescription())
 			.imageUrl(campaign.getImageUrl())
-			.startDate(campaign.getStartDate().toLocalDate())
-			.deadline(campaign.getEndDate().toLocalDate())
+			.startDate(campaign.getStartDate())
+			.deadline(campaign.getEndDate())
 			.status(convertStatusToLabel(campaign.getStatus()))
 			.capacity(campaign.getCapacity())
 			.hashtags(campaign.getHashtags())

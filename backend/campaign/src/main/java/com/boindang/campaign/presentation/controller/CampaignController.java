@@ -32,7 +32,7 @@ public class CampaignController implements CampaignApi {
 	@GetMapping
 	public BaseResponse<List<CampaignSummaryResponse>> getCampaigns(
 		@RequestParam(required = false) String status,
-		@RequestParam(defaultValue = "10") int size,
+		@RequestParam(defaultValue = "5") int size,
 		@RequestParam(defaultValue = "0") int page
 	){
 		return BaseResponse.success(200, "체험단 목록 조회가 완료되었습니다."
