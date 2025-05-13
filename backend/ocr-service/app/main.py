@@ -8,9 +8,6 @@ from contextlib import asynccontextmanager
 import logging
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI()
-app.include_router(ocr_router.router, prefix="")
-
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -32,6 +29,7 @@ async def lifespan(app_: FastAPI):
     await eureka_client.stop_async()
 
 app = FastAPI(lifespan=lifespan)
+app.include_router(ocr_router.router, prefix="")
 
 origins = [
     "https://k12d206.p.ssafy.io",
