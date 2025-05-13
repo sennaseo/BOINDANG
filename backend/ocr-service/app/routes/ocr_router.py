@@ -8,7 +8,7 @@ class ImageUrlRequest(BaseModel):
     ingredient_image_url: str
     nutrition_image_url: str
 
-@router.post("/upload")
+@router.post("ocr/upload")
 async def upload_images_by_url(payload: ImageUrlRequest):
     print("요청 감지 (URL)")
     print("Ingredient Image URL:", payload.ingredient_image_url)
