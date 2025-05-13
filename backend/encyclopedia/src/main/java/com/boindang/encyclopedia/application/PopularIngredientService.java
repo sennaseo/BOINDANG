@@ -38,6 +38,8 @@ public class PopularIngredientService { // 실시간 API용 서비스
         Set<ZSetOperations.TypedTuple<String>> result =
             redisTemplate.opsForZSet().reverseRangeWithScores(POPULAR_INGREDIENT_KEY, 0, limit - 1);
 
+        log.info("🔥 redis result = {}", result);
+
         if (result != null && !result.isEmpty()) {
             return result.stream()
                 .map(entry -> new PopularIngredientResponse(entry.getValue(), entry.getScore().longValue()))
