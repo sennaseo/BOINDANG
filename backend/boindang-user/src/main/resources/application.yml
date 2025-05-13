@@ -1,13 +1,17 @@
 spring:
-  config:
-    import: application-secret.yml
-
   application:
     name: boindang-user
 
+  datasource:
+    url: ${DB_URL}?serverTimezone=Asia/Seoul
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+
   jpa:
+    database: mysql
     hibernate:
-      ddl-auto: update  # ?? create, validate ? ??? ??
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:
@@ -22,3 +26,22 @@ spring:
     charset:
       console: UTF-8
       file: UTF-8
+
+eureka:
+  client:
+    enabled: true
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+      defaultZone: ${EUREKA_URL}
+  instance:
+    hostname: ${HOST_IP}
+
+springdoc:
+  swagger-ui:
+    path: /user/swagger-ui
+  api-docs:
+    path: /user/v3/api-docs
+
+server:
+  port: 8081

@@ -1,0 +1,25 @@
+services:
+  user-service:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: kimhwidong/boindang-repo:user-service
+    container_name: user-service
+    environment:
+      DB_URL: jdbc:p6spy:mysql://user-db:3306/${DB_NAME}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      EUREKA_URL: ${EUREKA_URL}
+      HOST_IP: ${HOST_IP}
+    ports:
+      - "8081:8081"
+    restart: always
+    networks:
+      - user-network
+
+volumes:
+  mysql_data:
+
+networks:
+  user-network:
+    external: true

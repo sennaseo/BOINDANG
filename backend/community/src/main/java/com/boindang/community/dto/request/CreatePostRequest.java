@@ -1,0 +1,17 @@
+package com.boindang.community.dto.request;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Getter
+@NoArgsConstructor
+@Schema(description = "게시글 작성 Request DTO")
+public class CreatePostRequest {
+
+	@Schema(description = "게시글 제목", example = "오늘 점심 뭐 먹지?")
+	private String title;
+
+	@Schema(description = "게시글 내용", example = "저는 고단백 도시락 먹었습니다.")
+	private String content;
+}

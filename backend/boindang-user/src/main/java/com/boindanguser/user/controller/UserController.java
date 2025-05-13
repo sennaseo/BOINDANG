@@ -1,6 +1,7 @@
 package com.boindanguser.user.controller;
 
 import com.boindanguser.common.model.dto.ApiResponse;
+import com.boindanguser.user.model.dto.JwtTokenDto;
 import com.boindanguser.user.model.dto.request.ChangeNicknameRequest;
 import com.boindanguser.user.model.dto.request.UpdateUserRequest;
 import com.boindanguser.user.model.dto.request.UserLoginRequest;
@@ -12,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/user")
+@RequestMapping("")
 @RequiredArgsConstructor
 public class UserController {
 
@@ -24,7 +25,7 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ApiResponse<UserResponse> login(@RequestBody @Valid UserLoginRequest request) {
+    public ApiResponse<JwtTokenDto> login(@RequestBody @Valid UserLoginRequest request) {
         // 여기서 성공하면 인증서버로 요청
         return ApiResponse.success(userService.login(request));
     }
@@ -58,5 +59,9 @@ public class UserController {
         return ApiResponse.success("닉네임이 성공적으로 변경되었습니다.");
     }
 
+    @GetMapping("/check-username")
+    public ApiResponse<Boolean> checkUsernameExists(@RequestParam String username) {
+        return ApiResponse.success(userService.isUsernameTaken(username));
+    }
 
 }
