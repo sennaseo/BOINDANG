@@ -2,11 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { Eye, EyeSlash, CaretLeft, Shuffle, CheckCircle } from '@phosphor-icons/react'; // 아이콘 추가
 import { getRandomNickname } from '@woowa-babble/random-nickname';
 import Button from '@/components/common/Button';
 import { useCheckUsername } from '@/hooks/useAuthMutations';
+import ConfirmModal from '@/components/common/ConfirmModal'; // ConfirmModal import
 
 // 1. Zustand 스토어 import
 import { useSignUpStore } from '@/stores/signupStore';
@@ -24,6 +24,7 @@ export default function SignUp() {
     setUsername, // 스토어에서는 setUsername
     setNickname,
     setPassword,
+    resetSignUpForm, // 데이터 초기화 액션 추가
   } = useSignUpStore();
 
   // 로컬 UI 상태는 useState 유지
@@ -34,6 +35,7 @@ export default function SignUp() {
   const [nicknameError, setNicknameError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false); // 모달 상태 추가
 
   // React Query 훅 사용 예시는 최종 단계에서 적용 예정
   // const signUpMutation = useSignUpMutation();
@@ -105,10 +107,10 @@ export default function SignUp() {
     if (validateForm() && isUsernameChecked && isUsernameAvailable === true) {
       router.push('/signup/physical-info');
     } else if (!isUsernameChecked || isUsernameAvailable !== true) {
-       // 사용자에게 아이디 중복 확인을 먼저 하도록 유도하거나, 에러 상태에 따라 다른 메시지 표시
-       // isUsernameAvailable === false (API 결과 true) -> 중복
-       // isUsernameAvailable === null -> 확인 안 함
-       setUsernameError(isUsernameAvailable === false ? '이미 사용 중인 아이디입니다.' : '아이디 중복 확인을 해주세요.');
+      // 사용자에게 아이디 중복 확인을 먼저 하도록 유도하거나, 에러 상태에 따라 다른 메시지 표시
+      // isUsernameAvailable === false (API 결과 true) -> 중복
+      // isUsernameAvailable === null -> 확인 안 함
+      setUsernameError(isUsernameAvailable === false ? '이미 사용 중인 아이디입니다.' : '아이디 중복 확인을 해주세요.');
     }
     // validateForm() 에서 false가 반환된 경우는 해당 함수 내에서 에러가 설정됨
   };
@@ -249,12 +251,33 @@ export default function SignUp() {
   };
   // --- 핸들러 함수 추가 끝 ---
 
+  // 뒤로가기 버튼 클릭 핸들러
+  const handleBackNavigation = () => {
+    if (username || nickname || password) {
+      setIsConfirmModalOpen(true); // window.confirm 대신 모달 열기
+    } else {
+      router.push('/login');
+    }
+  };
+
+  // 모달 확인 버튼 클릭 시
+  const handleModalConfirm = () => {
+    resetSignUpForm();
+    router.push('/login');
+    setIsConfirmModalOpen(false);
+  };
+
+  // 모달 취소 버튼 클릭 시 또는 외부 클릭 시
+  const handleModalClose = () => {
+    setIsConfirmModalOpen(false);
+  };
+
   return (
     <div className="flex flex-col min-h-screen overflow-x-hidden">
       <div className="p-4">
-        <Link href="/login" className="inline-block">
+        <button onClick={handleBackNavigation} className="inline-block">
           <CaretLeft size={24} weight="regular" />
-        </Link>
+        </button>
       </div>
 
       <div className="px-6 flex-1">
@@ -275,7 +298,7 @@ export default function SignUp() {
                     className={`w-full p-3 border rounded-md focus:outline-none ${
                       // usernameError 상태가 있고, "확인 중"이 아닐 때만 빨간 테두리
                       usernameError && !checkUsernameMutation.isPending ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                      }`}
                     aria-describedby="username-feedback" // 설명 ID 변경
                   />
                   {/* --- 피드백 메시지 영역 (에러 또는 성공) --- */}
@@ -290,7 +313,7 @@ export default function SignUp() {
                       </p>
                     ) : null}
                   </div>
-                   {/* --- 피드백 메시지 영역 끝 --- */}
+                  {/* --- 피드백 메시지 영역 끝 --- */}
                 </div>
                 <button
                   type="button"
@@ -399,6 +422,16 @@ export default function SignUp() {
           onClick={handleSubmit}
         />
       </div>
+
+      <ConfirmModal
+        isOpen={isConfirmModalOpen}
+        onClose={handleModalClose}
+        onConfirm={handleModalConfirm}
+        title="페이지 나가기"
+        message="입력한 내용이 저장되지 않습니다. 정말로 뒤로 가시겠습니까?"
+        confirmText="나가기"
+        cancelText="취소"
+      />
     </div>
   );
 }

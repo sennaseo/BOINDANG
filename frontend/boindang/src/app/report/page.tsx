@@ -19,6 +19,8 @@ export default function ReportPage() {
           src="/assets/report/cream-latte.jpg" // 실제 이미지 경로로 교체
           alt="제품 사진"
           className="w-80 h-48 object-cover rounded-lg border"
+          width={320}
+          height={192}
         />
       </div>
 
