@@ -29,7 +29,7 @@ async def lifespan(app_: FastAPI):
     await eureka_client.stop_async()
 
 app = FastAPI(lifespan=lifespan)
-app.include_router(ocr_router.router, prefix="") 
+app.include_router(ocr_router.router, prefix="")
 
 origins = [
     "https://k12d206.p.ssafy.io",
