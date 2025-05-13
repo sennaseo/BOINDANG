@@ -17,8 +17,7 @@ function getGaugeData(value: number) {
   return [
     { name: "안전", value: safe, color: COLORS[0] },
     { name: "주의", value: caution, color: COLORS[1] },
-    { name: "위험", value: danger, color: COLORS[2] },
-    { name: "빈공간", value: 100 - value, color: "#eee" }, // 남은 부분
+    { name: "위험", value: 100 - danger, color: COLORS[2] },
   ];
 }
 
@@ -42,7 +41,7 @@ export default function SafetyChart({ value }: SafetyChartProps) {
           outerRadius={100}
           cornerRadius={10}
           paddingAngle={1}
-          isAnimationActive={false}
+          isAnimationActive={true}
         >
           {data.map((entry, idx) => (
             <Cell key={`cell-${idx}`} fill={entry.color} />
@@ -57,7 +56,7 @@ export default function SafetyChart({ value }: SafetyChartProps) {
           bottom: 20,
           width: 0,
           height: 0,
-          transform: `translateX(-50%) rotate(${-90 + angle}deg)`,
+          transform: `translateX(-50%) rotate(${90 + angle}deg)`,
           transformOrigin: "bottom center",
         }}
       >
