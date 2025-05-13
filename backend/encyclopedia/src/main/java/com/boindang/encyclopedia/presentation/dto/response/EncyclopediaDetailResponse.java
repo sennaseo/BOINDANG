@@ -1,4 +1,4 @@
-package com.boindang.encyclopedia.presentation.dto;
+package com.boindang.encyclopedia.presentation.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

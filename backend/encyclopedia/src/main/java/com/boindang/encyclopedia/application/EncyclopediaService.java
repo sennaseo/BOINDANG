@@ -5,8 +5,8 @@ import com.boindang.encyclopedia.common.exception.ErrorCode;
 import com.boindang.encyclopedia.common.exception.IngredientException;
 import com.boindang.encyclopedia.domain.IngredientDictionary;
 import com.boindang.encyclopedia.infrastructure.EncyclopediaRepository;
-import com.boindang.encyclopedia.presentation.dto.EncyclopediaDetailResponse;
-import com.boindang.encyclopedia.presentation.dto.EncyclopediaSearchResponse;
+import com.boindang.encyclopedia.presentation.dto.response.EncyclopediaDetailResponse;
+import com.boindang.encyclopedia.presentation.dto.response.EncyclopediaSearchResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

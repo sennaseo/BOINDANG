@@ -1,8 +1,8 @@
 package com.boindang.encyclopedia.presentation;
 
 import com.boindang.encyclopedia.common.response.BaseResponse;
-import com.boindang.encyclopedia.presentation.dto.EncyclopediaDetailResponse;
-import com.boindang.encyclopedia.presentation.dto.EncyclopediaSearchResponse;
+import com.boindang.encyclopedia.presentation.dto.response.EncyclopediaDetailResponse;
+import com.boindang.encyclopedia.presentation.dto.response.EncyclopediaSearchResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
