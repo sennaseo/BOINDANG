@@ -21,4 +21,4 @@ eureka:
     hostname: ${HOST_IP}
 
 server:
-  port: 8081
+  port: 8080
