@@ -1,4 +1,4 @@
-package com.boindang.encyclopedia.presentation;
+package com.boindang.encyclopedia.presentation.api;
 
 import com.boindang.encyclopedia.common.response.BaseResponse;
 import com.boindang.encyclopedia.presentation.dto.response.EncyclopediaDetailResponse;

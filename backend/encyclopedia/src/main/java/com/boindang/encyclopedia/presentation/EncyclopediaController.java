@@ -2,6 +2,7 @@ package com.boindang.encyclopedia.presentation;
 
 import com.boindang.encyclopedia.application.EncyclopediaService;
 import com.boindang.encyclopedia.common.response.BaseResponse;
+import com.boindang.encyclopedia.presentation.api.EncyclopediaApi;
 import com.boindang.encyclopedia.presentation.dto.response.EncyclopediaDetailResponse;
 import com.boindang.encyclopedia.presentation.dto.response.EncyclopediaSearchResponse;
 import lombok.RequiredArgsConstructor;
