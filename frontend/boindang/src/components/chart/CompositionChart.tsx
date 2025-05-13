@@ -1,5 +1,5 @@
-import * as React from 'react';
-import { ResponsivePie } from '@nivo/pie';
+import React, { useState, useEffect } from "react";
+import { PieChart, Pie, Cell, Legend, ResponsiveContainer, Tooltip, Sector } from "recharts";
 
 interface PieChartProps {
     data: {
@@ -7,34 +7,150 @@ interface PieChartProps {
         label: string;
         value: number;
         color: string;
+        subData?: {
+            id: string;
+            label: string;
+            value: number;
+            color: string;
+        }[];
     }[];
 }
 
 export default function CompositionChart({ data }: PieChartProps) {
-    return (
-        <div className="bg-white rounded-xl shadow p-4 flex flex-col items-center">
-            <div style={{ width: 220, height: 220 }}>
-                <ResponsivePie
-                    data={data}
-                    margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
-                    innerRadius={0.6}
-                    padAngle={2}
-                    cornerRadius={8}
-                    activeOuterRadiusOffset={8}
-                    colors={{ datum: 'data.color' }}
-                    borderWidth={2}
-                    borderColor={{ from: 'color', modifiers: [['darker', 0.2]] }}
-                    enableArcLinkLabels={false}
-                    arcLabelsSkipAngle={10}
-                    arcLabelsTextColor="#222"
-                    theme={{
-                        labels: { text: { fontSize: 16, fontWeight: 700 } },
+    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+    const [innerData, setInnerData] = useState<any[]>([]);
+    const [activeIndex, setActiveIndex] = useState<number | undefined>(undefined);
+
+    // 컴포넌트 마운트 시 첫 번째 카테고리 자동 선택
+    useEffect(() => {
+        if (data && data.length > 0) {
+            const firstCategory = data[0];
+            setSelectedCategory(firstCategory.id);
+            setInnerData(firstCategory.subData || []);
+            setActiveIndex(0);
+        }
+    }, [data]);
+
+    const handleOuterPieClick = (data: any) => {
+        if (data && data.payload) {
+            const category = data.payload.id;
+            setSelectedCategory(category);
+            setInnerData(data.payload.subData || []);
+        }
+    };
+
+    const onPieEnter = (_: any, index: number) => {
+        setActiveIndex(index);
+    };
+
+    const onPieLeave = () => {
+        setActiveIndex(undefined);
+    };
+
+    const renderActiveShape = (props: any) => {
+        const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props;
+
+        return (
+            <g>
+                <Sector
+                    cx={cx}
+                    cy={cy}
+                    innerRadius={innerRadius}
+                    outerRadius={outerRadius + 5}
+                    startAngle={startAngle}
+                    endAngle={endAngle}
+                    fill={fill}
+                    cornerRadius={10}
+                    style={{
+                        filter: 'drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.1))',
+                        transition: 'all 0.3s ease'
                     }}
                 />
+            </g>
+        );
+    };
+
+    const CustomTooltip = ({ active, payload }: any) => {
+        if (active && payload && payload.length) {
+            return (
+                <div className="bg-white rounded-xl shadow p-4">
+                    <p>{payload[0].name}</p>
+                    <p>{payload[0].value}g</p>
+                </div>
+            );
+        }
+        return null;
+    };
+
+    return (
+        <div className="bg-white rounded-xl shadow p-4 flex flex-col items-center">
+            <div style={{ width: 300, height: 300 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                        <Pie 
+                            data={data} 
+                            dataKey="value" 
+                            cx="50%" 
+                            cy="50%" 
+                            innerRadius={60}
+                            outerRadius={100}
+                            paddingAngle={1}
+                            cornerRadius={10}
+                            onClick={handleOuterPieClick}
+                            activeIndex={activeIndex}
+                            activeShape={renderActiveShape}
+                            onMouseEnter={onPieEnter}
+                            onMouseLeave={onPieLeave}
+                            style={{
+                                filter: 'drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.1))'
+                            }}
+                        >
+                            {data.map((entry, idx) => (
+                                <Cell 
+                                    key={`cell-${idx}`} 
+                                    fill={entry.color}
+                                    style={{
+                                        transition: 'all 0.3s ease'
+                                    }}
+                                />
+                            ))}
+                        </Pie>
+                        <Pie
+                            data={innerData.length > 0 ? innerData : data}
+                            dataKey="value"
+                            nameKey="label"
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={0}
+                            outerRadius={55}
+                            paddingAngle={1}
+                            cornerRadius={10}
+                            style={{
+                                filter: 'drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.1))'
+                            }}
+                        >
+                            {(innerData.length > 0 ? innerData : data).map((entry, idx) => (
+                                <Cell 
+                                    key={`cell-${idx}`} 
+                                    fill={entry.color}
+                                    style={{
+                                        transition: 'all 0.3s ease'
+                                    }}
+                                />
+                            ))}
+                        </Pie>
+                        <Tooltip 
+                            content={<CustomTooltip />}
+                            wrapperStyle={{
+                                outline: 'none'
+                            }}
+                        />
+                    </PieChart>
+                </ResponsiveContainer>
             </div>
             {/* 범례 */}
             <div className="mt-4 flex flex-col gap-1 text-sm w-full">
-                {data.map((item) => (
+                {(innerData.length > 0 ? innerData : data).map((item) => (
                     <div key={item.id} className="flex items-center gap-2">
                         <span
                             className="inline-block w-3 h-3 rounded-full"
