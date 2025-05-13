@@ -3,6 +3,12 @@
 import React from "react";
 import ReportTabNav from "@/components/navigation/ReportTabNav";
 import { CaretLeft } from "@phosphor-icons/react";
+import dynamic from "next/dynamic";
+
+// 동적 import, SSR 비활성화
+const SafetyChart = dynamic(() => import("@/components/chart/SafetyChart"), {
+  ssr: false,
+});
 
 export default function SafetyPage() {
   return (
@@ -31,15 +37,7 @@ export default function SafetyPage() {
           </div>
           {/* 게이지 그래프 */}
           <div className="flex flex-col items-center">
-            <svg width="180" height="90">
-              <path d="M20,80 A70,70 0 0,1 160,80" fill="none" stroke="#eee" strokeWidth="18" />
-              <path d="M20,80 A70,70 0 0,1 90,20" fill="none" stroke="#22c55e" strokeWidth="18" />
-              <path d="M90,20 A70,70 0 0,1 130,40" fill="none" stroke="#eab308" strokeWidth="18" />
-              <path d="M130,40 A70,70 0 0,1 160,80" fill="none" stroke="#ef4444" strokeWidth="18" />
-              {/* 바늘 */}
-              <line x1="90" y1="80" x2="140" y2="45" stroke="#222" strokeWidth="4" />
-              <circle cx="90" cy="80" r="7" fill="#222" />
-            </svg>
+            <SafetyChart value={58} />
             <div className="flex justify-between w-full px-4 mt-2 text-xs">
               <span className="text-green-500 font-bold">안전 등급</span>
               <span className="text-yellow-500 font-bold">주의 등급</span>

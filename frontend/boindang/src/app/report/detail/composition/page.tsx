@@ -6,10 +6,37 @@ import { CaretLeft } from "@phosphor-icons/react";
 import CompositionChart from "@/components/chart/CompositionChart";
 
 const exampleData = [
-  { id: "탄수화물", label: "탄수화물", value: 33, color: "#3b82f6" },
-  { id: "단백질", label: "단백질", value: 5, color: "#22c55e" },
-  { id: "지방", label: "지방", value: 14, color: "#f59e42" },
-  // 필요시 소분류도 추가 가능
+  { 
+    id: "탄수화물", 
+    label: "탄수화물", 
+    value: 33, 
+    color: "#3b82f6",
+    subData: [
+      { id: "당류", label: "당류", value: 15, color: "#60a5fa" },
+      { id: "식이섬유", label: "식이섬유", value: 8, color: "#93c5fd" },
+      { id: "기타", label: "기타", value: 10, color: "#bfdbfe" }
+    ]
+  },
+  { 
+    id: "단백질", 
+    label: "단백질", 
+    value: 5, 
+    color: "#22c55e",
+    subData: [
+      { id: "동물성", label: "동물성", value: 3, color: "#4ade80" },
+      { id: "식물성", label: "식물성", value: 2, color: "#86efac" }
+    ]
+  },
+  { 
+    id: "지방", 
+    label: "지방", 
+    value: 14, 
+    color: "#f59e42",
+    subData: [
+      { id: "포화지방", label: "포화지방", value: 6, color: "#fbbf24" },
+      { id: "불포화지방", label: "불포화지방", value: 8, color: "#fcd34d" }
+    ]
+  }
 ];
 
 export default function CompositionPage() {
