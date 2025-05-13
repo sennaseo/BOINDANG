@@ -9,7 +9,7 @@ import logging
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
-app.include_router(ocr_router.router, prefix="/")
+app.include_router(ocr_router.router, prefix="")
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
