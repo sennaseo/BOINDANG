@@ -40,23 +40,23 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
 		String path = request.getURI().getPath();
 		AntPathMatcher pathMatcher = new AntPathMatcher();
 		List<String> excludedPatterns = List.of(
-			"/**/login",
-			"/**/signup",
-			"/**/check-username",
+			"/user/login",
+			"/user/signup",
+			"/user/check-username",
 			"/**/swagger-ui/**",
 			"/favicon.ico"
 		);
 		boolean isExcluded = excludedPatterns.stream()
 				.anyMatch(pattern -> pathMatcher.match(pattern, path));
-		if (isExcluded) {
-			return chain.filter(exchange);
-		}
-		
+
 		System.out.println("Request path: " + path);
 		System.out.println("Is excluded: " + isExcluded);
 		excludedPatterns.forEach(pattern ->
 				System.out.println("Match with " + pattern + " = " + pathMatcher.match(pattern, path))
 		);
+		if (isExcluded) {
+			return chain.filter(exchange);
+		}
 
 		// jwt 검증
 		String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
