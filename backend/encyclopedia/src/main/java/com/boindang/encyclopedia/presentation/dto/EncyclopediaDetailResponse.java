@@ -1,6 +1,5 @@
 package com.boindang.encyclopedia.presentation.dto;
 
-import com.boindang.encyclopedia.domain.IngredientDictionary.CompareItem;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -38,8 +37,25 @@ public class EncyclopediaDetailResponse {
     private List<String> dieter;
     private List<String> muscleBuilder;
 
-    private int recommendedDailyIntake;
+    private String recommendedDailyIntake;
     private String regulatory;
     private String issue;
-    private List<CompareItem> compareTable;
+
+    private List<String> labels;
+    private CompareTable compareTable;
+
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    public static class CompareTable {
+        private List<Row> rows;
+
+        @Getter
+        @Builder
+        @AllArgsConstructor
+        public static class Row {
+            private String name;
+            private List<String> values;
+        }
+    }
 }

@@ -1,0 +1,29 @@
+version: "3.8"
+
+services:
+  user-db:
+    image: mongo:6.0
+    container_name: ocr-db
+    environment:
+      MONGO_INITDB_DATABASE: ${DB_NAME}
+      MONGO_INITDB_ROOT_USERNAME: ${DB_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: [ "CMD", "mongo", "--eval", "db.adminCommand('ping')" ]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    restart: always
+    networks:
+      - nutrition-network
+
+volumes:
+  mongo_data:
+
+networks:
+  nutrition-network:
+    external: true

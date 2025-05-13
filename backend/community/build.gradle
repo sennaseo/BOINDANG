@@ -1,0 +1,70 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.4.5'
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.boindang'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+ext {
+	set('springCloudVersion', "2024.0.1")
+}
+
+dependencies {
+	// Spring Boot 기본 웹 MVC + REST API 지원
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	// JPA (Hibernate) + MySQL
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	runtimeOnly 'com.mysql:mysql-connector-j'
+
+	// Bean Validation (ex. @Valid, @NotNull 등)
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+	// 개발 편의성 향상 (Live Reload 등)
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+	// OpenAPI 3.0 기반 Swagger 문서 자동 생성 도구
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5'
+
+	// Lombok - getter/setter 등 코드 자동 생성
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+
+	// eureka client
+	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+	implementation 'com.github.ben-manes.caffeine:caffeine'
+
+	// 단위 테스트를 위한 Spring Boot Test 지원
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+	// JUnit Platform 런처 (testRuntimeOnly로 지정)
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+	}
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}

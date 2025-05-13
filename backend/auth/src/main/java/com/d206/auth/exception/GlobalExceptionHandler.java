@@ -19,8 +19,7 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(JwtAuthenticationException.class)
 	public ResponseEntity<Map<String, String>> handleInvalidateTokenException(Exception e) {
 		Map<String, String> response = new HashMap<>();
-		response.put("error", "token_expired");
-		response.put("message", "인증 토큰이 만료되었습니다: " + e.getMessage());
+		response.put("message", "토큰 검증 오류: " + e.getMessage());
 		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
 	}
 
