@@ -32,19 +32,19 @@ spring:
       ddl-auto: update # 또는 update (DDL 자동 생성 여부)
     open-in-view: false
 
-#eureka:
-#  client:
-#    enabled: true
-#    fetch-registry: true
-#    register-with-eureka: true
-#    service-url:
-#      defaultZone: ${EUREKA_URL}
-#  instance:
-#    hostname: ${HOST_IP}
-
 eureka:
   client:
-    enabled: false
+    enabled: true
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+      defaultZone: ${EUREKA_URL}
+  instance:
+    hostname: ${HOST_IP}
+
+#eureka:
+#  client:
+#    enabled: false
 
 springdoc:
   swagger-ui:
