@@ -1,6 +1,7 @@
 package com.nutritionservice.nutrition.model.document;
 
 import com.nutritionservice.nutrition.model.dto.analysis.NutrientResult;
+import com.nutritionservice.nutrition.model.dto.external.IngredientDetail;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -27,7 +28,7 @@ public class NutritionReport {
 
     private Map<String, NutrientResult> ratios;
 
-    private Map<String, String> warningIngredients;
+    private List<IngredientDetail> ingredientWarnings;
     private List<String> userTypeWarnings;
 
     private String summary;

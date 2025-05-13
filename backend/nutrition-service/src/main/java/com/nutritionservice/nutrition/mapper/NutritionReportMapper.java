@@ -23,16 +23,8 @@ public class NutritionReportMapper {
                 .giGrade("위험")
                 .nutrientRatios(toRatios(report.getRatios()))
                 .nutrientDetails(toDetails(report.getRatios()))
-                .ingredientWarnings(
-                        report.getWarningIngredients().entrySet().stream()
-                                .map(entry -> NutritionReportResponse.IngredientWarning.builder()
-                                        .name(entry.getKey())
-                                        .riskLevel(entry.getValue())
-                                        .type("")
-                                        .shortMessage("")
-                                        .build())
-                                .collect(Collectors.toList())
-                )
+
+                .ingredientWarnings(report.getIngredientWarnings()) // ✅ 백과사전 기반 그대로 사용
                 .userTypeWarnings(report.getUserTypeWarnings())
                 .topSensitiveIngredients(List.of())
                 .build();

@@ -1,5 +1,6 @@
 package com.nutritionservice.nutrition.model.dto.response;
 
+import com.nutritionservice.nutrition.model.dto.external.IngredientDetail;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -22,7 +23,7 @@ public class NutritionReportResponse {
     private List<NutrientRatio> nutrientRatios;   // 탄단지 비율
     private List<NutrientDetail> nutrientDetails; // 각 성분 등급
 
-    private List<IngredientWarning> ingredientWarnings; // 위험 성분 목록
+    private List<IngredientDetail> ingredientWarnings; // 위험 성분 목록
     private List<String> userTypeWarnings;              // 사용자 유형 기반 경고 메시지
 
     private List<TopSensitiveIngredient> topSensitiveIngredients; // 우선순위 위험 성분
