@@ -47,9 +47,9 @@ public class PopularIngredientService { // 실시간 API용 서비스
         }
 
         // ✅ Redis에 없을 경우, 어제 날짜 기준으로 fallback
-        LocalDate yesterday = LocalDate.now().minusDays(1);
-        log.info("🩵 yesterday = " + yesterday);
-        List<PopularIngredientBackup> backupList = backupRepository.findTopNByBackupDate(yesterday, limit);
+        LocalDate today = LocalDate.now();
+        log.info("🩵 fallback to DB, date = {}", today);
+        List<PopularIngredientBackup> backupList = backupRepository.findTopNByBackupDate(today, limit);
 
         return backupList.stream()
             .map(backup -> new PopularIngredientResponse(backup.getIngredientName(), backup.getScore()))
