@@ -1,5 +1,6 @@
 package com.d206.imageservice.image;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 import com.d206.imageservice.dto.ImageUploadResDto;
@@ -50,6 +51,7 @@ public class ImageService {
         Image image = Image.builder()
                 .imageUrl("https://d1d5plumlg2gxc.cloudfront.net/" + fileKey)
                 .userId(userId)
+                .createdAt(LocalDateTime.now())
                 .build();
         return imageRepository.save(image);
     }
