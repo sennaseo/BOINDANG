@@ -35,7 +35,7 @@ public class ImageService {
         String presignedUrl = s3Service.createPresignedPutUrl(fileKey, fileType);
 
         return ImageUploadResDto.builder()
-                .prisignedUrl(presignedUrl)
+                .presignedUrl(presignedUrl)
                 .fileKey(fileKey)
                 .build();
     }
