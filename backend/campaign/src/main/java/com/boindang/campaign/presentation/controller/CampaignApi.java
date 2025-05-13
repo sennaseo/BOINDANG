@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.boindang.campaign.common.response.BaseResponse;
 import com.boindang.campaign.presentation.dto.response.ApplyResultResponse;
 import com.boindang.campaign.presentation.dto.response.CampaignDetailResponse;
+import com.boindang.campaign.presentation.dto.response.CampaignListResponse;
 import com.boindang.campaign.presentation.dto.response.CampaignSummaryResponse;
 import com.boindang.campaign.presentation.dto.response.MyApplicationResponse;
 
@@ -64,7 +65,7 @@ public interface CampaignApi {
                 """)))
 	})
 	@GetMapping
-	BaseResponse<List<CampaignSummaryResponse>> getCampaigns(
+	BaseResponse<CampaignListResponse> getCampaigns(
 		@Parameter(description = "체험단 상태 필터 ('모집 예정', '진행중', '종료')")
 		@RequestParam(required = false) String status,
 

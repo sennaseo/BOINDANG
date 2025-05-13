@@ -15,6 +15,7 @@ import com.boindang.campaign.application.CampaignService;
 import com.boindang.campaign.common.response.BaseResponse;
 import com.boindang.campaign.presentation.dto.response.ApplyResultResponse;
 import com.boindang.campaign.presentation.dto.response.CampaignDetailResponse;
+import com.boindang.campaign.presentation.dto.response.CampaignListResponse;
 import com.boindang.campaign.presentation.dto.response.CampaignSummaryResponse;
 import com.boindang.campaign.presentation.dto.response.MyApplicationResponse;
 
@@ -30,13 +31,13 @@ public class CampaignController implements CampaignApi {
 
 	@Override
 	@GetMapping
-	public BaseResponse<List<CampaignSummaryResponse>> getCampaigns(
+	public BaseResponse<CampaignListResponse> getCampaigns(
 		@RequestParam(required = false) String status,
 		@RequestParam(defaultValue = "5") int size,
 		@RequestParam(defaultValue = "0") int page
-	){
-		return BaseResponse.success(200, "체험단 목록 조회가 완료되었습니다."
-			, campaignService.getCampaigns(status, size, page));
+	) {
+		return BaseResponse.success(200, "체험단 목록 조회가 완료되었습니다.",
+			campaignService.getCampaigns(status, size, page));
 	}
 
 	@Override

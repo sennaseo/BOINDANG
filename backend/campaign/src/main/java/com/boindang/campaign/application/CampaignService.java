@@ -7,9 +7,11 @@ import com.boindang.campaign.domain.model.CampaignStatus;
 import com.boindang.campaign.infrastructure.repository.CampaignApplicationRepository;
 import com.boindang.campaign.infrastructure.repository.CampaignRepository;
 import com.boindang.campaign.presentation.dto.response.CampaignDetailResponse;
+import com.boindang.campaign.presentation.dto.response.CampaignListResponse;
 import com.boindang.campaign.presentation.dto.response.CampaignSummaryResponse;
 import com.boindang.campaign.presentation.dto.response.MyApplicationResponse;
 
+import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -25,11 +27,11 @@ public class CampaignService {
 	private final CampaignRepository campaignRepository;
 	private final CampaignApplicationRepository applicationRepository;
 
-	public List<CampaignSummaryResponse> getCampaigns(String status, int size, int page) {
-		List<Campaign> campaigns;
+	public CampaignListResponse getCampaigns(String status, int size, int page) {
+		Page<Campaign> pageResult;
 
 		if (status == null) {
-			campaigns = campaignRepository.findAll(PageRequest.of(page, size)).getContent();
+			pageResult = campaignRepository.findAll(PageRequest.of(page, size));
 		} else {
 			CampaignStatus statusEnum = switch (status) {
 				case "모집 예정" -> CampaignStatus.PENDING;
@@ -37,13 +39,16 @@ public class CampaignService {
 				case "종료" -> CampaignStatus.CLOSED;
 				default -> throw new IllegalArgumentException("유효하지 않은 상태입니다.");
 			};
-			campaigns = campaignRepository.findByStatus(statusEnum, PageRequest.of(page, size));
+			pageResult = campaignRepository.findByStatus(statusEnum, PageRequest.of(page, size));
 		}
 
-		return campaigns.stream()
+		List<CampaignSummaryResponse> campaigns = pageResult.getContent().stream()
 			.map(CampaignSummaryResponse::from)
-			.collect(Collectors.toList());
+			.toList();
+
+		return new CampaignListResponse(pageResult.getTotalPages(), campaigns);
 	}
+
 
 	@Transactional(readOnly = true)
 	public CampaignDetailResponse getCampaignDetail(Long campaignId) {
