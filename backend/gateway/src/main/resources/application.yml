@@ -67,8 +67,6 @@ spring:
           uri: lb://OCR-SERVICE
           predicates:
             - Path=/ocr/**
-          filters:
-            - StripPrefix=1
 
 eureka:
   client:
