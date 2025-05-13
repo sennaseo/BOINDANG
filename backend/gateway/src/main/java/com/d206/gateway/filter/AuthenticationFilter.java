@@ -46,10 +46,17 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
 			"/**/swagger-ui/**",
 			"/favicon.ico"
 		);
-
-		if (excludedPatterns.stream().anyMatch(pattern -> pathMatcher.match(pattern, path))) {
+		boolean isExcluded = excludedPatterns.stream()
+				.anyMatch(pattern -> pathMatcher.match(pattern, path));
+		if (isExcluded) {
 			return chain.filter(exchange);
 		}
+		
+		System.out.println("Request path: " + path);
+		System.out.println("Is excluded: " + isExcluded);
+		excludedPatterns.forEach(pattern ->
+				System.out.println("Match with " + pattern + " = " + pathMatcher.match(pattern, path))
+		);
 
 		// jwt 검증
 		String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
