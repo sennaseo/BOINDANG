@@ -42,6 +42,9 @@ export default function SafetyChart({ value }: SafetyChartProps) {
           cornerRadius={10}
           paddingAngle={1}
           isAnimationActive={true}
+          animationEasing="ease"
+          animationDuration={500}
+          animationBegin={0}
         >
           {data.map((entry, idx) => (
             <Cell key={`cell-${idx}`} fill={entry.color} />
