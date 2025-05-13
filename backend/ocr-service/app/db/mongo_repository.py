@@ -4,7 +4,7 @@ from urllib.parse import quote_plus
 import os
 
 settings = get_settings()
-username = quote_plus(os.environ["DB_USERNAME"])
+username = quote_plus(os.environ["DB_USERNAME"])    # url에 특수문자가 들어가면 안되기 때문에 변환해줌
 password = quote_plus(os.environ["DB_PASSWORD"])
 dbname = os.environ["DB_NAME"]
 MONGODB_URI = f"mongodb://{username}:{password}@ocr-db:27017/{dbname}"
