@@ -1,0 +1,11 @@
+# Python virtual env
+.venv/
+venv/
+ENV/
+env/
+services/
+# 모든 outputs 디렉토리 제외
+**/outputs/
+.env
+.env_ocr
+.idea/

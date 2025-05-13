@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: swagger-server
+
+server:
+  port: 8080
+
+springdoc:
+  swagger-ui:
+    use-root-path: true
+    urls:
+      - name: ??? ???
+        url: http://3.34.141.11:8000/image/v3/api-docs
+      - name: ???? ???
+        url: http://3.34.141.11:8000/encyclopedia/v3/api-docs
+      - name: ??? ???
+        url: http://3.34.141.11:8000/campaign/v3/api-docs

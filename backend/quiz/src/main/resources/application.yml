@@ -1,0 +1,40 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: quiz
+
+  web:
+    resources:
+      add-mappings: false
+
+  datasource:
+    url: ${DB_URL}?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+
+eureka:
+  client:
+    enabled: true
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+      defaultZone: ${EUREKA_URL}
+  instance:
+    hostname: ${HOST_IP}
+
+#eureka:
+#  client:
+#    enabled: false
+
+springdoc:
+  swagger-ui:
+    enabled: true
+    path: quiz/swagger-ui.html
