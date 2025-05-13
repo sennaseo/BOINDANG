@@ -2,6 +2,7 @@ package com.boindang.encyclopedia.presentation;
 
 import com.boindang.encyclopedia.application.PopularIngredientService;
 import com.boindang.encyclopedia.common.response.BaseResponse;
+import com.boindang.encyclopedia.presentation.api.PopularIngredientApi;
 import com.boindang.encyclopedia.presentation.dto.response.PopularIngredientResponse;
 import lombok.RequiredArgsConstructor;
 

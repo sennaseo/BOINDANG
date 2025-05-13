@@ -22,13 +22,9 @@ public class ReportDocument {
 	@Id
 	private String id;
 
-	private String name;          // 성분명
-	private String category;      // 탄수화물, 단백질 등
-	private String type;          // 당류 등
-	private int gi;
-
+	private String name;
 	private String shortMessage;
-	private List<String> description;
+	private String keyword;
 
 	private RiskLevel riskLevel;
 
@@ -47,7 +43,6 @@ public class ReportDocument {
 	@NoArgsConstructor
 	@AllArgsConstructor
 	public static class RiskLevel {
-		private String defaultLevel;
 		private String diabetic;
 		private String kidneyPatient;
 		private String dieter;
