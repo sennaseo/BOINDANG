@@ -39,17 +39,17 @@ public class ImageService {
                 .build();
     }
 
-    public Image saveMetadata(MetaUploadReqDto metaUploadReqDto) {
-        if (metaUploadReqDto.getUserId() == null) {
+    public Image saveMetadata(Long userId, String fileKey) {
+        if (userId == null) {
             throw new MissingUserIdException("유저 ID가 없습니다");
         }
-        if (metaUploadReqDto.getFileKey() == null || metaUploadReqDto.getFileKey().isEmpty()) {
+        if (fileKey == null || fileKey.isEmpty()) {
             throw new MissingUuidException("UUID가 없습니다");
         }
 
         Image image = Image.builder()
-                .imageUrl("https://d1d5plumlg2gxc.cloudfront.net/" + metaUploadReqDto.getFileKey())
-                .userId(metaUploadReqDto.getUserId())
+                .imageUrl("https://d1d5plumlg2gxc.cloudfront.net/" + fileKey)
+                .userId(userId)
                 .build();
         return imageRepository.save(image);
     }
