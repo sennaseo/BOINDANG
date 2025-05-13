@@ -20,4 +20,10 @@ public class Image {
 
 	@Column(nullable = false)
 	private String imageUrl;
+
+	@Column(nullable = false)
+	private String createdAt;
+
+	@Column(nullable = true)
+	private String deletedAt;
 }

@@ -10,6 +10,6 @@ import lombok.RequiredArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class MetaUploadReqDto {
-    Long userId;
     String fileKey;
+
 }
