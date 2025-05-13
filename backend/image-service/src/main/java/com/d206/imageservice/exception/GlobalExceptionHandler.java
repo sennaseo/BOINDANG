@@ -23,6 +23,21 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.ok(ApiResponses.error(new ErrorResponse(HttpStatus.BAD_REQUEST, e.getMessage())));
 	}
 
+	@ExceptionHandler(MissingUuidException.class)
+	public ResponseEntity<ApiResponses<String>> handleException(MissingUuidException e) {
+		return ResponseEntity.ok(ApiResponses.error(new ErrorResponse(HttpStatus.BAD_REQUEST, e.getMessage())));
+	}
+	@ExceptionHandler(MissingUserIdException.class)
+	public ResponseEntity<ApiResponses<String>> handleException(MissingUserIdException e) {
+		return ResponseEntity.ok(ApiResponses.error(new ErrorResponse(HttpStatus.BAD_REQUEST, e.getMessage())));
+	}
+	@ExceptionHandler(InvalidImageIdException.class)
+	public ResponseEntity<ApiResponses<String>> handleException(InvalidImageIdException e) {
+		return ResponseEntity.ok(ApiResponses.error(new ErrorResponse(HttpStatus.BAD_REQUEST, e.getMessage())));
+	}
+
+
+
 	// 기타 예외 처리
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ApiResponses<String>> handleAllExceptions(Exception e) {
