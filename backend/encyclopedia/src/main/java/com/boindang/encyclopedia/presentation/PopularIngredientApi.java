@@ -1,12 +1,11 @@
 package com.boindang.encyclopedia.presentation;
 
 import com.boindang.encyclopedia.common.response.BaseResponse;
-import com.boindang.encyclopedia.presentation.dto.PopularIngredientResponse;
+import com.boindang.encyclopedia.presentation.dto.response.PopularIngredientResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;

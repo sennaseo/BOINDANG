@@ -1,6 +1,6 @@
 package com.boindang.encyclopedia.application;
 
-import com.boindang.encyclopedia.presentation.dto.PopularIngredientResponse;
+import com.boindang.encyclopedia.presentation.dto.response.PopularIngredientResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;

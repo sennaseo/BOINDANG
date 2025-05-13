@@ -2,8 +2,8 @@ package com.boindang.encyclopedia.presentation;
 
 import com.boindang.encyclopedia.application.EncyclopediaService;
 import com.boindang.encyclopedia.common.response.BaseResponse;
-import com.boindang.encyclopedia.presentation.dto.EncyclopediaDetailResponse;
-import com.boindang.encyclopedia.presentation.dto.EncyclopediaSearchResponse;
+import com.boindang.encyclopedia.presentation.dto.response.EncyclopediaDetailResponse;
+import com.boindang.encyclopedia.presentation.dto.response.EncyclopediaSearchResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
