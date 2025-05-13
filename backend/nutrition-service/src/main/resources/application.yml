@@ -4,6 +4,8 @@ server:
 spring:
   application:
     name: nutrition-service
+  config:
+    import: optional:application-secret.yml
 
   data:
     mongodb:
