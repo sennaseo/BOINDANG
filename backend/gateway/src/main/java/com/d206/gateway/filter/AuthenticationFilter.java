@@ -40,9 +40,9 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
 		String path = request.getURI().getPath();
 		AntPathMatcher pathMatcher = new AntPathMatcher();
 		List<String> excludedPatterns = List.of(
-			"/user/login",
-			"/user/signup",
-			"/user/check-username",
+			"/**/login",
+			"/**/signup",
+			"/**/check-username",
 			"/**/swagger-ui/**",
 			"/favicon.ico"
 		);
