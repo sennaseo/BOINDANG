@@ -1,5 +1,3 @@
-# app/main.py
-
 import os
 from fastapi import FastAPI
 from app.routes import ocr_router
@@ -7,9 +5,6 @@ from py_eureka_client import eureka_client
 from contextlib import asynccontextmanager
 import logging
 from fastapi.middleware.cors import CORSMiddleware
-
-app = FastAPI()
-app.include_router(ocr_router.router, prefix="/ocr")
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -31,7 +26,9 @@ async def lifespan(app_: FastAPI):
     logger.info("Stopping Eureka client")
     await eureka_client.stop_async()
 
+
 app = FastAPI(lifespan=lifespan)
+app.include_router(ocr_router.router, prefix="/")
 
 origins = [
     "https://k12d206.p.ssafy.io",
