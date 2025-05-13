@@ -3,6 +3,8 @@ package com.d206.gateway.filter;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -31,6 +33,7 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
 	private final RestClient restClient;
 	@Autowired
 	private EurekaClient discoveryClient;
+	private static final Logger log = LoggerFactory.getLogger(AuthenticationFilter.class);
 
 	@Override
 	public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
@@ -40,12 +43,23 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
 		String path = request.getURI().getPath();
 		AntPathMatcher pathMatcher = new AntPathMatcher();
 		List<String> excludedPatterns = List.of(
-			"/user/login",
-			"/user/signup",
-			"/user/check-username",
-			"/**/swagger-ui/**",
-			"/favicon.ico"
+				"/user/login",
+				"/user/signup",
+				"/user/check-username",
+				"/**/swagger-ui/**",
+				"/favicon.ico"
 		);
+
+		if (excludedPatterns.stream().anyMatch(pattern -> {
+			boolean matches = pathMatcher.match(pattern, path);
+			if (matches) {
+				log.debug("제외된 패턴과 일치: 패턴 '{}', 경로 '{}'", pattern, path);
+			}
+			return matches;
+		})) {
+			log.info("인증이 필요 없는 경로입니다. 필터 체인 계속 진행: {}", path);
+			return chain.filter(exchange);
+		}
 
 		if (excludedPatterns.stream().anyMatch(pattern -> pathMatcher.match(pattern, path))) {
 			return chain.filter(exchange);
