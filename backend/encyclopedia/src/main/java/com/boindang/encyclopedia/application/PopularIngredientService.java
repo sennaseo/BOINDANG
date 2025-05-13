@@ -4,6 +4,8 @@ import com.boindang.encyclopedia.domain.PopularIngredientBackup;
 import com.boindang.encyclopedia.infrastructure.PopularIngredientBackupRepository;
 import com.boindang.encyclopedia.presentation.dto.response.PopularIngredientResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
@@ -15,6 +17,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class PopularIngredientService { // 실시간 API용 서비스
@@ -43,6 +46,7 @@ public class PopularIngredientService { // 실시간 API용 서비스
 
         // ✅ Redis에 없을 경우, 어제 날짜 기준으로 fallback
         LocalDate yesterday = LocalDate.now().minusDays(1);
+        log.info("🩵 yesterday = " + yesterday);
         List<PopularIngredientBackup> backupList = backupRepository.findTopNByBackupDate(yesterday, limit);
 
         return backupList.stream()
