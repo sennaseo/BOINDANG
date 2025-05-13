@@ -8,13 +8,12 @@ from contextlib import asynccontextmanager
 import logging
 from fastapi.middleware.cors import CORSMiddleware
 
+app = FastAPI()
+app.include_router(ocr_router.router, prefix="/ocr")
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-origins = [
-    "https://k12d206.p.ssafy.io",
-    "http://localhost:3000"
-]
 
 @asynccontextmanager
 async def lifespan(app_: FastAPI):
@@ -34,7 +33,11 @@ async def lifespan(app_: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-# 미들웨어와 라우터 등록은 lifespan 아래에서!
+origins = [
+    "https://k12d206.p.ssafy.io",
+    "http://localhost:3000"
+]
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -44,4 +47,5 @@ app.add_middleware(
     max_age=3600,
 )
 
-app.include_router(ocr_router.router, prefix="/ocr")
+if __name__ == "__main__":
+    import uvicorn
