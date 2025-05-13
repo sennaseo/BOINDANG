@@ -6,8 +6,25 @@ from app.routes import ocr_router
 from py_eureka_client import eureka_client
 from contextlib import asynccontextmanager
 import logging
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+origins = [
+    "https://k12d206.p.ssafy.io",
+    "http://localhost:3000"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    max_age=3600,
+)
+
+
+
 app.include_router(ocr_router.router, prefix="/ocr")
 
 logging.basicConfig(level=logging.INFO)
