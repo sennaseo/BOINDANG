@@ -46,8 +46,8 @@ public class UserService {
 	}
 
 	public JwtTokenDto login(UserLoginRequest request) {
-		User user = userRepository.findByUsername(request.getEmail())
-			.orElseThrow(() -> new IllegalArgumentException("해당 이메일의 사용자를 찾을 수 없습니다."));
+		User user = userRepository.findByUsername(request.getUsername())
+			.orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
 
 		if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
 			throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
