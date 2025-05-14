@@ -100,7 +100,7 @@ public class NutritionService {
         EncyclopediaResponse encyclopediaResponse;
 
         try {
-            String url = eurekaService.getUrl("ENCYCLOPEDIA") + "/user-type";
+            String url = eurekaService.getUrl("ENCYCLOPEDIA") + "/encyclopedia/user-type";
             System.out.println("url: " + url);
             encyclopediaResponse = restClient.post()
                     .uri(url)
