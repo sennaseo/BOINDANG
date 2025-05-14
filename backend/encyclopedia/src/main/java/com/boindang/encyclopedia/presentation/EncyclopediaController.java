@@ -32,9 +32,9 @@ public class EncyclopediaController implements EncyclopediaApi {
             return BaseResponse.fail(400, "검색어를 입력하세요.");
         }
 
-        if (query.trim().length() < 2) {
-            return BaseResponse.fail(400, "검색어는 최소 2자 이상 입력해주세요.");
-        }
+        // if (query.trim().length() < 2) {
+        //     return BaseResponse.fail(400, "검색어는 최소 2자 이상 입력해주세요.");
+        // }
 
         return BaseResponse.success(encyclopediaService.searchWithSuggestion(query, suggested));
     }
