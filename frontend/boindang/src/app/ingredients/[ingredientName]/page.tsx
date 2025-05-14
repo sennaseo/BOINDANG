@@ -141,7 +141,7 @@ export default function IngredientDetailPage({ params: paramsPromise }: { params
             {displayData.stats.map((stat) => (
               <div key={stat.label} className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col items-center text-center border border-slate-100">
                 <div className="mb-2">{stat.icon}</div>
-                <p className="text-2xl font-bold text-slate-800">{stat.value}</p>
+                <p className="text-xl font-bold text-slate-800">{stat.value}</p>
                 <p className="text-sm text-slate-600 mt-1 whitespace-nowrap">{stat.label}</p>
               </div>
             ))}
