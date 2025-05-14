@@ -8,11 +8,12 @@ interface ExperienceCardProps {
   description: string;
   imageUrl: string;
   tags: string[];
-  remainingDays: number;
+  remainingDays: number | string;
   maxParticipants?: number;
   openDateTime?: string;
 }
 
+export type { ExperienceCardProps };
 export default function ExperienceCard({
   id,
   title,
@@ -39,12 +40,15 @@ export default function ExperienceCard({
             className="object-cover"
           />
           <div className="absolute top-4 left-4 bg-black/60 text-white px-3 py-1 rounded-full text-xs">
-            {remainingDays}일 남음
+            {typeof remainingDays === 'string' ? remainingDays : `${remainingDays}일 남음`}
           </div>
           {openDateTime && (
             <div className="absolute bottom-4 left-4 bg-[#6C2FF2] text-white px-3 py-1 rounded-full text-xs">
               {openDateTime} 오픈
             </div>
+          )}
+          {typeof remainingDays === 'string' && remainingDays === '종료' && (
+            <div className="absolute inset-0 bg-black/40 z-10 rounded-t-2xl pointer-events-none" />
           )}
         </div>
 

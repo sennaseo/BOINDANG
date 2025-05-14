@@ -2,21 +2,16 @@
 
 import React from 'react';
 import { ArrowSquareOut } from '@phosphor-icons/react';
+import type { OverviewTabProps } from '@/types/api/ingredients';
 
-interface OverviewTabProps {
-  details: string;
-  mainFoods: string[];
-  references: Array<{ text: string; url: string }>;
-}
-
-export default function OverviewTab({ details, mainFoods, references }: OverviewTabProps) {
+export default function OverviewTab({ description, examples, references }: OverviewTabProps) {
   return (
     <div className="space-y-8">
       {/* 상세 정보 */}
       <section>
         <h2 className="text-xl font-semibold text-slate-700 mb-3">상세 정보</h2>
         <p className="text-sm text-slate-600 leading-relaxed">
-          {details}
+          {description}
         </p>
       </section>
 
@@ -24,7 +19,7 @@ export default function OverviewTab({ details, mainFoods, references }: Overview
       <section>
         <h2 className="text-xl font-semibold text-slate-700 mb-3">주요 함유 식품</h2>
         <ul className="list-disc list-inside space-y-1.5 text-sm text-slate-600 pl-2">
-          {mainFoods.map((food) => (
+          {examples.map((food) => (
             <li key={food}>{food}</li>
           ))}
         </ul>

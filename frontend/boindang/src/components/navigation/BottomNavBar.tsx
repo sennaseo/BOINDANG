@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { House, Pill, Plus, ForkKnife, DotsThreeCircle } from '@phosphor-icons/react';
 import ActionMenu from './ActionMenu';
@@ -13,21 +14,6 @@ const RADIUS = 32;
 const HAND_OFFSET = -25;
 const LEFT_ANGLE = (-120 * Math.PI) / 180;
 const RIGHT_ANGLE = (-60 * Math.PI) / 180;
-
-function handStyle(angle: number, show: boolean, isRight?: boolean) {
-  return {
-    left: '50%',
-    top: '50%',
-    transform: `translate(-50%, -50%) translate(${RADIUS * Math.cos(angle)}px, ${RADIUS * Math.sin(angle) + HAND_OFFSET}px)${isRight ? ' scaleX(-1)' : ''}`,
-    zIndex: 50,
-    opacity: show ? 1 : 0,
-    transition: 'opacity 0.5s',
-    position: 'absolute' as const,
-    width: '12px',
-    height: '12px',
-    pointerEvents: 'none' as React.CSSProperties['pointerEvents'],
-  };
-}
 
 export default function BottomNavBar() {
   const pathname = usePathname();
@@ -88,40 +74,53 @@ export default function BottomNavBar() {
           {pathname === '/' && (
             <>
               {/* 왼손 */}
-              <img
+              <Image
                 src={handImg}
                 alt="왼손"
+                width={12}
+                height={12}
                 style={{
-                  ...handStyle(LEFT_ANGLE, showHands),
                   zIndex: 50,
                   position: 'absolute',
                   left: '50%',
                   top: '50%',
-                  transform: `translate(-50%, -50%) translate(${RADIUS * Math.cos(LEFT_ANGLE)}px, ${RADIUS * Math.sin(LEFT_ANGLE) + HAND_OFFSET}px)`
+                  transform: `translate(-50%, -50%) translate(${RADIUS * Math.cos(LEFT_ANGLE)}px, ${RADIUS * Math.sin(LEFT_ANGLE) + HAND_OFFSET}px)`,
+                  opacity: showHands ? 1 : 0,
+                  transition: 'opacity 0.5s',
+                  pointerEvents: 'none',
                 }}
                 draggable={false}
+                unoptimized
               />
               {/* 오른손 */}
-              <img
+              <Image
                 src={handImg}
                 alt="오른손"
+                width={12}
+                height={12}
                 style={{
-                  ...handStyle(RIGHT_ANGLE, showHands, true),
                   zIndex: 50,
                   position: 'absolute',
                   left: '50%',
                   top: '50%',
-                  transform: `translate(-50%, -50%) translate(${RADIUS * Math.cos(RIGHT_ANGLE)}px, ${RADIUS * Math.sin(RIGHT_ANGLE) + HAND_OFFSET}px) scaleX(-1)`
+                  transform: `translate(-50%, -50%) translate(${RADIUS * Math.cos(RIGHT_ANGLE)}px, ${RADIUS * Math.sin(RIGHT_ANGLE) + HAND_OFFSET}px) scaleX(-1)`,
+                  opacity: showHands ? 1 : 0,
+                  transition: 'opacity 0.5s',
+                  pointerEvents: 'none',
                 }}
                 draggable={false}
+                unoptimized
               />
               {/* 얼굴(몸통) */}
-              <img
+              <Image
                 src={faceImg}
                 alt="각설탕 얼굴"
+                width={64}
+                height={64}
                 className={`absolute left-1/2 -translate-x-1/2 translate-x-[-30px] bottom-20 w-16 h-16 transition-all duration-500 ${showFace ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}
                 style={{ zIndex: 30, pointerEvents: 'none' as React.CSSProperties['pointerEvents'] }}
                 draggable={false}
+                unoptimized
               />
             </>
           )}

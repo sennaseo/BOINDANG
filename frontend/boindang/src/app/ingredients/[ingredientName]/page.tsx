@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, use } from 'react';
 import BottomNavBar from '@/components/navigation/BottomNavBar';
 import { ArrowLeft, WarningCircle, ChartBar, Fire, Cookie, CheckCircle, XCircle, Spinner } from '@phosphor-icons/react';
 
@@ -10,97 +10,25 @@ import HealthImpactTab from './HealthImpactTab';
 import UserSpecificTab from './UserSpecificTab';
 import MoreInfoTab from './MoreInfoTab';
 
-// Import API Types
-import { IngredientDetailApiResponse, IngredientDetailData, ApiErrorResponse } from '@/types/api/ingredients';
+// Import API Types and Processed Types from the centralized file
+import type {
+  ProcessedIngredientDetail,
+  // OverviewTabProps, // 사용 안 함
+  // HealthImpactTabProps, // 사용 안 함
+  // UserSpecificTabProps, // 사용 안 함
+  // MoreInfoTabProps // 사용 안 함
+} from '@/types/api/ingredients';
 
-// 프론트엔드에서 사용할 가공된 성분 상세 데이터 타입 (탭 컴포넌트들의 props 타입에 맞게)
-interface ProcessedIngredientDetail {
-  id: string;
-  name: string;
-  engName?: string;
-  category: string;
-  type: string;
-  riskLevel: '안심' | '주의' | '위험';
-  gi: number;
-  calories: number;
-  sweetness: number;
-  description: string;
-  examples: string[];
-  references: Array<{ text: string; url: string }>; // OverviewTab 용
-  healthEffects: HealthImpactTabProps['effects']; // HealthImpactTab 용
-  userConsiderations: UserSpecificTabProps['considerations']; // UserSpecificTab 용
-  moreInfo: MoreInfoTabProps['info']; // MoreInfoTab 용
-}
+// Import custom hook
+import useIngredientDetail from '@/hooks/useIngredientDetail';
 
-// Helper function to transform API data to frontend structure
-const transformApiDataToFrontend = (apiData: IngredientDetailData): ProcessedIngredientDetail => {
-  return {
-    id: apiData.id,
-    name: apiData.name,
-    engName: apiData.engName,
-    category: apiData.category,
-    type: apiData.type,
-    riskLevel: apiData.riskLevel,
-    gi: apiData.gi,
-    calories: apiData.calories,
-    sweetness: apiData.sweetness,
-    description: apiData.description,
-    examples: apiData.examples,
-    references: apiData.references.map(ref => ({ text: ref, url: '#' })), // API는 string[], 프론트는 객체 배열
-    healthEffects: {
-      bloodSugar: apiData.bloodResponse,
-      digestive: apiData.digestEffect,
-      dental: apiData.toothEffect,
-      pros: apiData.pros,
-      cons: apiData.cons,
-    },
-    userConsiderations: {
-      diabetes: apiData.diabetic.join('\n'), // 배열을 개행 문자로 연결된 문자열로
-      kidney: apiData.kidneyPatient.join('\n'),
-      diet: apiData.dieter.join('\n'),
-      exercise: apiData.muscleBuilder.join('\n'),
-    },
-    moreInfo: {
-      safetyRegulation: `일일권장섭취량: ${apiData.recommendedDailyIntake || '정보 없음'}mg (API 명세에 g 단위이나, 일반적 표기는 mg/kg이므로 확인 필요. 우선 mg으로 표시)\n규제 현황: ${apiData.regulatory}\n관련 이슈: ${apiData.issue || '특이사항 없음'}`,
-      comparison: apiData.compareTable.map(item => ({ ...item, gi: item.gi.toString(), calories: item.calories.toString(), sweetness: item.sweetness.toString()})), // MoreInfoTab은 문자열을 받을 수 있으므로 변환
-    }
-  };
-};
-
-export default function IngredientDetailPage({ params }: { params: { ingredientName: string } }) {
+export default function IngredientDetailPage({ params: paramsPromise }: { params: Promise<{ ingredientName: string }> }) {
   const [activeTab, setActiveTab] = useState('개요');
-  const [ingredientDetail, setIngredientDetail] = useState<ProcessedIngredientDetail | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchIngredientData = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        // 실제 API 호출 시 /api 프록시 경로 또는 전체 URL 사용
-        const response = await fetch(`http://k12d206.p.ssafy.io:8081/api/ingredients/${params.ingredientName}`); 
-        if (!response.ok) {
-          const errorData: ApiErrorResponse = await response.json();
-          throw new Error(errorData.message || `Error ${response.status}: ${response.statusText}`);
-        }
-        const result: IngredientDetailApiResponse = await response.json();
-        if (result.isSuccess && result.data) {
-          setIngredientDetail(transformApiDataToFrontend(result.data));
-        } else {
-          throw new Error(result.message || 'Failed to fetch ingredient data');
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An unknown error occurred');
-        console.error("Failed to fetch ingredient details:", err);
-      }
-      setIsLoading(false);
-    };
+  const params = use(paramsPromise);
+  const { ingredientName } = params;
 
-    if (params.ingredientName) {
-      fetchIngredientData();
-    }
-  }, [params.ingredientName]);
+  const { ingredientDetail, isLoading, error, refetch } = useIngredientDetail(ingredientName);
 
   // 로딩 중 UI
   if (isLoading) {
@@ -116,7 +44,7 @@ export default function IngredientDetailPage({ params }: { params: { ingredientN
   if (error) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
-         <header className="sticky top-0 z-40 bg-white p-4 flex items-center border-b border-slate-200 gap-x-3 w-full max-w-md mb-4">
+        <header className="sticky top-0 z-40 bg-white p-4 flex items-center border-b border-slate-200 gap-x-3 w-full max-w-md mb-4">
           <button onClick={() => window.history.back()} className="p-1">
             <ArrowLeft size={24} className="text-slate-700" />
           </button>
@@ -126,8 +54,8 @@ export default function IngredientDetailPage({ params }: { params: { ingredientN
           <WarningCircle size={48} className="text-red-500 mx-auto mb-4" />
           <p className="text-red-600 font-semibold mb-2">데이터를 불러오는데 실패했습니다.</p>
           <p className="text-sm text-slate-600">오류 메시지: {error}</p>
-          <button 
-            onClick={() => window.location.reload()} 
+          <button
+            onClick={() => refetch()}
             className="mt-6 bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-150 ease-in-out"
           >
             다시 시도
@@ -139,8 +67,6 @@ export default function IngredientDetailPage({ params }: { params: { ingredientN
 
   // 데이터 로드 실패 또는 데이터가 없는 경우 (ingredientDetail이 null인 경우)
   if (!ingredientDetail) {
-    // 이 경우는 fetch 성공 후 result.data가 없거나 transform 실패 시 이론적으로 발생 가능하나,
-    // 위 error 처리에서 대부분 걸러지므로, 간단한 메시지 또는 에러 페이지로 리다이렉트도 고려.
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center">
         <WarningCircle size={48} className="text-yellow-500 mb-4" />
@@ -165,7 +91,7 @@ export default function IngredientDetailPage({ params }: { params: { ingredientN
         };
       case '위험':
         return {
-          icon: <XCircle size={20} className="mr-1.5 flex-shrink-0" weight="bold"/>,
+          icon: <XCircle size={20} className="mr-1.5 flex-shrink-0" weight="bold" />,
           className: 'bg-red-100 text-red-700 border-red-200',
         };
       // default는 ProcessedIngredientDetail의 riskLevel 타입에 의해 발생하지 않아야 함
@@ -226,11 +152,10 @@ export default function IngredientDetailPage({ params }: { params: { ingredientN
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`flex-1 py-2.5 px-4 text-sm font-medium rounded-md focus:outline-none transition-colors duration-200 ${
-                  activeTab === tab
-                    ? 'bg-white shadow text-purple-600'
-                    : 'text-slate-600 hover:bg-slate-200 hover:text-slate-800'
-                }`}
+                className={`flex-1 py-2.5 px-4 text-sm font-medium rounded-md focus:outline-none transition-colors duration-200 ${activeTab === tab
+                  ? 'bg-white shadow text-purple-600'
+                  : 'text-slate-600 hover:bg-slate-200 hover:text-slate-800'
+                  }`}
               >
                 {tab}
               </button>
@@ -238,11 +163,11 @@ export default function IngredientDetailPage({ params }: { params: { ingredientN
           </nav>
 
           <div className="mt-6">
-            {activeTab === '개요' && 
-              <OverviewTab 
-                details={ingredientDetail.description} 
-                mainFoods={ingredientDetail.examples} 
-                references={ingredientDetail.references} 
+            {activeTab === '개요' &&
+              <OverviewTab
+                description={ingredientDetail.description}
+                examples={ingredientDetail.examples}
+                references={ingredientDetail.references}
               />}
             {activeTab === '건강 영향' && <HealthImpactTab effects={ingredientDetail.healthEffects} />}
             {activeTab === '사용자별' && <UserSpecificTab considerations={ingredientDetail.userConsiderations} />}
@@ -264,35 +189,14 @@ export default function IngredientDetailPage({ params }: { params: { ingredientN
   );
 }
 
-// Helper interfaces for Tab props (to avoid direct import if not needed, or for clarity)
-interface HealthImpactTabProps {
-  effects: {
-    bloodSugar: string;
-    digestive: string;
-    dental: string;
-    pros: string[];
-    cons: string[];
-  };
-}
+// Helper interfaces for Tab props -> 삭제 (위에서 import)
+// export interface HealthImpactTabProps { ... } -> 삭제
+// export interface UserSpecificTabProps { ... } -> 삭제
+// export interface MoreInfoTabProps { ... } -> 삭제
+// OverviewTabProps가 page.tsx 내에 있었다면 그것도 삭제 대상
 
-interface UserSpecificTabProps {
-  considerations: {
-    diabetes: string;
-    kidney: string;
-    diet: string;
-    exercise: string;
-  };
-}
+// activeTab === '개요' 부분에서 OverviewTab에 전달하는 props가 OverviewTabProps 타입과 일치하는지 확인 필요
+// 예: <OverviewTab description={ingredientDetail.description} examples={ingredientDetail.examples} references={ingredientDetail.references} />
+// ProcessedIngredientDetail의 정의와 OverviewTabProps의 정의가 일치해야 함.
 
-interface MoreInfoTabProps {
-  info: {
-    safetyRegulation: string;
-    comparison: Array<{
-      name: string;
-      gi: string; // Was number | string, now string for display consistency from transform
-      calories: string; // Was number | string
-      sweetness: string; // Was number | string
-      note: string;
-    }>;
-  };
-} 
+// ... (나머지 코드) ... 

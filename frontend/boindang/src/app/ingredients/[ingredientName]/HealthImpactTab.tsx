@@ -1,16 +1,7 @@
 'use client';
 
 import React from 'react';
-
-interface HealthImpactTabProps {
-  effects: {
-    bloodSugar: string;
-    digestive: string;
-    dental: string;
-    pros: string[];
-    cons: string[];
-  };
-}
+import type { HealthImpactTabProps } from '@/types/api/ingredients';
 
 export default function HealthImpactTab({ effects }: HealthImpactTabProps) {
   return (

@@ -1,16 +1,8 @@
+import type { ExperienceCardProps } from './ExperienceCard';
 import ExperienceCard from './ExperienceCard';
 
-interface Experience {
-  id: string;
-  title: string;
-  description: string;
-  imageUrl: string;
-  tags: string[];
-  remainingDays: number;
-}
-
 interface ExperienceListProps {
-  experiences: Experience[];
+  experiences: ExperienceCardProps[];
 }
 
 export default function ExperienceList({ experiences }: ExperienceListProps) {
