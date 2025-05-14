@@ -43,7 +43,7 @@ export default function IngredientSearchPage() {
   };
 
   const handleGoBack = () => {
-    router.back();
+    router.push('/ingredients');
   };
 
   const errorMessage = error instanceof Error ? error.message : typeof error === 'string' ? error : null;
@@ -134,7 +134,7 @@ export default function IngredientSearchPage() {
                       <li
                         key={result.id}
                         className="flex items-center justify-between p-4 border-b border-gray-200 last:border-b-0 hover:bg-gray-50 cursor-pointer"
-                        onClick={() => router.push(`/ingredients/${result.id}`)}
+                        onClick={() => router.push(`/ingredients/detail/${result.id}`)}
                       >
                         <div className="flex items-center flex-1 min-w-0">
                           {/* 텍스트 정보 */}
