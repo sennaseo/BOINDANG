@@ -17,7 +17,7 @@ public class UserService {
 
     public UserInfo getUserById(String userId) {
         try {
-            String url = eurekaService.getUrl("USER") + "/user/me";
+            String url = eurekaService.getUrl("BOINDANG-USER") + "/me";
             System.out.println("🔍 사용자 정보 요청 URL: " + url);
 
             ApiResponse<UserInfo> response = restClient.get()
