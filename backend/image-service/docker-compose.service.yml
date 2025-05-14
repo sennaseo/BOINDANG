@@ -19,6 +19,7 @@ services:
       - .env_image
     ports:
       - "8081:8081"
+      - "1111:1111"
     restart: always
     networks:
       - image-network
