@@ -14,5 +14,5 @@ public class IngredientAnalysis {
     private BasicInfo basicInfo;
     private List<IngredientNode> ingredientTree;
     private Map<String, List<String>> categorizedIngredients;
-    private String ingredientSummary;
+    private String summary;
 }

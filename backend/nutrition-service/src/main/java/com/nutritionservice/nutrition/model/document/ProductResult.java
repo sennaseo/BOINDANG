@@ -1,6 +1,9 @@
 package com.nutritionservice.nutrition.model.document;
 
 import lombok.*;
+import org.springframework.data.mongodb.core.mapping.Field;
+
+import java.time.OffsetDateTime;
 
 @Getter
 @Setter
@@ -8,7 +11,13 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class ProductResult {
-    private IngredientAnalysis ingredientAnalysis;
-    private NutritionAnalysis nutritionAnalysis;
-}
 
+    @Field("ingredient_analysis")
+    private IngredientAnalysis ingredientAnalysis;
+
+    @Field("nutrition_analysis")
+    private NutritionAnalysis nutritionAnalysis;
+
+    @Field("updatedAt")
+    private OffsetDateTime updatedAt;
+}
