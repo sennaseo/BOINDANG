@@ -20,6 +20,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,15 +29,20 @@ public class CampaignService {
 
 	private final CampaignRepository campaignRepository;
 	private final CampaignApplicationRepository applicationRepository;
-	private final CampaignApplicationPolicy campaignApplicationPolicy;
 
+	@Transactional // ✅ 반드시 있어야 DB에 상태가 반영됨
 	public CampaignListResponse getCampaigns(String status, int size, int page, Long userId) {
 		LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
 		List<Campaign> allCampaigns = campaignRepository.findAll();
 
+		// ✅ 상태 한 번만 계산 + DB 반영
+		Map<Long, CampaignStatus> statusMap = allCampaigns.stream()
+			.collect(Collectors.toMap(Campaign::getId, c -> c.calculateAndSyncStatus(now)));
+
+		// ✅ 상태 필터링
 		List<Campaign> filtered = allCampaigns.stream()
 			.filter(campaign -> {
-				CampaignStatus dynamicStatus = campaign.calculateStatus(now);
+				CampaignStatus dynamicStatus = statusMap.get(campaign.getId());
 				if (status == null) return true;
 				return switch (status) {
 					case "진행중" -> dynamicStatus == CampaignStatus.OPEN;
@@ -47,10 +53,11 @@ public class CampaignService {
 			})
 			.toList();
 
+		// ✅ 정렬
 		List<Campaign> sorted = filtered.stream()
 			.sorted(Comparator
 				.comparing((Campaign c) -> {
-					CampaignStatus s = c.calculateStatus(now);
+					CampaignStatus s = statusMap.get(c.getId());
 					return switch (s) {
 						case OPEN -> 0;
 						case PENDING -> 1;
@@ -58,7 +65,7 @@ public class CampaignService {
 					};
 				})
 				.thenComparing(c -> {
-					CampaignStatus s = c.calculateStatus(now);
+					CampaignStatus s = statusMap.get(c.getId());
 					return switch (s) {
 						case OPEN, CLOSED -> c.getEndDate();
 						case PENDING -> c.getStartDate();
@@ -67,6 +74,7 @@ public class CampaignService {
 			)
 			.toList();
 
+		// ✅ 페이징
 		int fromIndex = page * size;
 		int toIndex = Math.min(fromIndex + size, sorted.size());
 
