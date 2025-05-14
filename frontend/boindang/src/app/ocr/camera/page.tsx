@@ -6,6 +6,7 @@ import Image from 'next/image'; // Next Image import 추가
 import { X, Image as ImageIcon, CheckCircle, ListBullets, Lightbulb, ChartBar, ArrowCounterClockwise, Check, ArrowRight } from '@phosphor-icons/react';
 import { postOcrAnalysis } from '@/api/ocr'; // 경로 확인 필요, @/api/ocr.ts 가정
 import { getPresignedUrl } from '@/api/image';
+import { motion } from 'framer-motion';
 
 // 애니메이션을 위한 상수 및 스타일 함수 정의 (컴포넌트 외부)
 const handImg = '/assets/sugarcube/sugar_hand.png';
@@ -57,6 +58,28 @@ const guideMessages = {
     ]
   }
 };
+
+// OCR API 응답 데이터 인터페이스 정의 (예시)
+interface OcrAnalysisResult {
+  summary?: string;
+  ingredientTree?: unknown[]; // 실제 타입으로 대체 필요
+  // 기타 필요한 필드들...
+}
+
+interface NutritionSummaryResult {
+  Kcal?: number;
+  // 기타 영양 정보 필드들...
+}
+
+interface OcrData {
+  ingredient_analysis?: OcrAnalysisResult | null;
+  nutrition_analysis?: {
+    summary?: string;
+    nutritionSummary?: NutritionSummaryResult | null;
+    // 기타 필요한 필드들...
+  } | null;
+  // 기타 최상위 API 응답 필드들...
+}
 
 // Base64 문자열을 Blob 객체로 변환하는 헬퍼 함수
 async function base64ToBlob(base64: string, fileType: string): Promise<Blob> {
@@ -337,23 +360,169 @@ export default function OcrCameraPage() {
 
       console.log("OCR API 요청 (CloudFront URLs):", requestBody);
       const ocrResponse = await postOcrAnalysis(requestBody);
-      console.log("OCR API 호출 성공:", ocrResponse);
+      console.log("OCR API 전체 응답:", ocrResponse);
+      console.log("--- [Debug] actualData 추출 시작 ---");
+      if (ocrResponse && typeof ocrResponse === 'object' && ocrResponse !== null) {
+        console.log("ocrResponse keys:", Object.keys(ocrResponse));
+      } else {
+        console.log("ocrResponse가 객체가 아니거나 null입니다.");
+      }
+
+      let actualData: OcrData | undefined | null = null;
+      if (ocrResponse && typeof ocrResponse === 'object' && ocrResponse !== null) {
+        const responseObject = ocrResponse as Record<string, unknown>;
+
+        if (
+          responseObject.hasOwnProperty('data') &&
+          typeof responseObject.data === 'object' &&
+          responseObject.data !== null
+        ) {
+          console.log("ocrResponse.data에서 분석 데이터 추출 시도:", responseObject.data);
+          actualData = responseObject.data as OcrData;
+        } else if (
+          responseObject.hasOwnProperty('ingredient_analysis') ||
+          responseObject.hasOwnProperty('nutrition_analysis')
+        ) {
+          if (
+            (responseObject.hasOwnProperty('ingredient_analysis') && responseObject.ingredient_analysis !== undefined) ||
+            (responseObject.hasOwnProperty('nutrition_analysis') && responseObject.nutrition_analysis !== undefined)
+          ) {
+            console.log("ocrResponse에서 직접 분석 데이터 추출 시도:", responseObject);
+            actualData = responseObject as OcrData;
+          }
+        }
+      }
+
+      console.log("--- [Debug] actualData 추출 시도 후 ---");
+      if (!actualData) {
+        console.error("[!!! Critical !!!] 유효한 OCR 분석 데이터를 찾을 수 없거나 API 응답 형식이 예상과 다릅니다:", ocrResponse);
+        setError("OCR 분석 결과를 처리할 수 없습니다.\n응답 형식을 확인해주세요.");
+        setIsProcessing(false);
+        return;
+      }
+      console.log("최종 분석 데이터(actualData) 성공적으로 추출됨:", actualData);
+
+      const ingAnalysis = actualData.ingredient_analysis;
+      const nutAnalysis = actualData.nutrition_analysis;
+
+      // OCR 결과 유효성 검사 (actualData 사용)
+      if (ingAnalysis === null && nutAnalysis === null) {
+        console.warn("OCR 분석 결과, ingredient_analysis와 nutrition_analysis 모두 명시적으로 null입니다:", actualData);
+        setError("이미지 분석에 실패했습니다.\n두 정보 모두 인식되지 않았습니다.");
+        setIsProcessing(false);
+        return;
+      }
+
+      let isIngredientInvalid: boolean = false;
+      if (ingAnalysis) {
+        isIngredientInvalid = Boolean(
+          (typeof ingAnalysis.summary === 'string' &&
+            (ingAnalysis.summary.includes("불가능합니다") ||
+              ingAnalysis.summary.includes("정보가 없어") ||
+              ingAnalysis.summary.includes("제공되어 성분 정보가 없어"))) ||
+          (Array.isArray(ingAnalysis.ingredientTree) &&
+            ingAnalysis.ingredientTree.length === 0)
+        );
+        console.log("[Debug] Ingredient Analysis:", ingAnalysis.summary, "isInvalid:", isIngredientInvalid);
+      } else if (ingAnalysis === undefined && nutAnalysis?.summary?.includes("식품이 아닌")) {
+        isIngredientInvalid = true;
+        console.log("[Debug] Ingredient undefined, Nut non-food. isIngredientInvalid:", isIngredientInvalid);
+      } else if (ingAnalysis === undefined && nutAnalysis?.summary?.includes("비식품입니다")) {
+        isIngredientInvalid = true;
+        console.log("[Debug] Ingredient undefined, Nut non-food (bisikpum). isIngredientInvalid:", isIngredientInvalid);
+      } else {
+        console.log("[Debug] Ingredient Analysis: No specific invalid condition met or ingAnalysis is null/undefined.", ingAnalysis);
+      }
+
+
+      let isNutritionInvalid: boolean = false;
+      if (nutAnalysis) {
+        isNutritionInvalid = Boolean(
+          (typeof nutAnalysis.summary === 'string' &&
+            (nutAnalysis.summary.includes("식품이 아닌 제품입니다") ||
+              nutAnalysis.summary.includes("정보가 없는 식품이거나") ||
+              nutAnalysis.summary.includes("분석할 수 없습니다") ||
+              nutAnalysis.summary.includes("비식품입니다"))) ||
+          (nutAnalysis.nutritionSummary && typeof nutAnalysis.nutritionSummary.Kcal === 'number' &&
+            nutAnalysis.nutritionSummary.Kcal === 0 &&
+            (!nutAnalysis.summary || !nutAnalysis.summary.includes("영양 정보가 없는 식품이거나"))
+          )
+        );
+        console.log("[Debug] Nutrition Analysis:", nutAnalysis.summary, "isInvalid:", isNutritionInvalid);
+        if (nutAnalysis.nutritionSummary) {
+          console.log("[Debug] Nutrition Kcal:", nutAnalysis.nutritionSummary.Kcal);
+        }
+      } else if (nutAnalysis === undefined && ingAnalysis?.summary?.includes("불가능합니다")) {
+        isNutritionInvalid = true;
+        console.log("[Debug] Nutrition undefined, Ing impossible. isNutritionInvalid:", isNutritionInvalid);
+      } else {
+        console.log("[Debug] Nutrition Analysis: No specific invalid condition met or nutAnalysis is null/undefined.", nutAnalysis);
+      }
+
+      const finalIsIngredientInvalid = isIngredientInvalid;
+      const finalIsNutritionInvalid = isNutritionInvalid;
+      const bothAnalysesUndefined = ingAnalysis === undefined && nutAnalysis === undefined;
+
+      console.log("[Debug] Final Validation Check:", {
+        finalIsIngredientInvalid,
+        finalIsNutritionInvalid,
+        ingSummary: ingAnalysis?.summary,
+        nutSummary: nutAnalysis?.summary,
+        ingTreeLength: ingAnalysis?.ingredientTree?.length,
+        nutKcal: nutAnalysis?.nutritionSummary?.Kcal,
+        bothAnalysesUndefined
+      });
+
+      if (finalIsIngredientInvalid || finalIsNutritionInvalid || bothAnalysesUndefined) {
+        console.warn("OCR 분석 결과, 유효하지 않은 이미지로 판단됨 (최종 결정):", {
+          isIngredientInvalid: finalIsIngredientInvalid,
+          isNutritionInvalid: finalIsNutritionInvalid,
+          actualData
+        });
+        setError("이미지 인식에 실패했습니다.\n내용이 잘 보이도록 다시 촬영해주세요.");
+        setIsProcessing(false);
+        return;
+      }
+
+      if (ingAnalysis === undefined || nutAnalysis === undefined) {
+        if (!(ingAnalysis === null && nutAnalysis === null)) {
+          console.error("OCR API 응답 데이터에 주요 분석 필드(ingredient_analysis 또는 nutrition_analysis)가 누락되었습니다:", actualData);
+          setError("OCR 분석 정보가 완전하지 않습니다.\n다시 시도해주세요.");
+          setIsProcessing(false);
+          return;
+        }
+      }
+
+      console.log("OCR 분석 결과 유효함, /report로 이동");
       router.push('/report');
 
-    } catch (err: unknown) { // err 타입을 unknown으로 변경
+    } catch (err: unknown) {
       console.error("OCR 처리 중 오류 발생:", err);
       let errorMessage = "이미지 처리 중 알 수 없는 오류가 발생했습니다.";
 
       // Axios 에러인지 확인 (타입 가드)
       if (typeof err === 'object' && err !== null && 'response' in err) {
-        const axiosError = err as { response?: { data?: { message?: string }, status?: number } }; // 간단한 타입 단언
+        const axiosError = err as { response?: { data?: { message?: string }, status?: number } };
         console.error('OCR API 서버 오류 응답:', axiosError.response?.data);
-        errorMessage = axiosError.response?.data?.message || `서버 응답 오류: ${axiosError.response?.status}`;
-      } else if (typeof err === 'object' && err !== null && 'request' in err) { // Axios 요청 관련 에러
-        console.error('OCR API 응답 없음:', (err as { request?: unknown }).request); // any를 unknown으로 변경
-        errorMessage = "서버에서 응답이 없습니다. 네트워크 연결을 확인해주세요.";
-      } else if (err instanceof Error) { // 일반 JavaScript 오류
-        errorMessage = err.message || "이미지 처리 중 오류가 발생했습니다.";
+        // 서버에서 내려주는 메시지가 있다면 그것을 우선 사용하고, 없다면 기본 메시지 사용
+        const serverMessage = axiosError.response?.data?.message;
+        if (serverMessage) {
+          // 서버 메시지에 이미 줄바꿈이 있거나, 한 줄로 표시하는게 나을 수 있음
+          // 필요하다면 여기서 serverMessage를 가공하거나, 줄바꿈을 추가할지 결정
+          errorMessage = serverMessage;
+        } else {
+          errorMessage = `서버 응답 오류: ${axiosError.response?.status}\n잠시 후 다시 시도해주세요.`; // 줄바꿈 추가
+        }
+      } else if (typeof err === 'object' && err !== null && 'request' in err) {
+        console.error('OCR API 응답 없음:', (err as { request?: unknown }).request);
+        errorMessage = "서버에서 응답이 없습니다.\n네트워크 연결을 확인해주세요."; // 줄바꿈 추가
+      } else if (err instanceof Error) {
+        // uploadImageAndGetCloudFrontUrl 에서 throw new Error(customMessage) 한 경우 등
+        // 이미 err.message에 포함되어 있을 수 있으므로, 여기서는 그대로 사용하거나, 필요시 추가
+        errorMessage = err.message; // 필요하다면 여기에 추가 로직
+        // 예: if (!err.message.includes('\n')) errorMessage += "\n다시 시도해주세요.";
+      } else {
+        errorMessage = "이미지 처리 중 알 수 없는 오류가 발생했습니다.\n다시 시도해주세요."; // 줄바꿈 추가
       }
       setError(errorMessage);
     } finally {
@@ -408,8 +577,8 @@ export default function OcrCameraPage() {
 
   return (
     <div className="flex flex-col h-screen w-screen bg-black text-white">
-      {/* 상단 바: X 버튼, 촬영 가이드 버튼 */}
-      {!isProcessing && (
+      {/* 상단 바: X 버튼, 촬영 가이드 버튼 - 에러 없을 때만 표시 */}
+      {!isProcessing && !error && (
         <div className="h-16 flex justify-between items-center p-4 z-10">
           <button className="p-2" onClick={handleCloseClick}>
             <X size={28} weight="bold" />
@@ -426,10 +595,11 @@ export default function OcrCameraPage() {
           autoPlay
           playsInline
           muted
-          className="absolute inset-0 w-full h-full object-cover"
+          className={`absolute inset-0 w-full h-full object-cover ${error ? 'filter blur-sm' : ''}`}
         />
 
-        {isGuideVisible && !isProcessing && (
+        {/* 가이드 UI (isGuideVisible && !isProcessing && !error) */}
+        {isGuideVisible && !isProcessing && !error && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/75 z-20 p-8 text-center">
             {currentPhotoStep === 'ingredient' ? (
               <ListBullets size={48} weight="bold" className="mb-6 text-[var(--color-maincolor)]" />
@@ -454,12 +624,11 @@ export default function OcrCameraPage() {
                       </>
                     );
                   }
-                  return text; // 혹시 문구가 바뀌어 phraseToBold가 없는 경우 원래 텍스트 반환
+                  return text;
                 })() :
                 guideMessages[currentPhotoStep].main
               }
             </p>
-
             {Array.isArray(guideMessages[currentPhotoStep].sub) ? (
               <div className="mt-6 flex flex-col items-center w-full max-w-xs px-4">
                 <div className="flex items-center mb-2">
@@ -477,7 +646,6 @@ export default function OcrCameraPage() {
                 {guideMessages[currentPhotoStep].sub as string}
               </p>
             )}
-
             <button
               onClick={() => setIsGuideVisible(false)}
               className="mt-8 px-4 py-2 bg-[var(--color-maincolor)] hover:bg-[var(--color-maincolor-100)] rounded text-white"
@@ -487,10 +655,9 @@ export default function OcrCameraPage() {
           </div>
         )}
 
-        {/* 미리보기 화면 UI */}
-        {showPreviewScreen && previewImageSrc && (
+        {/* 미리보기 화면 UI (showPreviewScreen && previewImageSrc && !error) */}
+        {showPreviewScreen && previewImageSrc && !error && (
           <div className="absolute inset-0 z-30 flex flex-col bg-black">
-            {/* <img src={previewImageSrc} alt="촬영된 이미지 미리보기" className="flex-grow object-contain" /> */}
             <div className="relative flex-grow">
               <Image src={previewImageSrc} alt="촬영된 이미지 미리보기" layout="fill" objectFit="contain" />
             </div>
@@ -519,7 +686,8 @@ export default function OcrCameraPage() {
           </div>
         )}
 
-        {isProcessing && (
+        {/* 처리 중 애니메이션 UI (isProcessing && !error) */}
+        {isProcessing && !error && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/85 z-30 p-8">
             {/* 캐릭터 애니메이션 컨테이너 */}
             <div className="relative flex flex-col items-center justify-center mb-3"> {/* 여백 mb-3 추가 */}
@@ -565,15 +733,59 @@ export default function OcrCameraPage() {
           </div>
         )}
 
+        {/* 오류 메시지 UI (error) - 최상위로 올라옴 */}
         {error && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-75 z-50 p-4">
-            <p className="text-center">{error}</p>
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-85 z-50 p-6 text-center">
+            {/* 캐릭터 이미지와 애니메이션을 위한 motion.div */}
+            <motion.div
+              initial={{ opacity: 0, y: -10 }} // 나타날 때 살짝 위에서 내려오는 효과
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="w-32 h-32 relative mb-4" // 크기를 w-32 h-32로 증가
+            >
+              {/* 몸 살짝 떨기 애니메이션 적용 */}
+              <motion.div
+                animate={{
+                  rotate: [0, -1.5, 1.5, -1.5, 1.5, 0], // 좀 더 명확한 떨림
+                }}
+                transition={{
+                  duration: 0.7, // 약간 빠르게
+                  repeat: Infinity,
+                  repeatType: 'loop',
+                  ease: "easeInOut"
+                }}
+                style={{ width: '100%', height: '100%' }} // 부모 div 크기에 맞춤
+              >
+                <Image
+                  src="/assets/quiz/sugar_X.png"
+                  alt="인식 실패 캐릭터"
+                  layout="fill"
+                  objectFit="contain"
+                />
+              </motion.div>
+            </motion.div>
+
+            <p className="text-lg text-white mb-6 whitespace-pre-line">
+              {error}
+            </p>
+            <button
+              onClick={() => {
+                setError(null);
+                setCurrentPhotoStep('ingredient');
+                setIngredientPhoto(null);
+                setNutritionPhoto(null);
+                setIsGuideVisible(true);
+              }}
+              className="px-6 py-3 bg-[var(--color-maincolor)] hover:bg-[var(--color-maincolor-100)] rounded-lg text-white font-semibold text-lg"
+            >
+              다시 시도
+            </button>
           </div>
         )}
       </div>
 
-      {/* 하단 컨트롤 바: 앨범, 촬영 버튼 등 */}
-      {!isProcessing && (
+      {/* 하단 컨트롤 바: 앨범, 촬영 버튼 등 - 에러 없을 때만 표시 */}
+      {!isProcessing && !error && (
         <div className="h-28 flex justify-between items-center px-8 py-4 z-10">
           <button className="p-2" onClick={handleAlbumClick}>
             <ImageIcon size={32} />
@@ -581,7 +793,7 @@ export default function OcrCameraPage() {
           <button
             className="w-16 h-16 rounded-full border-4 border-white bg-transparent flex items-center justify-center active:bg-white/20"
             onClick={handleCapture}
-            disabled={isProcessing} // 이 disabled는 isProcessing이 true일 때 적용되므로, 부모가 숨겨지면 의미가 없어지지만, 일단 유지
+            disabled={isProcessing} // isProcessing일 때 이미 비활성화
           >
             <div className="w-12 h-12 rounded-full bg-white"></div>
           </button>
@@ -595,7 +807,7 @@ export default function OcrCameraPage() {
         ref={fileInputRef}
         onChange={handleFileChange}
         className="hidden"
-        disabled={isProcessing} // 처리 중일 때 파일 입력 비활성화
+        disabled={isProcessing || Boolean(error)} // error 상태일 때도 파일 입력 비활성화
       />
       {/* 캡처용 숨겨진 캔버스 */}
       <canvas ref={canvasRef} className="hidden"></canvas>

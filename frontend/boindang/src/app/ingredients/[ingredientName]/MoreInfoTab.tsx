@@ -30,9 +30,9 @@ const MoreInfoTab: React.FC<MoreInfoTabProps> = ({ info }) => {
                 <tr>
                   <th scope="col" className="px-4 py-3">성분명</th>
                   <th scope="col" className="px-4 py-3">GI</th>
-                  <th scope="col" className="px-4 py-3">칼로리(kcal/g)</th>
+                  <th scope="col" className="px-4 py-3">칼로리</th>
                   <th scope="col" className="px-4 py-3">감미도(설탕대비)</th>
-                  <th scope="col" className="px-4 py-3">위험도</th>
+                  <th scope="col" className="px-4 py-3 whitespace-nowrap">위험도</th>
                 </tr>
               </thead>
               <tbody>
@@ -44,7 +44,7 @@ const MoreInfoTab: React.FC<MoreInfoTabProps> = ({ info }) => {
                     <td className="px-4 py-3">{item.gi}</td>
                     <td className="px-4 py-3">{item.calories}</td>
                     <td className="px-4 py-3">{item.sweetness}</td>
-                    <td className="px-4 py-3">{item.riskLevel}</td>
+                    <td className="px-4 py-3 whitespace-nowrap">{item.riskLevel}</td>
                   </tr>
                 ))}
               </tbody>
