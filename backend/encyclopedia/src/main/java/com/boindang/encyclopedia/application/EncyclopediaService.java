@@ -54,15 +54,18 @@ public class EncyclopediaService {
                 .map(EncyclopediaSearchResponse::from)
                 .toList();
 
+            // ✅ 정확 검색도 카운트 집계
+            popularIngredientService.incrementSearchCount(query);
+
             result.put("suggestedName", null);
             result.put("results", exactResults);
             return result;
         }
 
         try {
-            // ✅ 1단계: prefixQuery (정확한 접두어 자동완성)
+            // ✅ 1단계: prefixQuery (자동완성)
             SearchSourceBuilder prefixBuilder = new SearchSourceBuilder()
-                .query(QueryBuilders.prefixQuery("name.keyword", query))  // keyword 필드 기준
+                .query(QueryBuilders.prefixQuery("name.keyword", query))
                 .size(20);
 
             SearchResponse prefixResponse = client.search(
@@ -75,12 +78,15 @@ public class EncyclopediaService {
                 .collect(Collectors.toList());
 
             if (!prefixResults.isEmpty()) {
+                // ✅ prefix 검색어도 그대로 카운트
+                popularIngredientService.incrementSearchCount(query);
+
                 result.put("suggestedName", null);
                 result.put("results", prefixResults);
                 return result;
             }
 
-            // ✅ 2단계: matchQuery + fuzziness (오타 대응)
+            // ✅ 2단계: 오타 대응 fuzzy match
             SearchSourceBuilder fuzzyBuilder = new SearchSourceBuilder()
                 .query(QueryBuilders.matchQuery("name", query)
                     .fuzziness(Fuzziness.TWO)
@@ -100,12 +106,18 @@ public class EncyclopediaService {
 
             if (!fuzzyResults.isEmpty()) {
                 String accurateName = fuzzyResults.get(0).getName();
+
+                // ✅ 추천어로 카운트
+                popularIngredientService.incrementSearchCount(accurateName);
+
                 result.put("suggestedName", !accurateName.equalsIgnoreCase(query) ? accurateName : null);
                 result.put("results", fuzzyResults);
                 return result;
             }
 
-            // ✅ 3단계: DB fallback
+            // ✅ fallback도 검색어 그대로 카운트
+            popularIngredientService.incrementSearchCount(query);
+
             List<EncyclopediaSearchResponse> fallbackResults = encyclopediaRepository.findByNameContaining(query)
                 .stream()
                 .map(EncyclopediaSearchResponse::from)
