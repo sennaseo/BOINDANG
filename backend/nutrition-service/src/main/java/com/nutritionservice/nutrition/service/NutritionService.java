@@ -2,7 +2,6 @@ package com.nutritionservice.nutrition.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nutritionservice.common.service.EurekaService;
-import com.nutritionservice.nutrition.client.EncyclopediaClient;
 import com.nutritionservice.nutrition.model.document.*;
 import com.nutritionservice.nutrition.model.dto.analysis.NutrientResult;
 import com.nutritionservice.nutrition.model.dto.external.*;
@@ -22,7 +21,6 @@ public class NutritionService {
 
     private final ProductNutritionRepository productRepo;
     private final NutritionReportRepository reportRepo;
-    private final EncyclopediaClient encyclopediaClient;
 
     private final RestClient restClient;
     private final EurekaService eurekaService;
