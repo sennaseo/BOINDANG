@@ -59,11 +59,15 @@ async def ask_gpt_ingredient(ingredient_text: str) -> dict:
         분류 항목: 감미료, 산도조절제, 유화제, 점질제, 착향료, 착색료, 보존제, 산화방지제, 팽창제, 염류, 보충제, 기타
         괄호 안 용도 설명은 여기에 반영할 것
 
+        4. summary
+        전체 원재료 구성의 영양학적 특성을 한 줄로 요약할 것 (예: "감미료와 정제유지가 다량 포함되어 혈당과 체지방 증가에 주의가 필요합니다.")
+        
         결과는 아래 JSON 형식만 반환할 것:
         {
           "basicInfo": {...},
           "ingredientTree": [...],
-          "categorizedIngredients": {...}
+          "categorizedIngredients": {...},
+          "summary": "..."
         }
         """
     )
@@ -95,13 +99,22 @@ async def ask_gpt_nutrition(nutrition_text: str) -> dict:
     1. nutritionSummary
     - carbohydrate, protein, fat 구조로 나눌 것
     - 각 항목: gram, ratio 포함
-    - fat은 sub 항목(saturatedFat, transFat, unsaturatedFat) 포함 가능
 
+    2. summary
+    - 해당 제품의 영양학적 특성을 한 문장으로 요약 (예: "지방 함량이 높은 고열량 식품입니다.")
+    
     아래 형식의 JSON만 반환하라:
     {
       "nutritionSummary": {
         "Kcal": ...,
-        "carbohydrate": { "gram": ..., "ratio": ... },
+        "carbohydrate": {
+          "gram": ...,
+          "ratio": ...,
+          "sub": {
+            "sugar": { "gram": ..., "ratio": ... },
+            "fiber": { "gram": ..., "ratio": ... }
+          }
+        },
         "protein": { "gram": ..., "ratio": ... },
         "fat": {
           "gram": ..., "ratio": ...,
@@ -113,7 +126,8 @@ async def ask_gpt_nutrition(nutrition_text: str) -> dict:
         },
         "sodium": { "mg": ..., "ratio": ... },
         "cholesterol": { "mg": ..., "ratio": ... }
-      }
+      },
+      "summary": "..."
     }
     """
     )

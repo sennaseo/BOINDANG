@@ -16,9 +16,13 @@ print("DB name:", db.name)
 
 def save_product(product_name, result):
     print("🧪 save_product() 함수 시작")
-    db.product.insert_one({
-        "name": product_name,
-        "result": result
-    })
-
-
+    db.product.update_one(
+        {"name": product_name},  # 조건: 이름이 같은 문서
+        {
+            "$set": {
+                "result": result,
+                "updatedAt": datetime.utcnow()
+            }
+        },
+        upsert=True
+    )
