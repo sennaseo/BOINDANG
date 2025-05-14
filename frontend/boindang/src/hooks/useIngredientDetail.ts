@@ -96,8 +96,10 @@ export default function useIngredientDetail(ingredientName: string | undefined):
       } else if (err instanceof Error) {
         message = err.message;
       }
-      setError(message);
-      console.error("Failed to fetch ingredient details in hook:", err);
+      // setError(message); // 기존 코드 주석 처리
+      console.error(`[임시 수정] UI 오류를 표시하지 않습니다. 원래 오류 (${ingredientName}): ${message}`, err); // 원래 오류는 콘솔에 기록
+      setIngredientDetail(null); // 데이터는 null로 설정
+      setError(null);            // UI를 가리는 error 상태를 null로 설정하여 오류 화면 방지
     }
     setIsLoading(false);
   }, [ingredientName]);
