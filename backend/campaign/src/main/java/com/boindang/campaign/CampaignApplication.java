@@ -1,5 +1,7 @@
 package com.boindang.campaign;
 
+import java.util.TimeZone;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -13,6 +15,7 @@ import io.swagger.v3.oas.annotations.info.Info;
 public class CampaignApplication {
 
 	public static void main(String[] args) {
+		TimeZone.setDefault(TimeZone.getTimeZone("Asia/Seoul"));
 		SpringApplication.run(CampaignApplication.class, args);
 	}
 
