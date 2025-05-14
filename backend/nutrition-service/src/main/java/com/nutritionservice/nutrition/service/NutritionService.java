@@ -8,7 +8,7 @@ import com.nutritionservice.nutrition.model.dto.analysis.NutrientResult;
 import com.nutritionservice.nutrition.model.dto.external.*;
 import com.nutritionservice.nutrition.repository.NutritionReportRepository;
 import com.nutritionservice.nutrition.repository.ProductNutritionRepository;
-import jakarta.annotation.PostConstruct;
+import com.nutritionservice.nutrition.util.UserTypeConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
@@ -27,7 +27,7 @@ public class NutritionService {
     private final RestClient restClient;
     private final EurekaService eurekaService;
 
-    @PostConstruct
+//    @PostConstruct
     public void testEncyclopediaApi() {
         List<String> testIngredients = List.of("말티톨", "말토덱스트린", "스테비아");
         EncyclopediaRequest request = new EncyclopediaRequest(testIngredients, "dieter");
@@ -63,7 +63,7 @@ public class NutritionService {
         }
     }
 
-    public NutritionReport analyzeProductForUser(String userId, String productId) {
+    public NutritionReport analyzeProductForUser(UserInfo userInfo, String productId) {
         // 1. 제품 조회
         ProductNutrition product = productRepo.findById(productId)
                 .orElseThrow(() -> new RuntimeException("해당 제품이 존재하지 않습니다."));
@@ -81,22 +81,22 @@ public class NutritionService {
             throw new RuntimeException("제품에 영양 또는 성분 분석 정보가 부족합니다.");
         }
 
-        // 2. 사용자 정보 (임시 하드코딩)
-        UserInfo user = new UserInfo(userId, "F", 165, 60.0, "다이어트");
+        // 사용자 기준 영양소 비율/등급 계산
+        Map<String, NutrientResult> ratios = AnalysisHelper.calculateRatios(product, userInfo);
 
-        // 3. 사용자 기준 영양소 비율/등급 계산
-        Map<String, NutrientResult> ratios = AnalysisHelper.calculateRatios(product, user);
-
-        // 4. 제품 성분 트리에서 전체 원재료 수집
+        // 제품 성분 트리에서 전체 원재료 수집
         List<String> ingredientNames = new ArrayList<>();
         for (IngredientNode node : product.getResult().getIngredientAnalysis().getIngredientTree()) {
             collectIngredientNames(node, ingredientNames);
         }
 
-        // 5. 백과사전 API 호출
-        EncyclopediaRequest encyclopediaRequest = new EncyclopediaRequest(ingredientNames, "dieter");
-        String token = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMCIsImlhdCI6MTc0NzExMzM3MiwiZXhwIjoxNzQ3MzcyNTcyfQ.MQNJBZGWVnwKebMxLSvW-dgKOblln1jwKvg5ieVyJ4M";  // 실제 토큰 입력 필요
+        // 백과사전 API 호출
+        String userType = UserTypeConverter.toEnglish(userInfo.getUserType());
 
+        // 백과사전 requestDto
+        EncyclopediaRequest encyclopediaRequest = new EncyclopediaRequest(ingredientNames, userType);
+
+//        String token = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMCIsImlhdCI6MTc0NzExMzM3MiwiZXhwIjoxNzQ3MzcyNTcyfQ.MQNJBZGWVnwKebMxLSvW-dgKOblln1jwKvg5ieVyJ4M";  // 실제 토큰 입력 필요
 //        EncyclopediaResponse encyclopediaResponse = encyclopediaClient.getIngredientDetails(token, encyclopediaRequest);
 
         EncyclopediaResponse encyclopediaResponse;
@@ -154,7 +154,7 @@ public class NutritionService {
 
         // 8. NutritionReport 구성
         NutritionReport report = NutritionReport.builder()
-                .userId(userId)
+                .userId(userInfo.getId())
                 .productId(productId)
                 .productName(product.getName())
                 .analyzedAt(LocalDateTime.now())
@@ -168,7 +168,7 @@ public class NutritionService {
 
         try {
             // 9. 기존 리포트 존재하면 update, 없으면 insert
-            Optional<NutritionReport> existing = reportRepo.findByUserId(userId).stream()
+            Optional<NutritionReport> existing = reportRepo.findByUserId(userInfo.getId()).stream()
                     .filter(r -> r.getProductId().equals(productId))
                     .findFirst();
 

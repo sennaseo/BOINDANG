@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 @UtilityClass
 public class NutritionReportMapper {
 
-    public static NutritionReportResponse from(NutritionReport report, UserInfo user) {
+    public static NutritionReportResponse from(NutritionReport report) {
         return NutritionReportResponse.builder()
                 .productName(report.getProductName())
                 .kcal(report.getKcal())
