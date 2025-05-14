@@ -22,7 +22,7 @@ public class NutritionReportMapper {
                 .nutrientRatios(toRatios(report.getRatios()))
                 .nutrientDetails(toDetails(report.getRatios()))
 
-                .ingredients(report.getIngredients())
+                .categorizedIngredients(report.getCategorizedIngredients())
                 .topRisks(report.getTopRisks())
                 .build();
     }
@@ -54,3 +54,5 @@ public class NutritionReportMapper {
         return r != null ? r.getValue() : 0.0;
     }
 }
+
+

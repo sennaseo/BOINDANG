@@ -12,10 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -86,8 +83,34 @@ public class NutritionService {
         List<IngredientDetail> ingredientWarnings = encyclopediaResponse.getData().getIngredients();
         List<TopRisk> topRisks = encyclopediaResponse.getData().getTopRisks();
 
-        // 6. 사용자 유형 경고 메시지
-//        List<String> userTypeWarnings = userTypeWarningService.generateWarnings(user, ratios);
+        // 추가된 부분
+        Map<String, List<String>> categorized = product.getResult()
+                .getIngredientAnalysis()
+                .getCategorizedIngredients();
+
+        List<IngredientDetail> allDetails = encyclopediaResponse.getData().getIngredients();
+
+        Map<String, List<IngredientDetail>> categorizedMap = new LinkedHashMap<>();
+
+        List<String> orderedCategories = List.of(
+                "감미료", "산도조절제", "유화제", "점질제", "착향료", "착색료", "보존제", "산화방지제", "팽창제", "기타"
+        );
+
+        for (String category : orderedCategories) {
+            List<String> namesInCategory = categorized.getOrDefault(category, List.of());
+
+            List<IngredientDetail> matched = new ArrayList<>();
+            for (String name : namesInCategory) {
+                allDetails.stream()
+                        .filter(detail -> detail.getName().equals(name))
+                        .findFirst()
+                        .ifPresent(matched::add);
+            }
+
+            // ✅ 무조건 카테고리 키를 넣고, 값은 비어있어도 됨
+            categorizedMap.put(category, matched);
+        }
+
 
         // 7. 제품 분석 summary 저장
         Nutrition nutrition = product.getResult().getNutritionAnalysis().getNutrition();
@@ -104,7 +127,7 @@ public class NutritionService {
                 .analyzedAt(LocalDateTime.now())
                 .kcal(kcal)
                 .ratios(ratios)
-                .ingredients(ingredientWarnings)
+                .categorizedIngredients(categorizedMap)
                 .topRisks(topRisks)
                 .nutritionSummary(nutritionSummary)
                 .ingredientSummary(ingredientSummary) // 추가
