@@ -19,6 +19,7 @@ import com.boindang.community.service.PostService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -50,7 +51,7 @@ public class PostController {
 	@PostMapping
 	public BaseResponse<CreatePostResponse> createPost(
 		@RequestHeader("X-User-Id") String userId,
-		@RequestBody CreatePostRequest request
+		@RequestBody @Valid CreatePostRequest request
 	) {
 		Long postId = postService.createPost(Long.parseLong(userId), request);
 		return BaseResponse.success(200, "게시글 작성이 완료되었습니다."

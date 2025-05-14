@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
 import com.boindang.community.client.UserClient;
+import com.boindang.community.common.exception.CommunityException;
+import com.boindang.community.common.exception.ErrorCode;
 import com.boindang.community.dto.request.CreatePostRequest;
 import com.boindang.community.dto.response.PostResponse;
 import com.boindang.community.entity.Post;
@@ -72,7 +74,7 @@ public class PostService {
 			.orElseThrow(() -> new RuntimeException("존재하지 않는 게시글입니다."));
 
 		if (!post.getUserId().equals(userId)) {
-			throw new RuntimeException("본인의 게시글만 삭제할 수 있습니다.");
+			throw new CommunityException(ErrorCode.FORBIDDEN_DELETE_POST);
 		}
 
 		post.softDelete();
