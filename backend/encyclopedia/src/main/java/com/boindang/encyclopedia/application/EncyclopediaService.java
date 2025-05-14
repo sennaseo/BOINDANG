@@ -48,7 +48,6 @@ public class EncyclopediaService {
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("originalQuery", query);
 
-        // DB fallback
         if (!flag) {
             List<EncyclopediaSearchResponse> exactResults = encyclopediaRepository.findByNameContaining(query)
                 .stream()
@@ -61,53 +60,59 @@ public class EncyclopediaService {
         }
 
         try {
-            // ✅ 1차: 정확한 접두어 검색 (예: "말" → "말티톨", "말토덱스트린")
-            SearchSourceBuilder builder = new SearchSourceBuilder()
-                .query(QueryBuilders.prefixQuery("name", query))
+            // ✅ 1단계: prefixQuery (정확한 접두어 자동완성)
+            SearchSourceBuilder prefixBuilder = new SearchSourceBuilder()
+                .query(QueryBuilders.prefixQuery("name.keyword", query))  // keyword 필드 기준
                 .size(20);
 
-            SearchResponse response = client.search(
-                new SearchRequest("ingredients").source(builder),
+            SearchResponse prefixResponse = client.search(
+                new SearchRequest("ingredients").source(prefixBuilder),
                 RequestOptions.DEFAULT
             );
 
-            List<EncyclopediaSearchResponse> results = Arrays.stream(response.getHits().getHits())
+            List<EncyclopediaSearchResponse> prefixResults = Arrays.stream(prefixResponse.getHits().getHits())
                 .map(hit -> EncyclopediaSearchResponse.from2(hit.getSourceAsMap()))
                 .collect(Collectors.toList());
 
-            if (!results.isEmpty()) {
+            if (!prefixResults.isEmpty()) {
                 result.put("suggestedName", null);
-                result.put("results", results);
+                result.put("results", prefixResults);
                 return result;
             }
 
-            // ✅ 2차: Suggest API (오타 교정)
-            SearchSourceBuilder suggestSource = new SearchSourceBuilder()
-                .suggest(new SuggestBuilder()
-                    .addSuggestion("name-suggest", SuggestBuilders
-                        .completionSuggestion("suggest")
-                        .prefix(query, Fuzziness.TWO)
-                        .size(1)));
+            // ✅ 2단계: matchQuery + fuzziness (오타 대응)
+            SearchSourceBuilder fuzzyBuilder = new SearchSourceBuilder()
+                .query(QueryBuilders.matchQuery("name", query)
+                    .fuzziness(Fuzziness.TWO)
+                    .prefixLength(0)
+                    .maxExpansions(50)
+                    .fuzzyTranspositions(true))
+                .size(20);
 
-            SearchResponse suggestResponse = client.search(
-                new SearchRequest("ingredients").source(suggestSource),
+            SearchResponse fuzzyResponse = client.search(
+                new SearchRequest("ingredients").source(fuzzyBuilder),
                 RequestOptions.DEFAULT
             );
 
-            CompletionSuggestion suggestion = suggestResponse.getSuggest().getSuggestion("name-suggest");
+            List<EncyclopediaSearchResponse> fuzzyResults = Arrays.stream(fuzzyResponse.getHits().getHits())
+                .map(hit -> EncyclopediaSearchResponse.from2(hit.getSourceAsMap()))
+                .collect(Collectors.toList());
 
-            if (suggestion != null && !suggestion.getEntries().isEmpty()) {
-                List<CompletionSuggestion.Entry.Option> options = suggestion.getEntries().get(0).getOptions();
-                if (!options.isEmpty()) {
-                    String suggested = options.get(0).getText().string();
-                    result.put("suggestedName", suggested);
-                    return searchWithSuggestion(suggested, false); // 🔁 재귀로 DB fallback 재조회
-                }
+            if (!fuzzyResults.isEmpty()) {
+                String accurateName = fuzzyResults.get(0).getName();
+                result.put("suggestedName", !accurateName.equalsIgnoreCase(query) ? accurateName : null);
+                result.put("results", fuzzyResults);
+                return result;
             }
 
-            // ✅ 3차: fallback – 아무것도 안 나왔을 때
+            // ✅ 3단계: DB fallback
+            List<EncyclopediaSearchResponse> fallbackResults = encyclopediaRepository.findByNameContaining(query)
+                .stream()
+                .map(EncyclopediaSearchResponse::from)
+                .toList();
+
             result.put("suggestedName", null);
-            result.put("results", Collections.emptyList());
+            result.put("results", fallbackResults);
             return result;
 
         } catch (Exception e) {
@@ -115,8 +120,6 @@ public class EncyclopediaService {
             throw new IngredientException(ErrorCode.INGREDIENT_NOT_FOUND);
         }
     }
-
-
 
     public EncyclopediaDetailResponse getIngredientDetail(String id) {
         IngredientDictionary ingredient = encyclopediaRepository.findById(id)
