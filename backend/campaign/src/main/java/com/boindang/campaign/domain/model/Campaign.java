@@ -79,6 +79,13 @@ public class Campaign {
         return CampaignStatus.OPEN;
     }
 
+    public CampaignStatus calculateAndSyncStatus(LocalDateTime now) {
+        CampaignStatus newStatus = calculateStatus(now);
+        if (this.status != newStatus) {
+            this.status = newStatus;
+        }
+        return newStatus;
+    }
 
     public void increaseApplicant() {
         if (currentApplicants >= capacity) {
