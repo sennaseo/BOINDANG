@@ -10,12 +10,12 @@ import org.bson.types.ObjectId;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-//@Document("product_nutrition")
 @Document("product")
 public class ProductNutrition {
-
     @Id
     private ObjectId id;
     private String name;
     private ProductResult result;
 }
+
+

@@ -1,22 +1,18 @@
 package com.nutritionservice.nutrition.service;
 
-import com.nutritionservice.nutrition.model.document.NutritionAnalysis;
-import com.nutritionservice.nutrition.model.document.NutritionReport;
-import com.nutritionservice.nutrition.model.document.NutritionSummary;
+import com.nutritionservice.nutrition.model.document.Nutrition;
 import com.nutritionservice.nutrition.model.document.ProductNutrition;
 import com.nutritionservice.nutrition.model.dto.analysis.NutrientResult;
 import com.nutritionservice.nutrition.model.dto.external.UserInfo;
-import com.nutritionservice.nutrition.repository.NutritionReportRepository;
 import com.nutritionservice.nutrition.util.NutrientGradeRule;
 import com.nutritionservice.nutrition.util.NutrientGradeRule.UserType;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
 
 public class AnalysisHelper {
 
     public static Map<String, NutrientResult> calculateRatios(ProductNutrition product, UserInfo user) {
-        NutritionSummary ns = product.getResult().getNutrition_analysis().getNutritionSummary();
+        Nutrition ns = product.getResult().getNutritionAnalysis().getNutrition();
         UserType userType = UserType.valueOf(user.getUserType());
 
         Map<String, NutrientResult> result = new HashMap<>();

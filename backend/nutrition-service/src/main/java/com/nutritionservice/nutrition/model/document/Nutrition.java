@@ -7,7 +7,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class NutritionSummary {
+public class Nutrition {
     private Integer Kcal;
     private Nutrient protein;
     private Nutrient carbohydrate;

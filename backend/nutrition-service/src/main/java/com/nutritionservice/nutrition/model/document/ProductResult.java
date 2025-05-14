@@ -8,7 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class ProductResult {
-    private IngredientAnalysis ingredient_analysis;
-    private NutritionAnalysis nutrition_analysis;
+    private IngredientAnalysis ingredientAnalysis;
+    private NutritionAnalysis nutritionAnalysis;
 }
 
