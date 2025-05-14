@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
 import com.boindang.community.dto.response.ApiResponse;
+import com.boindang.community.dto.response.UserResponse;
 import com.boindang.community.service.EurekaService;
 
 @Slf4j
@@ -23,12 +24,12 @@ public class UserClient {
 
 	public String getUsernameById(Long userId) {
 		try {
-			String url = eurekaService.getUrl("BOINDANG-USER") + "me";
-			ApiResponse<String> apiResponse = restClient.get()
+			String url = eurekaService.getUrl("BOINDANG-USER") + "users/" + userId;
+			ApiResponse<UserResponse> apiResponse = restClient.get()
 				.uri(url)
 				.retrieve()
 				.body(new ParameterizedTypeReference<>() {});
-			return apiResponse.getResult();
+			return apiResponse.getResult().getUsername();
 		} catch (Exception e) {
 			throw new RuntimeException("유저 이름 조회 실패: " + e.getMessage(), e);
 		}
