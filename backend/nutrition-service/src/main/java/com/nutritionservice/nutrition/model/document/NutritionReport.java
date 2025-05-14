@@ -30,7 +30,7 @@ public class NutritionReport {
     private int kcal;
     private Map<String, NutrientResult> ratios;
 
-    private List<IngredientDetail> ingredients;
+    private Map<String, List<IngredientDetail>> categorizedIngredients; // ✅ 추가
     private List<TopRisk> topRisks;
 
     private String nutritionSummary;

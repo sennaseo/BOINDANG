@@ -2,12 +2,10 @@ package com.nutritionservice.nutrition.model.dto.response;
 
 import com.nutritionservice.nutrition.model.dto.external.IngredientDetail;
 import com.nutritionservice.nutrition.model.dto.external.TopRisk;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @Builder
@@ -24,8 +22,10 @@ public class NutritionReportResponse {
     private List<NutrientRatio> nutrientRatios;   // 탄단지 비율
     private List<NutrientDetail> nutrientDetails; // 각 성분 등급
 
-    private List<IngredientDetail> ingredients;   // 원재료 정보 리스트
+    @Setter
+    private Map<String, List<IngredientDetail>> categorizedIngredients; // ✅ 카테고리별 원재료 상세 리스트
     private List<TopRisk> topRisks;               // 위험 리스트
+
 
     @Getter
     @Builder
