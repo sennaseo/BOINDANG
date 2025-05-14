@@ -192,7 +192,7 @@ public interface CampaignApi {
 		@PathVariable("campaignId") Long campaignId,
 
 		@Parameter(description = "사용자 ID", required = true)
-		@RequestHeader("X-USER-ID") String userId
+		@RequestHeader("X-User-Id") String userId
 	);
 
 	@Operation(
@@ -231,7 +231,7 @@ public interface CampaignApi {
 	@GetMapping("/my-applications")
 	BaseResponse<List<MyApplicationResponse>> getMyApplications(
 		@Parameter(description = "사용자 ID", required = true)
-		@RequestHeader("X-USER-ID") String userId
+		@RequestHeader("X-User-Id") String userId
 	);
 
 }
