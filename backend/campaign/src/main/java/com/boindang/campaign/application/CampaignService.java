@@ -30,39 +30,53 @@ public class CampaignService {
 	private final CampaignApplicationRepository applicationRepository;
 
 	public CampaignListResponse getCampaigns(String status, int size, int page) {
-		// 전체 목록을 불러오고
+		// 전체 데이터 조회
 		List<Campaign> allCampaigns = campaignRepository.findAll();
 
-		// 상태별로 필터링 및 정렬
-		List<Campaign> sorted = allCampaigns.stream()
-			.sorted(Comparator.comparing((Campaign c) -> {
-				// 상태 우선순위: 진행중(0), 모집예정(1), 종료(2)
-				return switch (c.getStatus()) {
-					case OPEN -> 0;
-					case PENDING -> 1;
-					case CLOSED -> 2;
+		// 상태 필터링
+		List<Campaign> filtered = allCampaigns.stream()
+			.filter(campaign -> {
+				if (status == null) return true;
+				return switch (status) {
+					case "진행중" -> campaign.getStatus() == CampaignStatus.OPEN;
+					case "모집 예정" -> campaign.getStatus() == CampaignStatus.PENDING;
+					case "종료" -> campaign.getStatus() == CampaignStatus.CLOSED;
+					default -> throw new IllegalArgumentException("유효하지 않은 상태입니다.");
 				};
-			}).thenComparing(c -> {
-				// 진행중 상태일 경우 마감일 빠른 순
-				if (c.getStatus() == CampaignStatus.OPEN) {
-					return c.getEndDate();
-				} else {
-					return LocalDateTime.MAX; // 나머지는 정렬 영향을 안 주게
-				}
-			}))
+			})
 			.toList();
 
-		// 페이징
+		// 복합 정렬 로직
+		List<Campaign> sorted = filtered.stream()
+			.sorted(Comparator
+				.comparing((Campaign c) -> {
+					// 상태 우선순위 지정
+					return switch (c.getStatus()) {
+						case OPEN -> 0;
+						case PENDING -> 1;
+						case CLOSED -> 2;
+					};
+				})
+				.thenComparing(c -> {
+					// 상태별로 정렬 기준 다르게 적용
+					return switch (c.getStatus()) {
+						case OPEN, CLOSED -> c.getEndDate();
+						case PENDING -> c.getStartDate();
+					};
+				})
+			)
+			.toList();
+
+		// 수동 페이징
 		int fromIndex = page * size;
 		int toIndex = Math.min(fromIndex + size, sorted.size());
-		List<CampaignSummaryResponse> pagedList = sorted.subList(fromIndex, toIndex)
-			.stream()
+		List<CampaignSummaryResponse> pageContent = sorted.subList(fromIndex, toIndex).stream()
 			.map(CampaignSummaryResponse::from)
 			.toList();
 
 		int totalPages = (int) Math.ceil((double) sorted.size() / size);
 
-		return new CampaignListResponse(totalPages, pagedList);
+		return new CampaignListResponse(totalPages, pageContent);
 	}
 
 	@Transactional(readOnly = true)
