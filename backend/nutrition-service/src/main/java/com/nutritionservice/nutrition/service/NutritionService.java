@@ -1,6 +1,7 @@
 package com.nutritionservice.nutrition.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nutritionservice.common.service.EurekaService;
 import com.nutritionservice.nutrition.client.EncyclopediaClient;
 import com.nutritionservice.nutrition.model.document.*;
 import com.nutritionservice.nutrition.model.dto.analysis.NutrientResult;
@@ -10,6 +11,7 @@ import com.nutritionservice.nutrition.repository.ProductNutritionRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -22,13 +24,30 @@ public class NutritionService {
     private final NutritionReportRepository reportRepo;
     private final EncyclopediaClient encyclopediaClient;
 
+    private final RestClient restClient;
+    private final EurekaService eurekaService;
+
     @PostConstruct
     public void testEncyclopediaApi() {
         List<String> testIngredients = List.of("말티톨", "말토덱스트린", "스테비아");
         EncyclopediaRequest request = new EncyclopediaRequest(testIngredients, "dieter");
-        String token = "Bearer eyJhbGciOiJIUzI1..."; // 실제 발급받은 토큰
 
-        EncyclopediaResponse response = encyclopediaClient.getIngredientDetails(token, request);
+//        EncyclopediaResponse response = encyclopediaClient.getIngredientDetails(token, request);
+
+        EncyclopediaResponse response;
+
+        try {
+            String url = eurekaService.getUrl("ENCYCLOPEDIA") + "/encyclopedia/user-type";
+            System.out.println("url: " + url);
+            response = restClient.post()
+                    .uri(url)
+                    .header("X-User-Id", "1")
+                    .body(request)
+                    .retrieve()
+                    .body(EncyclopediaResponse.class);
+        } catch (Exception e) {
+            throw new RuntimeException("힝 이게 머노: " + e.getMessage(), e);
+        }
 
         System.out.println("📘 백과사전 응답:");
         if (response != null && response.getData() != null) {
@@ -78,12 +97,28 @@ public class NutritionService {
         EncyclopediaRequest encyclopediaRequest = new EncyclopediaRequest(ingredientNames, "dieter");
         String token = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMCIsImlhdCI6MTc0NzExMzM3MiwiZXhwIjoxNzQ3MzcyNTcyfQ.MQNJBZGWVnwKebMxLSvW-dgKOblln1jwKvg5ieVyJ4M";  // 실제 토큰 입력 필요
 
-        EncyclopediaResponse encyclopediaResponse = encyclopediaClient.getIngredientDetails(token, encyclopediaRequest);
+//        EncyclopediaResponse encyclopediaResponse = encyclopediaClient.getIngredientDetails(token, encyclopediaRequest);
 
-        List<IngredientDetail> ingredientWarnings = encyclopediaResponse.getData().getIngredients();
+        EncyclopediaResponse encyclopediaResponse;
+
+        try {
+            String url = eurekaService.getUrl("ENCYCLOPEDIA") + "/encyclopedia/user-type";
+            System.out.println("url: " + url);
+            encyclopediaResponse = restClient.post()
+                    .uri(url)
+                    .header("X-User-Id", "1")
+                    .body(encyclopediaRequest)
+                    .retrieve()
+                    .body(EncyclopediaResponse.class);
+        } catch (Exception e) {
+            throw new RuntimeException("힝 이게 머노: " + e.getMessage(), e);
+        }
+
+
+//        List<IngredientDetail> ingredientWarnings = encyclopediaResponse.getData().getIngredients();
         List<TopRisk> topRisks = encyclopediaResponse.getData().getTopRisks();
 
-        // 추가된 부분
+        // 6. 원재료 용도별로 분리하여 매핑
         Map<String, List<String>> categorized = product.getResult()
                 .getIngredientAnalysis()
                 .getCategorizedIngredients();
@@ -106,14 +141,12 @@ public class NutritionService {
                         .findFirst()
                         .ifPresent(matched::add);
             }
-
-            // ✅ 무조건 카테고리 키를 넣고, 값은 비어있어도 됨
             categorizedMap.put(category, matched);
         }
 
 
         // 7. 제품 분석 summary 저장
-        Nutrition nutrition = product.getResult().getNutritionAnalysis().getNutrition();
+//        Nutrition nutrition = product.getResult().getNutritionAnalysis().getNutrition();
         String nutritionSummary = product.getResult().getNutritionAnalysis().getSummary();
         String ingredientSummary = product.getResult().getIngredientAnalysis().getSummary();
 
