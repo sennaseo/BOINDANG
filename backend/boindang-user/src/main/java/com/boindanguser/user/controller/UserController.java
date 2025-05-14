@@ -69,11 +69,17 @@ public class UserController {
         return ApiResponse.success(userService.isUsernameTaken(username));
     }
 
-    @Operation(summary = "사용자 이름 일괄 조회", description = "커뮤니티 서비스 백엔드를 위한 코드입니당~~")
+    @Operation(summary = "사용자 닉네임 일괄 조회", description = "커뮤니티 서비스 백엔드를 위한 코드입니당~~")
     @PostMapping("/users/batch")
     public ApiResponse<Map<Long, String>> getUsernames(@RequestBody List<Long> userIds) {
         Map<Long, String> result = userService.getUsernamesByIds(userIds);
         return ApiResponse.success(result);
+    }
+
+    @Operation(summary = "사용자 닉네임 조회", description = "커뮤니티 서비스 백엔드를 위한 코드입니다람쥐~~")
+    @GetMapping("/users/{id}")
+    public ApiResponse<UserResponse> getUserById(@PathVariable Long id) {
+        return ApiResponse.success(userService.getUserInfo(id));
     }
 
 }
