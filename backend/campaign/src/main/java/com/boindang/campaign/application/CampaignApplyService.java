@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.boindang.campaign.common.exception.CampaignException;
 import com.boindang.campaign.common.exception.ErrorCode;
 import com.boindang.campaign.domain.model.Campaign;
+import com.boindang.campaign.domain.model.CampaignStatus;
 import com.boindang.campaign.infrastructure.kafka.producer.KafkaCampaignProducer;
 import com.boindang.campaign.infrastructure.redis.RedisApplicationStore;
 import com.boindang.campaign.infrastructure.repository.CampaignRepository;
@@ -31,6 +32,11 @@ public class CampaignApplyService {
 
 		Campaign campaign = campaignRepository.findById(campaignId)
 			.orElseThrow(() -> new CampaignException(ErrorCode.CAMPAIGN_NOT_FOUND));
+
+		// 모집 상태 확인
+		if (campaign.getStatus() != CampaignStatus.OPEN) {
+			throw new CampaignException(ErrorCode.CAMPAIGN_NOT_OPEN);
+		}
 
 		// TTL 계산
 		Duration ttl = Duration.between(LocalDateTime.now(), campaign.getEndDate());
