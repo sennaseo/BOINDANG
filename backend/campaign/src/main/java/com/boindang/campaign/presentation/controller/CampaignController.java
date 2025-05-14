@@ -16,7 +16,6 @@ import com.boindang.campaign.common.response.BaseResponse;
 import com.boindang.campaign.presentation.dto.response.ApplyResultResponse;
 import com.boindang.campaign.presentation.dto.response.CampaignDetailResponse;
 import com.boindang.campaign.presentation.dto.response.CampaignListResponse;
-import com.boindang.campaign.presentation.dto.response.CampaignSummaryResponse;
 import com.boindang.campaign.presentation.dto.response.MyApplicationResponse;
 
 import lombok.RequiredArgsConstructor;
