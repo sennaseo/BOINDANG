@@ -18,7 +18,7 @@ async def ocr_and_gpt(image_url: str, mode: str):
         text = clean_ingredient_text(text)
         result = await ask_gpt_ingredient(text)
     elif mode == "nutrition":
-        text = clean_nutrition_text(text)
+        # text = clean_nutrition_text(text)
         result = await ask_gpt_nutrition(text)
     else:
         raise ValueError("Invalid mode: must be 'ingredient' or 'nutrition'")
