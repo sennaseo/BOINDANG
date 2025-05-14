@@ -31,19 +31,23 @@ public class CampaignController implements CampaignApi {
 	@Override
 	@GetMapping
 	public BaseResponse<CampaignListResponse> getCampaigns(
+		@RequestHeader("X-User-Id") String userId,
 		@RequestParam(required = false) String status,
 		@RequestParam(defaultValue = "5") int size,
 		@RequestParam(defaultValue = "0") int page
 	) {
 		return BaseResponse.success(200, "체험단 목록 조회가 완료되었습니다.",
-			campaignService.getCampaigns(status, size, page));
+			campaignService.getCampaigns(status, size, page, Long.parseLong(userId)));
 	}
 
 	@Override
 	@GetMapping("/{campaignId}")
-	public BaseResponse<CampaignDetailResponse> getCampaignDetail(@PathVariable("campaignId") Long campaignId) {
+	public BaseResponse<CampaignDetailResponse> getCampaignDetail(
+		@RequestHeader("X-User-Id") String userId,
+		@PathVariable("campaignId") Long campaignId
+	) {
 		return BaseResponse.success(200, "체험단 상세 조회가 완료되었습니다."
-			, campaignService.getCampaignDetail(campaignId));
+			, campaignService.getCampaignDetail(campaignId, Long.parseLong(userId)));
 	}
 
 	@Override
