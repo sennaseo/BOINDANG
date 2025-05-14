@@ -1,0 +1,21 @@
+services:
+  user-service:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: kimhwidong/boindang-repo:nutrition-service
+    container_name: user-service
+    environment:
+      EUREKA_URL: ${EUREKA_URL}
+      HOST_IP: ${HOST_IP}
+      DB_URL: mongodb://${DB_USERNAME}:${DB_PASSWORD}@ocr-db:27017/${DB_NAME}
+      DB_NAME: ${DB_NAME}
+    ports:
+      - "8082:8082"
+    restart: always
+    networks:
+      - nutrition-network
+
+networks:
+  nutrition-network:
+    external: true
