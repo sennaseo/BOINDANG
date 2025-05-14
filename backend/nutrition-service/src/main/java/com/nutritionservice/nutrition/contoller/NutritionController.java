@@ -29,8 +29,27 @@ public class NutritionController {
             @RequestParam String productId
     ) {
 
+//        UserInfo userInfo = userService.getUserById(userId);
+//        NutritionReport report = nutritionService.analyzeProductForUser(userInfo, productId);
+
+        System.out.println("analyze 함수 호출 ㅋ");
+
         UserInfo userInfo = userService.getUserById(userId);
+        System.out.println("👤 [유저 정보 조회 완료]");
+        System.out.println(" - ID: " + userInfo.getId());
+        System.out.println(" - 성별: " + userInfo.getGender());
+        System.out.println(" - 키(cm): " + userInfo.getHeight());
+        System.out.println(" - 몸무게(kg): " + userInfo.getWeight());
+        System.out.println(" - 유저 타입: " + userInfo.getUserType());
+
         NutritionReport report = nutritionService.analyzeProductForUser(userInfo, productId);
+        System.out.println("📄 [분석 리포트 생성 완료]");
+        System.out.println(" - 제품명: " + report.getProductName());
+        System.out.println(" - 분석 시각: " + report.getAnalyzedAt());
+        System.out.println(" - 열량(kcal): " + report.getKcal());
+        System.out.println(" - 카테고리별 성분 수: " +
+                (report.getCategorizedIngredients() != null ? report.getCategorizedIngredients().size() : 0));
+
 
         NutritionReportResponse response = NutritionReportMapper.from(report);
         return ApiResponse.success(response);
