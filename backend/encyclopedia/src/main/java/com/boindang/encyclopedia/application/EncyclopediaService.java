@@ -87,7 +87,7 @@ public class EncyclopediaService {
                     .prefixLength(0)
                     .maxExpansions(50)
                     .fuzzyTranspositions(true))
-                .size(20);
+                .size(1);
 
             SearchResponse fuzzyResponse = client.search(
                 new SearchRequest("ingredients").source(fuzzyBuilder),
