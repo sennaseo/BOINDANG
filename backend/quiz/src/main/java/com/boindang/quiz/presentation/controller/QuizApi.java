@@ -6,15 +6,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import com.boindang.quiz.common.response.BaseResponse;
 import com.boindang.quiz.presentation.dto.request.AnswerRequest;
 import com.boindang.quiz.presentation.dto.response.QuizAnswerResponse;
 import com.boindang.quiz.presentation.dto.response.QuizResponse;
 import com.boindang.quiz.presentation.dto.response.QuizStatisticsResponse;
-import com.boindang.quiz.presentation.dto.response.WrongAnswerResponse;
+import com.boindang.quiz.presentation.dto.response.AnswerResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -145,7 +143,7 @@ public interface QuizApi {
 	@ApiResponses(value = {
 		@ApiResponse(responseCode = "200", description = "오답노트 조회에 성공하였습니다.",
 			content = @Content(mediaType = "application/json",
-				schema = @Schema(implementation = WrongAnswerResponse.class),
+				schema = @Schema(implementation = AnswerResponse.class),
 				examples = @ExampleObject(value = """
                 {
                   "isSuccess": true,
@@ -178,7 +176,7 @@ public interface QuizApi {
 		)
 	})
 	@GetMapping("/wrong-answers")
-	BaseResponse<List<WrongAnswerResponse>> getWrongAnswers(
+	BaseResponse<List<AnswerResponse>> getWrongAnswers(
 		@Parameter(description = "사용자 ID", required = true, example = "1")
 		@RequestHeader("X-User-Id") String userId
 	);

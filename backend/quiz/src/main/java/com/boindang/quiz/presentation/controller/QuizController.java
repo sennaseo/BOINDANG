@@ -7,16 +7,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.boindang.quiz.application.QuizService;
 import com.boindang.quiz.common.response.BaseResponse;
 import com.boindang.quiz.presentation.dto.request.AnswerRequest;
+import com.boindang.quiz.presentation.dto.response.AnswerResponse;
 import com.boindang.quiz.presentation.dto.response.QuizAnswerResponse;
 import com.boindang.quiz.presentation.dto.response.QuizResponse;
 import com.boindang.quiz.presentation.dto.response.QuizStatisticsResponse;
-import com.boindang.quiz.presentation.dto.response.WrongAnswerResponse;
 
 import lombok.RequiredArgsConstructor;
 
@@ -46,9 +45,9 @@ public class QuizController implements QuizApi {
 
 	@Override
 	@GetMapping("/wrong-answers")
-	public BaseResponse<List<WrongAnswerResponse>> getWrongAnswers(@RequestHeader("X-User-Id") String userId) {
+	public BaseResponse<List<AnswerResponse>> getWrongAnswers(@RequestHeader("X-User-Id") String userId) {
 		return BaseResponse.success(200, "오답노트 조회에 성공하였습니다."
-			, quizService.getWrongAnswers(Long.parseLong(userId)));
+			, quizService.getAnswerHistories(Long.parseLong(userId)));
 	}
 
 	@Override
