@@ -9,5 +9,5 @@ import lombok.*;
 @Builder
 public class NutritionAnalysis {
     private Nutrition nutrition;
-    private String NutritionSummary;
+    private String summary;
 }

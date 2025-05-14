@@ -1,11 +1,13 @@
 package com.nutritionservice.nutrition.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nutritionservice.nutrition.client.EncyclopediaClient;
 import com.nutritionservice.nutrition.model.document.*;
 import com.nutritionservice.nutrition.model.dto.analysis.NutrientResult;
 import com.nutritionservice.nutrition.model.dto.external.*;
 import com.nutritionservice.nutrition.repository.NutritionReportRepository;
 import com.nutritionservice.nutrition.repository.ProductNutritionRepository;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,32 +25,45 @@ public class NutritionService {
     private final NutritionReportRepository reportRepo;
     private final EncyclopediaClient encyclopediaClient;
 
-//    @PostConstruct
-//    public void testEncyclopediaApi() {
-//        List<String> testIngredients = List.of("말티톨", "말토덱스트린", "스테비아");
-//        EncyclopediaRequest request = new EncyclopediaRequest(testIngredients, "dieter");
-//        String token = "Bearer eyJhbGciOiJIUzI1..."; // 실제 발급받은 토큰
-//
-//        EncyclopediaResponse response = encyclopediaClient.getIngredientDetails(token, request);
-//
-//        System.out.println("📘 백과사전 응답:");
-//        if (response != null && response.getData() != null) {
-//            response.getData().getIngredients().forEach(detail -> {
-//                System.out.printf("- %s | 위험도: %s | GI: %d | 메시지: %s\n",
-//                        detail.getName(),
-//                        detail.getRiskLevel(),
-//                        detail.getGi(),
-//                        detail.getShortMessage());
-//            });
-//        } else {
-//            System.out.println("❌ 응답이 null이거나 데이터가 없습니다. → response = " + response);
-//        }
-//    }
+    @PostConstruct
+    public void testEncyclopediaApi() {
+        List<String> testIngredients = List.of("말티톨", "말토덱스트린", "스테비아");
+        EncyclopediaRequest request = new EncyclopediaRequest(testIngredients, "dieter");
+        String token = "Bearer eyJhbGciOiJIUzI1..."; // 실제 발급받은 토큰
+
+        EncyclopediaResponse response = encyclopediaClient.getIngredientDetails(token, request);
+
+        System.out.println("📘 백과사전 응답:");
+        if (response != null && response.getData() != null) {
+            response.getData().getIngredients().forEach(detail -> {
+                System.out.printf("- %s | 위험도: %s | GI: %d | 메시지: %s\n",
+                        detail.getName(),
+                        detail.getRiskLevel(),
+                        detail.getGi(),
+                        detail.getShortMessage());
+            });
+        } else {
+            System.out.println("❌ 응답이 null이거나 데이터가 없습니다. → response = " + response);
+        }
+    }
 
     public NutritionReport analyzeProductForUser(String userId, String productId) {
         // 1. 제품 조회
         ProductNutrition product = productRepo.findById(productId)
                 .orElseThrow(() -> new RuntimeException("해당 제품이 존재하지 않습니다."));
+
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(product);
+//            System.out.println("📦 불러온 제품 전체 정보 (JSON):\n" + json);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        ProductResult result = product.getResult();
+
+        if (result == null || result.getNutritionAnalysis() == null || result.getIngredientAnalysis() == null) {
+            throw new RuntimeException("제품에 영양 또는 성분 분석 정보가 부족합니다.");
+        }
 
         // 2. 사용자 정보 (임시 하드코딩)
         UserInfo user = new UserInfo(userId, "F", 165, 60.0, "다이어트");
@@ -63,8 +78,9 @@ public class NutritionService {
         }
 
         // 5. 백과사전 API 호출
-        EncyclopediaRequest encyclopediaRequest = new EncyclopediaRequest(ingredientNames, user.getUserType());
-        String token = "Bearer eyJhbGciOiJIUzI1...";  // 실제 토큰 입력 필요
+        EncyclopediaRequest encyclopediaRequest = new EncyclopediaRequest(ingredientNames, "dieter");
+        String token = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMCIsImlhdCI6MTc0NzExMzM3MiwiZXhwIjoxNzQ3MzcyNTcyfQ.MQNJBZGWVnwKebMxLSvW-dgKOblln1jwKvg5ieVyJ4M";  // 실제 토큰 입력 필요
+
         EncyclopediaResponse encyclopediaResponse = encyclopediaClient.getIngredientDetails(token, encyclopediaRequest);
 
         List<IngredientDetail> ingredientWarnings = encyclopediaResponse.getData().getIngredients();
@@ -75,8 +91,8 @@ public class NutritionService {
 
         // 7. 제품 분석 summary 저장
         Nutrition nutrition = product.getResult().getNutritionAnalysis().getNutrition();
-        String nutritionSummary = product.getResult().getNutritionAnalysis().getNutritionSummary();
-        String ingredientSummary = product.getResult().getIngredientAnalysis().getIngredientSummary();
+        String nutritionSummary = product.getResult().getNutritionAnalysis().getSummary();
+        String ingredientSummary = product.getResult().getIngredientAnalysis().getSummary();
 
         int kcal = product.getResult().getNutritionAnalysis().getNutrition().getKcal();
 
