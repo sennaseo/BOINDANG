@@ -1,0 +1,22 @@
+services:
+  community-service:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: kimhwidong/boindang-repo:community-service
+    container_name: community-service
+    environment:
+      DB_URL: jdbc:mysql://community-db:3306/${DB_NAME}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      EUREKA_URL: ${EUREKA_URL}
+      HOST_IP: ${HOST_IP}
+    ports:
+      - "8084:8084"
+    restart: always
+    networks:
+      - community-network
+
+networks:
+  community-network:
+    external: true

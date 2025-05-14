@@ -1,14 +1,18 @@
 package com.boindang.community.dto.response;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
-@NoArgsConstructor
+@Setter
+@Builder
 @AllArgsConstructor
-public class UserResponse {
-	private Long id;
-	private String nickname;
+@NoArgsConstructor
+public class JwtTokenDto {
+	private String refreshToken;
+	private String accessToken;
 }
 

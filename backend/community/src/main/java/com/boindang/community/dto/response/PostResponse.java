@@ -14,6 +14,7 @@ public class PostResponse {
 	private Long postId;
 	private String title;
 	private String content;
+	private Long imageId;
 
 	private Long userId;
 	private String username;       // USER 서비스에서 가져옴
@@ -29,6 +30,7 @@ public class PostResponse {
 			.postId(post.getId())
 			.title(post.getTitle())
 			.content(post.getContent())
+			.imageId(post.getImageId())
 			.userId(post.getUserId())
 			.username(username)
 			.commentCount(post.getCommentCount())
