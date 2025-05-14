@@ -3,7 +3,6 @@ package com.boindang.quiz.application;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.Objects;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,9 +16,9 @@ import com.boindang.quiz.domain.QuizSolvedHistory;
 import com.boindang.quiz.infrastructure.QuizRepository;
 import com.boindang.quiz.infrastructure.QuizSolvedHistoryRepository;
 import com.boindang.quiz.presentation.dto.request.AnswerRequest;
+import com.boindang.quiz.presentation.dto.response.AnswerResponse;
 import com.boindang.quiz.presentation.dto.response.QuizAnswerResponse;
 import com.boindang.quiz.presentation.dto.response.QuizResponse;
-import com.boindang.quiz.presentation.dto.response.WrongAnswerResponse;
 import com.boindang.quiz.presentation.dto.response.QuizStatisticsResponse;
 
 import lombok.RequiredArgsConstructor;
@@ -98,24 +97,14 @@ public class QuizService {
 		);
 	}
 
-	public List<WrongAnswerResponse> getWrongAnswers(Long userId) {
-		List<QuizSolvedHistory> histories = historyRepository.findWrongAnswersByUserId(userId);
+	@Transactional(readOnly = true)
+	public List<AnswerResponse> getAnswerHistories(Long userId) {
+		List<QuizSolvedHistory> histories = historyRepository.findAllByUserId(userId);
 
 		return histories.stream().map(history -> {
 			Quiz quiz = history.getQuiz();
 			int selectedId = history.getSelectedOptionId();
 			int answerId = quiz.getAnswerOptionId();
-
-			System.out.println("🧪 Quiz ID: " + quiz.getId());
-			System.out.println("🧪 Answer ID: " + answerId);
-			System.out.println("🧪 Selected ID: " + selectedId);
-			System.out.println("🧪 Options:");
-
-			quiz.getOptions().forEach(opt -> {
-				System.out.println(" - Option ID: " + opt.getOptionId());
-				System.out.println("   Content: " + opt.getContent());
-				System.out.println("   Explanation: " + opt.getExplanation());
-			});
 
 			String explanation = quiz.getOptions().stream()
 				.filter(opt -> opt.getOptionId() == answerId)
@@ -127,12 +116,13 @@ public class QuizService {
 				.filter(opt -> opt.getOptionId() == selectedId)
 				.map(QuizOption::getExplanation)
 				.findFirst()
-				.orElse("오답 해설이 없습니다.");
+				.orElse("선택한 보기 해설이 없습니다.");
 
-			return new WrongAnswerResponse(
+			return new AnswerResponse(
 				quiz.getId(),
 				quiz.getQuestion(),
 				quiz.getOptions().stream().map(QuizOption::getContent).toList(),
+				history.isCorrect(),  // ✅ 맞았는지 여부
 				answerId,
 				selectedId,
 				explanation,
