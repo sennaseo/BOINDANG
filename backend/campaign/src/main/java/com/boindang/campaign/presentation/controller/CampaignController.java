@@ -50,7 +50,7 @@ public class CampaignController implements CampaignApi {
 	@PostMapping("/{campaignId}/apply")
 	public BaseResponse<ApplyResultResponse> apply(
 		@PathVariable("campaignId") Long campaignId,
-		@RequestHeader("X-USER-ID") String userId
+		@RequestHeader("X-User-Id") String userId
 	) {
 		ApplyResultResponse result = applyService.apply(campaignId, Long.parseLong(userId));
 		String message = result.isSelected() ? "체험단 신청이 완료되었습니다." : "정원이 마감되었습니다.";
@@ -59,7 +59,7 @@ public class CampaignController implements CampaignApi {
 
 	@Override
 	@GetMapping("/my-applications")
-	public BaseResponse<List<MyApplicationResponse>> getMyApplications(@RequestHeader("X-USER-ID") String userId) {
+	public BaseResponse<List<MyApplicationResponse>> getMyApplications(@RequestHeader("X-User-Id") String userId) {
 		return BaseResponse.success(200, "나의 체험단 신청 내역 조회가 왼료되었습니다."
 			, campaignService.getMyApplications(Long.parseLong(userId)));
 	}
