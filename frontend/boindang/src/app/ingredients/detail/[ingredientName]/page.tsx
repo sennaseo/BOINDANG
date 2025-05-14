@@ -116,7 +116,7 @@ export default function IngredientDetailPage({ params: paramsPromise }: { params
     <div className="min-h-screen bg-slate-50">
       <div className="max-w-md mx-auto bg-white shadow-lg pb-[80px]">
         <header className="sticky top-0 z-40 bg-white p-4 flex items-center border-b border-slate-200 gap-x-3">
-          <button onClick={() => router.push('/ingredients')} className="p-1">
+          <button onClick={() => router.back()} className="p-1">
             <ArrowLeft size={24} className="text-slate-700" />
           </button>
           <h1 className="text-lg font-semibold text-slate-800">{displayData.name} {ingredientDetail.engName ? `(${ingredientDetail.engName})` : ''}</h1>

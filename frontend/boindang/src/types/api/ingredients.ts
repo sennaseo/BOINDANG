@@ -98,6 +98,11 @@ export interface ApiErrorResponse {
   data?: null; // 혹은 T | null 등으로 유연하게 처리 가능
 }
 
+/**
+ * 카테고리별 성분 목록 조회 API의 전체 응답 타입
+ */
+export type CategoryIngredientsApiResponse = ApiResponse<IngredientResult[]>;
+
 // --- 프론트엔드용 타입 정의 시작 ---
 
 // 프론트엔드에서 사용할 가공된 참고문헌 타입

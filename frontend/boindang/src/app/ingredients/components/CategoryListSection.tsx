@@ -3,6 +3,7 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { Books } from '@phosphor-icons/react';
 
 interface CategoryItem {
   name: string;
@@ -16,7 +17,10 @@ interface CategoryListSectionProps {
 const CategoryListSection: React.FC<CategoryListSectionProps> = ({ categoryIngredients }) => {
   return (
     <section className="mb-8">
-      <h2 className="text-lg font-semibold mb-3 text-gray-800">카테고리별 성분 백과 📚</h2>
+      <h2 className="text-lg font-semibold mb-3 text-gray-800 flex items-center">
+        <Books size={24} className="mr-2 text-purple-600" />
+        카테고리별 성분 백과
+      </h2>
       <div className="bg-white border border-gray-100 rounded-lg shadow-md overflow-hidden p-6">
         <div className="grid grid-cols-4 gap-4">
           {categoryIngredients.map((item) => (
