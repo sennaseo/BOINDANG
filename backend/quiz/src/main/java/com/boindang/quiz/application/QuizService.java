@@ -93,6 +93,7 @@ public class QuizService {
 		// 6. 응답 반환
 		return new QuizAnswerResponse(
 			isCorrect,
+			quiz.getAnswerOptionId(),
 			selectedOption.getExplanation()
 		);
 	}
