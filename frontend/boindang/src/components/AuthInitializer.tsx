@@ -1,11 +1,5 @@
 "use client";
 
-// =====================================================================================
-// !!!! 중요 !!!! 개발용 인증 우회 로직 포함 !!!!
-// 백엔드 로그인이 정상화되면 .env.local 파일에서 NEXT_PUBLIC_BYPASS_AUTH_REDIRECT 관련 설정을
-// 반드시 제거하거나 false로 변경하고, 이 주석과 아래 관련 로직을 삭제해주세요.
-// =====================================================================================
-
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
@@ -15,46 +9,90 @@ interface AuthInitializerProps {
   children: React.ReactNode;
 }
 
+const splashShownSessionKey = 'splashAlreadyShown';
+
 export default function AuthInitializer({ children }: AuthInitializerProps) {
   const router = useRouter();
   const { isLoggedIn } = useAuthStore();
   const [isLoading, setIsLoading] = useState(true);
 
+  const [isHydrated, setIsHydrated] = useState(false);
+  const [hasSplashBeenShown, setHasSplashBeenShown] = useState(false);
+
   useEffect(() => {
-    const showSplashThenCheckAuth = async () => {
-      console.log('AuthInitializer: Showing splash screen and starting 1-second delay...');
-      // 1초 지연
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      console.log('AuthInitializer: 1-second delay finished. Checking auth state...', { isLoggedIn });
+    const unsubFinishHydration = useAuthStore.persist.onFinishHydration(() => {
+      console.log('AuthInitializer: Zustand store rehydration finished.');
+      setIsHydrated(true);
+    });
 
+    if (useAuthStore.persist.hasHydrated()) {
+      console.log('AuthInitializer: Store rehydrated synchronously.');
+      setIsHydrated(true);
+      unsubFinishHydration();
+    }
+
+    return () => {
+      unsubFinishHydration();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (sessionStorage.getItem(splashShownSessionKey)) {
+      console.log('AuthInitializer: Splash already shown in this session.');
+      setHasSplashBeenShown(true);
+    } else {
+      console.log('AuthInitializer: First load in this session, will show splash delay.');
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isHydrated) {
+      console.log('AuthInitializer: Waiting for store hydration...');
+      return;
+    }
+
+    console.log('AuthInitializer: Store is hydrated.', { hasSplashBeenShown });
+
+    const performAuthCheckAndFinishLoading = () => {
+      console.log('AuthInitializer: Performing auth check...', { isLoggedIn });
       if (isLoggedIn) {
-        console.log('AuthInitializer: User is logged in. Hiding splash screen.');
-        setIsLoading(false); // 로그인 상태면 로딩 해제
+        console.log('AuthInitializer: User is logged in. Allowing access.');
       } else {
-        // !!!! 중요 !!!! 아래는 개발용 인증 우회 로직입니다.
-        // 백엔드 로그인이 정상화되면 .env.local 설정 변경 후 이 부분을 반드시 원래대로 되돌리거나 삭제하세요.
-        const bypassRedirect = process.env.NEXT_PUBLIC_BYPASS_AUTH_REDIRECT === 'true';
-
-        if (bypassRedirect) {
-          console.warn('AuthInitializer: BYPASSING auth redirect for development. User is not logged in but allowing access.');
-          setIsLoading(false); // 리다이렉션 안 하므로 로딩 해제
-        } else {
-          console.log('AuthInitializer: User is not logged in. Redirecting to /onboarding');
-          router.replace('/onboarding');
-          // 리다이렉션 후 로딩 상태 해제 (이전 수정 유지)
-          setIsLoading(false);
-        }
+        console.log('AuthInitializer: User is not logged in. Redirecting to /onboarding.');
+        router.replace('/onboarding');
       }
+      setIsLoading(false);
     };
 
-    showSplashThenCheckAuth();
+    if (hasSplashBeenShown) {
+      console.log('AuthInitializer: Skipping splash delay as it was already shown.');
+      performAuthCheckAndFinishLoading();
+    } else {
+      console.log('AuthInitializer: Starting 1-second splash delay for first load...');
+      const splashTimer = setTimeout(() => {
+        console.log('AuthInitializer: Splash delay finished.');
+        performAuthCheckAndFinishLoading();
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoggedIn, router]); // isLoggedIn 또는 router 객체가 변경될 때만 실행
+        console.log('AuthInitializer: Marking splash as shown for this session.');
+        try {
+          sessionStorage.setItem(splashShownSessionKey, 'true');
+          setHasSplashBeenShown(true);
+        } catch (error) {
+          console.error('AuthInitializer: Failed to set sessionStorage item:', error);
+        }
+      }, 1000);
+
+      return () => {
+        clearTimeout(splashTimer);
+      };
+    }
+  }, [isLoggedIn, isHydrated, router, hasSplashBeenShown]);
 
   if (isLoading) {
+    console.log('AuthInitializer: isLoading is true, showing SplashScreen.');
     return <SplashScreen />;
   }
 
+  console.log('AuthInitializer: isLoading is false. Rendering children or redirected.');
   return <>{children}</>;
 } 
