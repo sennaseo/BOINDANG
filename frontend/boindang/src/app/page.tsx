@@ -3,6 +3,17 @@
 import { CameraPlus, CaretRight, SealPercent } from '@phosphor-icons/react';
 import BottomNavBar from '@/components/navigation/BottomNavBar';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
+
+// 클라이언트 사이드에서만 로드하기 위해 dynamic import 사용
+const DangDangi = dynamic(() => import('@/components/3D/DangDangi'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full flex items-center justify-center">
+      <p>로딩 중...</p>
+    </div>
+  ),
+});
 
 export default function Home() {
   return (
@@ -28,8 +39,8 @@ export default function Home() {
 
       {/* 중앙(애니메이션/그림 자리) */}
       <main className="flex-1 flex flex-col items-center justify-center">
-        <div className="w-full h-[200px] my-4 bg-gray-100 rounded-xl flex items-center justify-center">
-          {/* 여기에 애니메이션/그림 컴포넌트 삽입 */}
+        <div className="w-full my-4 bg-gray-100 rounded-xl flex items-center justify-center shadow-sm">
+          <DangDangi />
         </div>
 
         {/* 분석/퀴즈 버튼 */}
