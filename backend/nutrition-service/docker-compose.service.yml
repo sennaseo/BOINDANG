@@ -4,7 +4,7 @@ services:
       context: ./
       dockerfile: Dockerfile
     image: kimhwidong/boindang-repo:nutrition-service
-    container_name: user-service
+    container_name: nutrition-service
     environment:
       EUREKA_URL: ${EUREKA_URL}
       HOST_IP: ${HOST_IP}
