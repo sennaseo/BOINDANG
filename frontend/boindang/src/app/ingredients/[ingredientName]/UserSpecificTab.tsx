@@ -2,15 +2,7 @@
 
 import React from 'react';
 import { Leaf, Drop, PersonSimpleRun, FirstAidKit } from '@phosphor-icons/react'; // Kidney를 Drop으로 변경
-
-interface UserSpecificTabProps {
-  considerations: {
-    diabetes: string;
-    kidney: string;
-    diet: string;
-    exercise: string;
-  };
-}
+import type { UserSpecificTabProps } from '@/types/api/ingredients';
 
 const iconMap = {
   diabetes: <FirstAidKit size={20} className="mr-2 text-red-500" weight="fill" />, // 당뇨 아이콘 (예시)
@@ -23,7 +15,7 @@ export default function UserSpecificTab({ considerations }: UserSpecificTabProps
   return (
     <div className="space-y-6 p-1">
       <h2 className="text-xl font-semibold text-slate-700 mb-4">사용자 유형별 참고사항</h2>
-      
+
       <div className="space-y-4">
         {Object.entries(considerations).map(([key, value]) => {
           let title = '';
