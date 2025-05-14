@@ -23,7 +23,7 @@ public class UserClient {
 
 	public String getUsernameById(Long userId) {
 		try {
-			String url = eurekaService.getUrl("USER") + "me";
+			String url = eurekaService.getUrl("BOINDANG-USER") + "me";
 			ApiResponse<String> apiResponse = restClient.get()
 				.uri(url)
 				.retrieve()
@@ -36,7 +36,7 @@ public class UserClient {
 
 	public Map<Long, String> getUsernamesByIds(List<Long> userIds) {
 		try {
-			String url = eurekaService.getUrl("USER") + "users/batch";
+			String url = eurekaService.getUrl("BOINDANG-USER") + "users/batch";
 			log.info("🩵url = " + url);
 			ApiResponse<Map<Long, String>> apiResponse = restClient.post()
 				.uri(url)
