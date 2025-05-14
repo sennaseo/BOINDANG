@@ -121,7 +121,7 @@ public class UserService {
 	public Map<Long, String> getUsernamesByIds(List<Long> userIds) {
 		List<User> users = userRepository.findAllById(userIds);
 		return users.stream()
-			.collect(Collectors.toMap(User::getId, User::getUsername));
+			.collect(Collectors.toMap(User::getId, User::getNickname));
 	}
 
 }
