@@ -29,7 +29,7 @@ public class UserClient {
 				.uri(url)
 				.retrieve()
 				.body(new ParameterizedTypeReference<>() {});
-			return apiResponse.getResult().getUsername();
+			return apiResponse.getResult().getNickname();
 		} catch (Exception e) {
 			throw new RuntimeException("유저 이름 조회 실패: " + e.getMessage(), e);
 		}
