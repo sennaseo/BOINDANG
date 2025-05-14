@@ -35,7 +35,7 @@ public class UserClient {
 
 	public Map<Long, String> getUsernamesByIds(List<Long> userIds) {
 		try {
-			String url = eurekaService.getUrl("USER") + "/users/batch";
+			String url = eurekaService.getUrl("USER") + "users/batch";
 			ApiResponse<Map<Long, String>> apiResponse = restClient.post()
 				.uri(url)
 				.body(userIds)
