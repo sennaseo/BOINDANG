@@ -14,4 +14,7 @@ public class CreatePostRequest {
 
 	@Schema(description = "게시글 내용", example = "저는 고단백 도시락 먹었습니다.")
 	private String content;
+
+	@Schema(description = "게시글 이미지 ID")
+	private Long imageId;
 }
