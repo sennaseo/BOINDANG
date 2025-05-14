@@ -8,5 +8,6 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class NutritionAnalysis {
-    private NutritionSummary nutritionSummary;
+    private Nutrition nutrition;
+    private String NutritionSummary;
 }

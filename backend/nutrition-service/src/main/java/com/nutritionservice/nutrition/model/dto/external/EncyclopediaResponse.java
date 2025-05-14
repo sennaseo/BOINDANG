@@ -20,11 +20,4 @@ public class EncyclopediaResponse {
         private List<IngredientDetail> ingredients;
         private List<TopRisk> topRisks;
     }
-
-    @Getter
-    @Setter
-    public static class TopRisk {
-        private String title;
-        private String message;
-    }
 }

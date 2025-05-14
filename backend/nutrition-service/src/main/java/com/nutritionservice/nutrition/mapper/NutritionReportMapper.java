@@ -15,24 +15,16 @@ public class NutritionReportMapper {
     public static NutritionReportResponse from(NutritionReport report, UserInfo user) {
         return NutritionReportResponse.builder()
                 .productName(report.getProductName())
-                .totalKcal((int) Math.round(
-                        getValue(report, "탄수화물") * 4 +
-                                getValue(report, "단백질") * 4 +
-                                getValue(report, "지방") * 9))
+                .kcal(report.getKcal())
                 .estimatedGi(58)
                 .giGrade("위험")
+
                 .nutrientRatios(toRatios(report.getRatios()))
                 .nutrientDetails(toDetails(report.getRatios()))
 
-                .ingredientWarnings(report.getIngredientWarnings()) // ✅ 백과사전 기반 그대로 사용
-                .userTypeWarnings(report.getUserTypeWarnings())
-                .topSensitiveIngredients(List.of())
+                .ingredients(report.getIngredients())
+                .topRisks(report.getTopRisks())
                 .build();
-    }
-
-    private static double getValue(NutritionReport report, String key) {
-        NutrientResult r = report.getRatios().get(key);
-        return r != null ? r.getValue() : 0.0;
     }
 
     private static List<NutritionReportResponse.NutrientRatio> toRatios(Map<String, NutrientResult> ratios) {
