@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pymongo import MongoClient
 from app.config import get_settings
 from urllib.parse import quote_plus
