@@ -1,8 +1,10 @@
 package com.boindang.community.service;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
 
 import com.boindang.community.client.UserClient;
 import com.boindang.community.dto.request.CreatePostRequest;
@@ -24,10 +26,20 @@ public class PostService {
 	public List<PostResponse> getAllPosts(Long currentUserId) {
 		List<Post> posts = postRepository.findAllByIsDeletedFalseOrderByCreatedAtDesc();
 
+		// userId 목록 추출 후 중복 제거
+		List<Long> userIds = posts.stream()
+			.map(Post::getUserId)
+			.distinct()
+			.toList();
+
+		// USER 서비스에 배치 요청
+		Map<Long, String> usernames = userClient.getUsernamesByIds(userIds);
+
+		// 최종 매핑
 		return posts.stream()
 			.map(post -> {
 				boolean likedByMe = likeRepository.existsByPostIdAndUserIdAndIsDeletedFalse(post.getId(), currentUserId);
-				String username = userClient.getUsernameById(post.getUserId());
+				String username = usernames.getOrDefault(post.getUserId(), "알 수 없음");
 				return PostResponse.from(post, likedByMe, username);
 			})
 			.toList();
