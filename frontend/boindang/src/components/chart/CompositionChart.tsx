@@ -31,6 +31,13 @@ interface CustomTooltipProps {
     payload?: Array<{
         name: string;
         value: number;
+        payload: {
+            id: string;
+            label: string;
+            value: number;
+            color: string;
+            subData?: PieData[];
+        };
     }>;
 }
 
@@ -51,9 +58,10 @@ export default function CompositionChart({ data }: PieChartProps) {
     }, [data]);
 
     // 외부 파이 클릭 시 내부 데이터 업데이트
-    const handleOuterPieClick = (data: { payload: PieData }) => {
+    const handleOuterPieClick = (data: { payload: PieData }, index: number) => {
         if (data && data.payload) {
             setInnerData(data.payload.subData || []);
+            setActiveIndex(index); // 클릭한 섹션의 인덱스를 설정
         }
     };
 
@@ -67,14 +75,14 @@ export default function CompositionChart({ data }: PieChartProps) {
                     cx={cx}
                     cy={cy}
                     innerRadius={innerRadius}
-                    outerRadius={Number(outerRadius) + 5}
+                    outerRadius={Number(outerRadius) + 10} // 더 크게 강조
                     startAngle={startAngle}
                     endAngle={endAngle}
                     fill={fill}
                     cornerRadius={10}
                     style={{
-                        filter: 'drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.1))',
-                        transition: 'all 5.0s ease'
+                        filter: 'drop-shadow(0px 4px 8px rgba(0, 0, 0, 0.2))', // 그림자 강화
+                        transition: 'all 0.5s ease' // 애니메이션 시간 단축
                     }}
                 />
             </g>
@@ -82,11 +90,19 @@ export default function CompositionChart({ data }: PieChartProps) {
     };
 
     const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
-        if (active && payload && payload.length) {
+        if (active && payload && payload.length > 0) {
+            // payload에는 현재 마우스가 올려진 항목의 데이터가 들어있음
+            const item = payload[0];
             return (
-                <div className="bg-white rounded-xl shadow p-4">
-                    <p>{payload[0].name}</p>
-                    <p>{payload[0].value}g</p>
+                <div className="bg-white rounded-xl shadow-lg p-3 border border-gray-100">
+                    <p className="font-semibold text-gray-800">{item.name}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                        <div 
+                            className="w-3 h-3 rounded-full" 
+                            style={{ backgroundColor: item.payload.color }}
+                        ></div>
+                        <p className="font-bold text-lg">{item.value}g</p>
+                    </div>
                 </div>
             );
         }
@@ -94,24 +110,29 @@ export default function CompositionChart({ data }: PieChartProps) {
     };
 
     return (
-        <div className="bg-white rounded-xl shadow p-4 flex flex-col items-start">
-            <div className="flex items-start gap-3">
-                {/* 파이 차트 컨테이너 */}
-                <div className="w-45 h-60">
+        <div className="bg-white rounded-xl shadow p-4 flex flex-col flex-wrap items-start">
+            {/* 반응형 레이아웃: 작은 화면에서는 수직, 중간 크기 이상에서는 수평 */}
+            <div className="flex flex-col md:flex-row items-center md:items-start gap-6 w-full">
+                {/* 파이 차트 컨테이너 - 작은 화면에서는 전체 너비, 중간 크기 이상에서는 60% */}
+                <div className="w-full md:w-1/2 lg:w-3/5 h-60">
                     <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                             {/* 외부 파이 차트 */}
                             <Pie 
                                 data={data} 
                                 dataKey="value"
+                                nameKey="label"
                                 cx="50%"
                                 cy="50%"
                                 innerRadius={50}
                                 outerRadius={80}
                                 paddingAngle={1}
                                 cornerRadius={10}
-                                onClick={handleOuterPieClick}
+                                onClick={(data, index) => handleOuterPieClick(data, index)}
                                 activeIndex={activeIndex}
+                                animationEasing="ease"
+                                animationDuration={500}
+                                animationBegin={0}
                                 activeShape={renderActiveShape}
                                 style={{
                                     filter: 'drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.1))'
@@ -137,6 +158,9 @@ export default function CompositionChart({ data }: PieChartProps) {
                                 innerRadius={0}
                                 outerRadius={45}
                                 paddingAngle={1}
+                                animationEasing="ease"
+                                animationDuration={500}
+                                animationBegin={0}
                                 cornerRadius={10}
                                 style={{
                                     filter: 'drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.1))'
@@ -162,39 +186,54 @@ export default function CompositionChart({ data }: PieChartProps) {
                     </ResponsiveContainer>
                 </div>
 
-                {/* 범례 컨테이너 */}
-                <div className="flex flex-col gap-4">
-                    {/* 외부 파이 차트 범례 */}
-                    <div className="flex flex-col gap-2 text-sm">
-                        <h3 className="font-bold mb-2">주요 성분</h3>
-                        {data.map((item) => (
-                            <div key={item.id} className="flex items-center gap-2">
-                                <span
-                                    className="inline-block w-3 h-3 rounded-full"
-                                    style={{ backgroundColor: item.color }}
-                                />
-                                <span className="font-semibold">{item.label}</span>
-                                <span className="ml-auto">{item.value}g</span>
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* 내부 파이 차트 범례 */}
-                    {innerData.length > 0 && (
+                {/* 범례 컨테이너 - 작은 화면에서는 전체 너비, 중간 크기 이상에서는 40% */}
+                <div className="w-full md:w-1/2 lg:w-2/5 flex flex-col gap-4">
+                    {/* 작은 화면에서는 수평 배치, 중간 크기 이상에서는 수직 배치 */}
+                    <div className="grid grid-cols-1 gap-4 w-full">
+                        {/* 외부 파이 차트 범례 */}
                         <div className="flex flex-col gap-2 text-sm">
-                            <h3 className="font-bold mb-2">상세 성분</h3>
-                            {innerData.map((item) => (
-                                <div key={item.id} className="flex items-center gap-2">
-                                    <span
-                                        className="inline-block w-3 h-3 rounded-full"
-                                        style={{ backgroundColor: item.color }}
-                                    />
-                                    <span className="font-semibold">{item.label}</span>
-                                    <span className="ml-auto">{item.value}g</span>
-                                </div>
-                            ))}
+                            <h3 className="font-bold mb-2">주요 성분</h3>
+                            <div className="space-y-1">
+                                {data.map((item) => (
+                                    <div 
+                                        key={item.id} 
+                                        className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded transition-colors"
+                                        onClick={() => handleOuterPieClick({ payload: item }, data.findIndex(d => d.id === item.id))}
+                                    >
+                                        <span
+                                            className="inline-block w-3 h-3 rounded-full"
+                                            style={{ backgroundColor: item.color }}
+                                        />
+                                        <span className={`font-semibold ${activeIndex === data.findIndex(d => d.id === item.id) ? 'text-gray-900' : 'text-gray-700'}`}>
+                                            {item.label}
+                                        </span>
+                                        <span className={`ml-auto ${activeIndex === data.findIndex(d => d.id === item.id) ? 'font-bold' : ''}`}>
+                                            {item.value}g
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
-                    )}
+
+                        {/* 내부 파이 차트 범례 */}
+                        {innerData.length > 0 && (
+                            <div className="flex flex-col gap-2 text-sm">
+                                <h3 className="font-bold mb-2">상세 성분</h3>
+                                <div className="space-y-1">
+                                    {innerData.map((item) => (
+                                        <div key={item.id} className="flex items-center gap-2 p-1">
+                                            <span
+                                                className="inline-block w-3 h-3 rounded-full"
+                                                style={{ backgroundColor: item.color }}
+                                            />
+                                            <span className="font-semibold">{item.label}</span>
+                                            <span className="ml-auto">{item.value}g</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>
