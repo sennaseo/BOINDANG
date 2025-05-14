@@ -1,5 +1,8 @@
 package com.boindanguser.user.controller;
 
+import java.util.List;
+import java.util.Map;
+
 import com.boindanguser.common.model.dto.ApiResponse;
 import com.boindanguser.user.model.dto.JwtTokenDto;
 import com.boindanguser.user.model.dto.request.ChangeNicknameRequest;
@@ -8,6 +11,8 @@ import com.boindanguser.user.model.dto.request.UserLoginRequest;
 import com.boindanguser.user.service.UserService;
 import com.boindanguser.user.model.dto.request.UserSignupRequest;
 import com.boindanguser.user.model.dto.response.UserResponse;
+
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -62,6 +67,13 @@ public class UserController {
     @GetMapping("/check-username")
     public ApiResponse<Boolean> checkUsernameExists(@RequestParam String username) {
         return ApiResponse.success(userService.isUsernameTaken(username));
+    }
+
+    @Operation(summary = "사용자 이름 일괄 조회", description = "커뮤니티 서비스 백엔드를 위한 코드입니당~~")
+    @PostMapping("/users/batch")
+    public ApiResponse<Map<Long, String>> getUsernames(@RequestBody List<Long> userIds) {
+        Map<Long, String> result = userService.getUsernamesByIds(userIds);
+        return ApiResponse.success(result);
     }
 
 }

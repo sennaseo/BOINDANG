@@ -1,5 +1,9 @@
 package com.boindanguser.user.service;
 
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -112,6 +116,12 @@ public class UserService {
 
 	public boolean isUsernameTaken(String username) {
 		return userRepository.existsByUsername(username);
+	}
+
+	public Map<Long, String> getUsernamesByIds(List<Long> userIds) {
+		List<User> users = userRepository.findAllById(userIds);
+		return users.stream()
+			.collect(Collectors.toMap(User::getId, User::getUsername));
 	}
 
 }
