@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 @RequiredArgsConstructor
 public enum ErrorCode {
-	CAMPAIGN_NOT_FOUND(404, "해당 캠페인이 존재하지 않습니다.");
+	FORBIDDEN_DELETE_POST(403, "해당 게시글의 삭제 권한이 없습니다.");
 
 	private final int code;
 	private final String message;
