@@ -1,9 +1,13 @@
 package com.boindang.campaign.domain.service;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+
 import com.boindang.campaign.common.annotation.DomainService;
 import com.boindang.campaign.common.exception.CampaignException;
 import com.boindang.campaign.common.exception.ErrorCode;
 import com.boindang.campaign.domain.model.Campaign;
+import com.boindang.campaign.domain.model.CampaignStatus;
 import com.boindang.campaign.infrastructure.repository.CampaignApplicationRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -21,19 +25,23 @@ public class CampaignApplicationPolicy {
      * @throws CampaignException 신청 불가 상황에 대한 예외
      */
     public void validateApplication(Campaign campaign, Long userId) {
-        // 1. 모집 기간 및 상태 확인
-        campaign.updateStatusByDate();  // 현재 시간 기준으로 상태 갱신
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
 
-        if (!campaign.isAvailable()) {
-            throw new CampaignException(ErrorCode.CAMPAIGN_NOT_AVAILABLE);
+        // 1. 모집 기간 상태 확인 (startDate/endDate 기준)
+        CampaignStatus currentStatus = campaign.calculateStatus(now);
+        if (currentStatus != CampaignStatus.OPEN) {
+            throw new CampaignException(ErrorCode.CAMPAIGN_NOT_AVAILABLE); // "진행 중이 아닙니다"
         }
 
-        // 2. 중복 신청 여부 확인
-        boolean alreadyApplied = applicationRepository.existsByCampaignIdAndUserId(campaign.getId(), userId);
-        if (alreadyApplied) {
-            throw new CampaignException(ErrorCode.ALREADY_APPLIED);
+        // 2. 정원 초과 여부 체크
+        if (campaign.getCurrentApplicants() >= campaign.getCapacity()) {
+            throw new CampaignException(ErrorCode.CAMPAIGN_CAPACITY_EXCEEDED); // "모집 인원이 모두 찼습니다"
         }
 
-        // 인원 마감은 Campaign 엔티티 내에서 자체적으로 판단 & 예외 발생
+        // 3. 중복 신청 여부 확인
+        if (userId != null && applicationRepository.existsByCampaignIdAndUserId(campaign.getId(), userId)) {
+            throw new CampaignException(ErrorCode.ALREADY_APPLIED); // "이미 신청한 캠페인입니다"
+        }
     }
 }
+

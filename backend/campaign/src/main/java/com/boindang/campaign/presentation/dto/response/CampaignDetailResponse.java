@@ -28,8 +28,9 @@ public class CampaignDetailResponse {
 	private int applicantCount;
 	private List<String> hashtags;
 	private List<String> notices;
+	private boolean isApplied;
 
-	public static CampaignDetailResponse from(Campaign campaign) {
+	public static CampaignDetailResponse from(Campaign campaign, boolean isApplied) {
 		return CampaignDetailResponse.builder()
 			.id(campaign.getId())
 			.name(campaign.getName())
@@ -44,6 +45,7 @@ public class CampaignDetailResponse {
 			.applicantCount(campaign.getCurrentApplicants())
 			.hashtags(campaign.getHashtags())
 			.notices(campaign.getNotices())
+			.isApplied(isApplied)
 			.build();
 	}
 

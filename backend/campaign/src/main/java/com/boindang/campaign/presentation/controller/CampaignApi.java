@@ -66,6 +66,9 @@ public interface CampaignApi {
 	})
 	@GetMapping
 	BaseResponse<CampaignListResponse> getCampaigns(
+		@Parameter(description = "사용자 ID", required = true)
+		@RequestHeader("X-User-Id") String userId,
+
 		@Parameter(description = "체험단 상태 필터 ('모집 예정', '진행중', '종료')")
 		@RequestParam(required = false) String status,
 
@@ -123,6 +126,9 @@ public interface CampaignApi {
 	})
 	@GetMapping("/{campaignId}")
 	BaseResponse<CampaignDetailResponse> getCampaignDetail(
+		@Parameter(description = "사용자 ID", required = true)
+		@RequestHeader("X-User-Id") String userId,
+
 		@Parameter(description = "캠페인 ID", required = true)
 		@PathVariable("campaignId") Long campaignId
 	);
