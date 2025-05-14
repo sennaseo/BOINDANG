@@ -7,14 +7,18 @@ import com.boindang.campaign.domain.model.CampaignStatus;
 import com.boindang.campaign.infrastructure.repository.CampaignApplicationRepository;
 import com.boindang.campaign.infrastructure.repository.CampaignRepository;
 import com.boindang.campaign.presentation.dto.response.CampaignDetailResponse;
+import com.boindang.campaign.presentation.dto.response.CampaignListResponse;
 import com.boindang.campaign.presentation.dto.response.CampaignSummaryResponse;
 import com.boindang.campaign.presentation.dto.response.MyApplicationResponse;
 
+import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,24 +29,54 @@ public class CampaignService {
 	private final CampaignRepository campaignRepository;
 	private final CampaignApplicationRepository applicationRepository;
 
-	public List<CampaignSummaryResponse> getCampaigns(String status, int size, int page) {
-		List<Campaign> campaigns;
+	public CampaignListResponse getCampaigns(String status, int size, int page) {
+		// 전체 데이터 조회
+		List<Campaign> allCampaigns = campaignRepository.findAll();
 
-		if (status == null) {
-			campaigns = campaignRepository.findAll(PageRequest.of(page, size)).getContent();
-		} else {
-			CampaignStatus statusEnum = switch (status) {
-				case "모집 예정" -> CampaignStatus.PENDING;
-				case "진행중" -> CampaignStatus.OPEN;
-				case "종료" -> CampaignStatus.CLOSED;
-				default -> throw new IllegalArgumentException("유효하지 않은 상태입니다.");
-			};
-			campaigns = campaignRepository.findByStatus(statusEnum, PageRequest.of(page, size));
-		}
+		// 상태 필터링
+		List<Campaign> filtered = allCampaigns.stream()
+			.filter(campaign -> {
+				if (status == null) return true;
+				return switch (status) {
+					case "진행중" -> campaign.getStatus() == CampaignStatus.OPEN;
+					case "모집 예정" -> campaign.getStatus() == CampaignStatus.PENDING;
+					case "종료" -> campaign.getStatus() == CampaignStatus.CLOSED;
+					default -> throw new IllegalArgumentException("유효하지 않은 상태입니다.");
+				};
+			})
+			.toList();
 
-		return campaigns.stream()
+		// 복합 정렬 로직
+		List<Campaign> sorted = filtered.stream()
+			.sorted(Comparator
+				.comparing((Campaign c) -> {
+					// 상태 우선순위 지정
+					return switch (c.getStatus()) {
+						case OPEN -> 0;
+						case PENDING -> 1;
+						case CLOSED -> 2;
+					};
+				})
+				.thenComparing(c -> {
+					// 상태별로 정렬 기준 다르게 적용
+					return switch (c.getStatus()) {
+						case OPEN, CLOSED -> c.getEndDate();
+						case PENDING -> c.getStartDate();
+					};
+				})
+			)
+			.toList();
+
+		// 수동 페이징
+		int fromIndex = page * size;
+		int toIndex = Math.min(fromIndex + size, sorted.size());
+		List<CampaignSummaryResponse> pageContent = sorted.subList(fromIndex, toIndex).stream()
 			.map(CampaignSummaryResponse::from)
-			.collect(Collectors.toList());
+			.toList();
+
+		int totalPages = (int) Math.ceil((double) sorted.size() / size);
+
+		return new CampaignListResponse(totalPages, pageContent);
 	}
 
 	@Transactional(readOnly = true)
