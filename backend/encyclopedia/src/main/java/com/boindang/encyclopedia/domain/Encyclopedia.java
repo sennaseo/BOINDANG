@@ -16,7 +16,7 @@ import lombok.Getter;
 public class Encyclopedia {
 	@Id
 	@GeneratedValue
-	private Long id;
+	private String id;
 
 	private String name;
 
