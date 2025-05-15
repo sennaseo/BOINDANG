@@ -1,15 +1,10 @@
 package com.nutritionservice.nutrition.contoller;
 
 import com.nutritionservice.common.model.dto.ApiResponse;
-import com.nutritionservice.nutrition.mapper.NutritionReportMapper;
-import com.nutritionservice.nutrition.model.document.NutritionReport;
-import com.nutritionservice.nutrition.model.dto.external.UserInfo;
 import com.nutritionservice.nutrition.model.dto.response.NutritionReportHistoryResponse;
 import com.nutritionservice.nutrition.model.dto.response.NutritionReportResponse;
 import com.nutritionservice.nutrition.service.NutritionService;
-import com.nutritionservice.nutrition.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
