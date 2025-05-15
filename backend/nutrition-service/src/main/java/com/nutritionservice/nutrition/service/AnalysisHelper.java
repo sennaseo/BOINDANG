@@ -17,17 +17,17 @@ public class AnalysisHelper {
     public static Map<String, NutrientResult> calculateRatios(ProductNutrition product, UserInfo user) {
         logger.debug("변수 초기화 시작");
         Nutrition ns = product.getResult().getNutritionAnalysis().getNutrition();
+        logger.debug("ns: " + ns.toString());
         UserType userType = UserType.valueOf(user.getUserType());
-
+        logger.debug("userType: " + userType);
         Map<String, NutrientResult> result = new HashMap<>();
-
-        logger.debug("변수 초기화 완료\nns: " + ns.toString() + "\nuserType: " + userType + "------------------");
+        logger.debug("변수 초기화 성공");
 
         result.put("단백질", makeResult("protein", ns.getProtein().getGram(), ns.getProtein().getRatio(), userType));
         result.put("지방", makeResult("fat", ns.getFat().getGram(), ns.getFat().getRatio(), userType));
         result.put("탄수화물", makeResult("carbohydrate", ns.getCarbohydrate().getGram(), ns.getCarbohydrate().getRatio(), userType));
 
-        logger.debug("탄단지 삽입 완료\nresult: "+result.get("탄수화물")+result.get("단백질")+result.get("지방"));
+        logger.debug("탄단지 삽입 완료\nresult: " + result.get("탄수화물") + result.get("단백질") + result.get("지방"));
 
         if (ns.getSodium() != null) {
             double sodiumGram = ns.getSodium().getMg() != null
