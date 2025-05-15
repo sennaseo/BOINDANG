@@ -17,6 +17,9 @@ import java.util.Map;
 public class NutritionReportResponse {
 
     private String productName; // 제품 이름
+    private String ingredientImageUrl;
+    private String nutritionImageUrl;
+
     private int kcal;           // 총 열량
 
     private int estimatedGi;    // 통합 GI
@@ -33,6 +36,8 @@ public class NutritionReportResponse {
     public static NutritionReportResponse from(NutritionReport report) {
         return NutritionReportResponse.builder()
                 .productName(report.getProductName())
+                .nutritionImageUrl(report.getNutritionImageUrl())
+                .ingredientImageUrl(report.getIngredientImageUrl())
                 .kcal(report.getKcal())
                 .estimatedGi(58) // TODO: 실제 로직으로 대체 가능
                 .giGrade("위험")  // TODO: 실제 로직으로 대체 가능

@@ -17,6 +17,8 @@ public class ProductNutrition {
     private ObjectId id;
     private String name;
     private ProductResult result;
+    private String ingredientImageUrl;
+    private String nutritionImageUrl;
 }
 
 

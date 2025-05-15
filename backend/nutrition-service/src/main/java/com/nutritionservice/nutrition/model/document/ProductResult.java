@@ -13,12 +13,8 @@ import java.time.OffsetDateTime;
 @ToString
 public class ProductResult {
 
-    @Field("ingredient_analysis")
     private IngredientAnalysis ingredientAnalysis;
-
-    @Field("nutrition_analysis")
     private NutritionAnalysis nutritionAnalysis;
-
     @Field("updatedAt")
     private OffsetDateTime updatedAt;
 }
