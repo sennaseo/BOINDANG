@@ -28,6 +28,9 @@ springdoc:
   api-docs:
     path: /nutrition/v3/api-docs
 
+  logging:
+    level: debug
+
 #  logging:
 #    level:
 #      p6spy: info   # ? ??? ??? SQL? ??
