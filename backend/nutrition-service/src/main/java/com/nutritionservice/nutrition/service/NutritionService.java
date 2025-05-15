@@ -103,31 +103,45 @@ public class NutritionService {
 //        String token = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMCIsImlhdCI6MTc0NzExMzM3MiwiZXhwIjoxNzQ3MzcyNTcyfQ.MQNJBZGWVnwKebMxLSvW-dgKOblln1jwKvg5ieVyJ4M";  // 실제 토큰 입력 필요
 //        EncyclopediaResponse encyclopediaResponse = encyclopediaClient.getIngredientDetails(token, encyclopediaRequest);
 
+        // 백과사전 API 호출 (유레카)
         EncyclopediaResponse encyclopediaResponse;
-
         try {
             String url = eurekaService.getUrl("ENCYCLOPEDIA") + "/encyclopedia/user-type";
-            System.out.println("url: " + url);
+            System.out.println("🔗 백과사전 호출 URL: " + url);
             encyclopediaResponse = restClient.post()
                     .uri(url)
-                    .header("X-User-Id", "1")
+                    .header("X-User-Id", userInfo.getId())
                     .body(encyclopediaRequest)
                     .retrieve()
                     .body(EncyclopediaResponse.class);
         } catch (Exception e) {
-            throw new RuntimeException("힝 이게 머노: " + e.getMessage(), e);
+            throw new RuntimeException("📛 백과사전 호출 실패: " + e.getMessage(), e);
         }
 
+        // 유효성 검증
+        if (encyclopediaResponse == null || encyclopediaResponse.getData() == null) {
+            throw new RuntimeException("📛 백과사전 응답이 null입니다.");
+        }
 
-//        List<IngredientDetail> ingredientWarnings = encyclopediaResponse.getData().getIngredients();
+        // 데이터 필드 검증
+        List<IngredientDetail> allDetails = encyclopediaResponse.getData().getIngredients();
         List<TopRisk> topRisks = encyclopediaResponse.getData().getTopRisks();
+
+        if (allDetails == null || allDetails.isEmpty()) {
+            System.out.println("⚠️ 백과사전 성분 상세정보가 없습니다. → ingredientDetails=null");
+            allDetails = new ArrayList<>();
+        }
+
+        if (topRisks == null || topRisks.isEmpty()) {
+            System.out.println("⚠️ 우선순위 위험 성분 정보가 없습니다. → topRisks=null");
+            topRisks = new ArrayList<>();
+        }
+
 
         // 6. 원재료 용도별로 분리하여 매핑
         Map<String, List<String>> categorized = product.getResult()
                 .getIngredientAnalysis()
                 .getCategorizedIngredients();
-
-        List<IngredientDetail> allDetails = encyclopediaResponse.getData().getIngredients();
 
         Map<String, List<IngredientDetail>> categorizedMap = new LinkedHashMap<>();
 
