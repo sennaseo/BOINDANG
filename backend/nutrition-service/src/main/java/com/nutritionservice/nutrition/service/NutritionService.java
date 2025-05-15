@@ -71,16 +71,10 @@ public class NutritionService {
 
     public NutritionReportResponse analyzeProductForUser(String userId, String productId){
 
-
         // 0. 유저 조회
         UserInfo userInfo = userService.getUserById(userId);
 
         System.out.println("👤 [유저 정보 조회 완료]");
-        System.out.println(" - ID: " + userInfo.getId());
-        System.out.println(" - 성별: " + userInfo.getGender());
-        System.out.println(" - 키(cm): " + userInfo.getHeight());
-        System.out.println(" - 몸무게(kg): " + userInfo.getWeight());
-        System.out.println(" - 유저 타입: " + userInfo.getUserType());
 
         // 1. 제품 조회
         logger.debug("제품 조회 시작");
@@ -120,6 +114,8 @@ public class NutritionService {
 
         // 백과사전 requestDto
         EncyclopediaRequest encyclopediaRequest = new EncyclopediaRequest(ingredientNames, userType);
+        logger.debug("원재료 -> "+ ingredientNames);
+        logger.debug("유저타입 -> " + userType);
 
 //        String token = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMCIsImlhdCI6MTc0NzExMzM3MiwiZXhwIjoxNzQ3MzcyNTcyfQ.MQNJBZGWVnwKebMxLSvW-dgKOblln1jwKvg5ieVyJ4M";  // 실제 토큰 입력 필요
 //        EncyclopediaResponse encyclopediaResponse = encyclopediaClient.getIngredientDetails(token, encyclopediaRequest);
