@@ -41,6 +41,9 @@ public enum ApiResponseStatus {
     ENCYCLOPEDIA_INGREDIENT_EMPTY(false, HttpStatus.NO_CONTENT, 5103, "백과사전 성분 상세정보가 없습니다."),
     ENCYCLOPEDIA_TOP_RISK_EMPTY(false, HttpStatus.NO_CONTENT, 5104, "우선순위 위험 성분 정보가 없습니다."),
 
+    // 리포트
+    REPORT_NOT_FOUND(false, HttpStatus.NOT_FOUND, 5201, "해당 유저의 리포트가 존재하지 않습니다."),
+
     ;
 
     private final boolean isSuccess;
