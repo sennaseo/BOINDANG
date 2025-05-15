@@ -11,4 +11,5 @@ services:
       JWT_SECRET: ${JWT_SECRET}
     ports:
       - "8080:8080"
+      - "1111:1111"
     restart: always
