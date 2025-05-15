@@ -15,17 +15,9 @@ public class AnalysisHelper {
     private static final Logger logger = LoggerFactory.getLogger(NutritionService.class);
 
     public static Map<String, NutrientResult> calculateRatios(ProductNutrition product, UserInfo user) {
-        logger.debug("변수 초기화 시작");
-        logger.debug("getResult: " + product.getResult());
-        logger.debug("getNutritionAnalysis: " + product.getResult().getNutritionAnalysis());
-        logger.debug("getNutrition: " + product.getResult().getNutritionAnalysis().getNutrition());
-        
         Nutrition ns = product.getResult().getNutritionAnalysis().getNutrition();
-        logger.debug("ns: " + ns.toString());
         UserType userType = UserType.valueOf(user.getUserType());
-        logger.debug("userType: " + userType);
         Map<String, NutrientResult> result = new HashMap<>();
-        logger.debug("변수 초기화 성공");
 
         result.put("단백질", makeResult("protein", ns.getProtein().getGram(), ns.getProtein().getRatio(), userType));
         result.put("지방", makeResult("fat", ns.getFat().getGram(), ns.getFat().getRatio(), userType));
@@ -48,25 +40,45 @@ public class AnalysisHelper {
         }
         logger.debug("콜레스테롤");
 
-        if (ns.getFat() != null && ns.getFat().getSub() != null) {
-            if (ns.getFat().getSub().getSaturatedFat() != null) {
+        if (ns.getFat() != null && ns.getFat().getFatSub() != null) {
+            if (ns.getFat().getFatSub().getSaturatedFat() != null) {
                 result.put("포화지방", makeResult(
                         "saturatedFat",
-                        ns.getFat().getSub().getSaturatedFat().getGram(),
-                        ns.getFat().getSub().getSaturatedFat().getRatio(),
+                        ns.getFat().getFatSub().getSaturatedFat().getGram(),
+                        ns.getFat().getFatSub().getSaturatedFat().getRatio(),
                         userType
                 ));
             }
-            if (ns.getFat().getSub().getTransFat() != null) {
+            if (ns.getFat().getFatSub().getTransFat() != null) {
                 result.put("트랜스지방", makeResult(
                         "transFat",
-                        ns.getFat().getSub().getTransFat().getGram(),
-                        ns.getFat().getSub().getTransFat().getRatio(),
+                        ns.getFat().getFatSub().getTransFat().getGram(),
+                        ns.getFat().getFatSub().getTransFat().getRatio(),
                         userType
                 ));
             }
         }
         logger.debug("지방");
+
+        if (ns.getCarbohydrate() != null && ns.getCarbohydrate().getCarbSub() != null) {
+            if (ns.getCarbohydrate().getCarbSub().getSugar() != null) {
+                result.put("당류", makeResult(
+                        "sugar",
+                        ns.getCarbohydrate().getCarbSub().getSugar().getGram(),
+                        ns.getCarbohydrate().getCarbSub().getSugar().getRatio(),
+                        userType
+                ));
+            }
+            if (ns.getCarbohydrate().getCarbSub().getFiber() != null) {
+                result.put("식이섬유", makeResult(
+                        "fiber",
+                        ns.getCarbohydrate().getCarbSub().getFiber().getGram(),
+                        ns.getCarbohydrate().getCarbSub().getFiber().getRatio(),
+                        userType
+                ));
+            }
+        }
+        logger.debug("탄수화물");
 
 
         System.out.println("✅ 계산된 영양 비율 결과:");
