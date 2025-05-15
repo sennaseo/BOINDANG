@@ -25,12 +25,14 @@ public class NutritionReport {
     private String userId;
     private String productId;
     private String productName;
+    private String ingredientImageUrl;
+    private String nutritionImageUrl;
     private LocalDateTime analyzedAt;
 
     private int kcal;
     private Map<String, NutrientResult> ratios;
 
-    private Map<String, List<IngredientDetail>> categorizedIngredients; // ✅ 추가
+    private Map<String, List<IngredientDetail>> categorizedIngredients;
     private List<TopRisk> topRisks;
 
     private String nutritionSummary;
@@ -51,6 +53,8 @@ public class NutritionReport {
                 .userId(userId)
                 .productId(product.getId().toHexString())
                 .productName(product.getName())
+                .nutritionImageUrl(product.getNutritionImageUrl())
+                .ingredientImageUrl(product.getIngredientImageUrl())
                 .analyzedAt(LocalDateTime.now())
                 .kcal(totalKcal)
                 .ratios(ratios)
