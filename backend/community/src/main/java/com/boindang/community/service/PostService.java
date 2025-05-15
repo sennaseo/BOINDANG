@@ -75,6 +75,7 @@ public class PostService {
 	public Long createPost(Long userId, CreatePostRequest request) {
 		Post post = Post.builder()
 			.userId(userId)
+			.category(request.getCategory())
 			.title(request.getTitle())
 			.content(request.getContent())
 			.imageId(request.getImageId())
