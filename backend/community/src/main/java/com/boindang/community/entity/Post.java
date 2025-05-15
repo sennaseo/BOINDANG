@@ -20,6 +20,8 @@ public class Post {
 	@Column(nullable = false)
 	private Long userId; // MSA 기반 외래키. USER 서비스 참조
 
+	private String category;
+
 	@Column(nullable = false, length = 255)
 	private String title;
 

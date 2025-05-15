@@ -12,11 +12,11 @@ import com.boindang.community.entity.Post;
 public class PostResponse {
 
 	private Long postId;
+	private String category;
 	private String title;
 	private String content;
 	private Long imageId;
 
-	private Long userId;
 	private String username;       // USER 서비스에서 가져옴
 
 	private int commentCount;
@@ -28,10 +28,10 @@ public class PostResponse {
 	public static PostResponse from(Post post, boolean likedByMe, String username) {
 		return PostResponse.builder()
 			.postId(post.getId())
+			.category(post.getCategory())
 			.title(post.getTitle())
 			.content(post.getContent())
 			.imageId(post.getImageId())
-			.userId(post.getUserId())
 			.username(username)
 			.commentCount(post.getCommentCount())
 			.likeCount(post.getLikeCount())

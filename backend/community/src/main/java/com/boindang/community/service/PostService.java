@@ -3,6 +3,8 @@ package com.boindang.community.service;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
@@ -10,6 +12,7 @@ import com.boindang.community.client.UserClient;
 import com.boindang.community.common.exception.CommunityException;
 import com.boindang.community.common.exception.ErrorCode;
 import com.boindang.community.dto.request.CreatePostRequest;
+import com.boindang.community.dto.response.PostListResponse;
 import com.boindang.community.dto.response.PostResponse;
 import com.boindang.community.entity.Post;
 import com.boindang.community.repository.LikeRepository;
@@ -25,8 +28,18 @@ public class PostService {
 	private final LikeRepository likeRepository;
 	private final UserClient userClient;
 
-	public List<PostResponse> getAllPosts(Long currentUserId) {
-		List<Post> posts = postRepository.findAllByIsDeletedFalseOrderByCreatedAtDesc();
+	public PostListResponse getAllPosts(Long currentUserId, String category, int size, int page) {
+		PageRequest pageRequest = PageRequest.of(page, size);
+		Page<Post> postPage;
+
+		// ✅ 카테고리 조건 분기
+		if (category == null) {
+			postPage = postRepository.findAllByIsDeletedFalseOrderByCreatedAtDesc(pageRequest);
+		} else {
+			postPage = postRepository.findAllByIsDeletedFalseAndCategoryOrderByCreatedAtDesc(category, pageRequest);
+		}
+
+		List<Post> posts = postPage.getContent();
 
 		// userId 목록 추출 후 중복 제거
 		List<Long> userIds = posts.stream()
@@ -38,13 +51,15 @@ public class PostService {
 		Map<Long, String> usernames = userClient.getUsernamesByIds(userIds);
 
 		// 최종 매핑
-		return posts.stream()
+		List<PostResponse> responseList = posts.stream()
 			.map(post -> {
 				boolean likedByMe = likeRepository.existsByPostIdAndUserIdAndIsDeletedFalse(post.getId(), currentUserId);
 				String username = usernames.getOrDefault(post.getUserId(), "알 수 없음");
 				return PostResponse.from(post, likedByMe, username);
 			})
 			.toList();
+
+		return new PostListResponse(postPage.getTotalPages(), responseList);
 	}
 
 	public PostResponse getPostById(Long postId, Long currentUserId) {
