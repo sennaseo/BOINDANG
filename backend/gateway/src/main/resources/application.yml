@@ -81,6 +81,15 @@ eureka:
     service-url:
       defaultZone: ${EUREKA_URL}
 
+# prometheusds
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  server:
+    port: 1111
+
 server:
   port: 8000
 
