@@ -10,6 +10,7 @@ import java.time.OffsetDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString
 public class ProductResult {
 
     @Field("ingredient_analysis")

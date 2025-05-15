@@ -7,6 +7,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString
 public class NutritionAnalysis {
     private Nutrition nutrition;
     private String summary;
