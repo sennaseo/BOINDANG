@@ -1,5 +1,6 @@
 package com.boindang.encyclopedia.presentation.dto.response;
 
+import com.boindang.encyclopedia.domain.Encyclopedia;
 import com.boindang.encyclopedia.domain.IngredientDictionary;
 import lombok.Builder;
 import lombok.Getter;
@@ -39,5 +40,14 @@ public class EncyclopediaSearchResponse {
                 .type((String) src.get("type"))
                 .riskLevel(riskLabel)
                 .build();
+    }
+    public static EncyclopediaSearchResponse from3(Encyclopedia entity) {
+        return EncyclopediaSearchResponse.builder()
+            .id(String.valueOf(entity.getId()))
+            .name(entity.getName())
+            .engName(entity.getEngName())
+            .type(entity.getType())
+            .riskLevel(entity.getRiskLevel().getLabel())
+            .build();
     }
 }
