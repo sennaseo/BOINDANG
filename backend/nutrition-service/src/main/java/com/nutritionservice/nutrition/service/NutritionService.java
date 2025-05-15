@@ -9,12 +9,16 @@ import com.nutritionservice.nutrition.repository.NutritionReportRepository;
 import com.nutritionservice.nutrition.repository.ProductNutritionRepository;
 import com.nutritionservice.nutrition.util.UserTypeConverter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
 import java.time.LocalDateTime;
 import java.util.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class NutritionService {
@@ -25,11 +29,12 @@ public class NutritionService {
     private final RestClient restClient;
     private final EurekaService eurekaService;
 
-//    @PostConstruct
+    //    @PostConstruct
     public void testEncyclopediaApi() {
         List<String> testIngredients = List.of("말티톨", "말토덱스트린", "스테비아");
         EncyclopediaRequest request = new EncyclopediaRequest(testIngredients, "dieter");
 
+        Logger logger = LoggerFactory.getLogger(NutritionService.class);
 //        EncyclopediaResponse response = encyclopediaClient.getIngredientDetails(token, request);
 
         EncyclopediaResponse response;
@@ -63,6 +68,7 @@ public class NutritionService {
 
     public NutritionReport analyzeProductForUser(UserInfo userInfo, String productId) {
         // 1. 제품 조회
+
         ProductNutrition product = productRepo.findById(productId)
                 .orElseThrow(() -> new RuntimeException("해당 제품이 존재하지 않습니다."));
 
