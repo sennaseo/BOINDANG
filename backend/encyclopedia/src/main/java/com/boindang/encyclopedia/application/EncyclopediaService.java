@@ -7,6 +7,8 @@ import com.boindang.encyclopedia.domain.IngredientDictionary;
 import com.boindang.encyclopedia.infrastructure.EncyclopediaRepository;
 import com.boindang.encyclopedia.presentation.dto.response.EncyclopediaDetailResponse;
 import com.boindang.encyclopedia.presentation.dto.response.EncyclopediaSearchResponse;
+import com.boindang.encyclopedia.presentation.dto.response.IngredientListResponse;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,56 +40,85 @@ public class EncyclopediaService {
 
     private static final Set<String> VALID_TYPES = Set.of("감미료", "식품첨가물", "단백질", "당류", "탄수화물", "식이섬유", "지방", "비타민", "미네랄");
 
-    public Map<String, Object> searchWithSuggestion(String query, boolean suggested) {
-        log.info("🩵 Elasticsearch 검색 실행: query={}, suggested={}", query, suggested);
+    public Map<String, Object> searchWithSuggestion(String query, boolean flag) {
+        log.info("🩵 Elasticsearch 검색 실행: query={}, suggested={}", query, flag);
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("originalQuery", query);  // 항상 포함
+        result.put("originalQuery", query);
 
-        if (!suggested) {
+        if (!flag) {
             List<EncyclopediaSearchResponse> exactResults = encyclopediaRepository.findByNameContaining(query)
                 .stream()
                 .map(EncyclopediaSearchResponse::from)
                 .toList();
+
+            // ✅ 정확 검색도 카운트 집계
+            popularIngredientService.incrementSearchCount(query);
 
             result.put("suggestedName", null);
             result.put("results", exactResults);
             return result;
         }
 
-        SearchSourceBuilder builder = new SearchSourceBuilder()
-            .query(QueryBuilders.matchQuery("name", query).fuzziness(Fuzziness.AUTO))
-            .size(20);
-
-        SearchRequest request = new SearchRequest("ingredients").source(builder);
-
         try {
-            SearchResponse response = client.search(request, RequestOptions.DEFAULT);
-            List<EncyclopediaSearchResponse> results = Arrays.stream(response.getHits().getHits())
-                .map(hit -> EncyclopediaSearchResponse.from2(hit.getSourceAsMap()))
-                .collect(Collectors.toList());
-
-            if (!results.isEmpty()) {
-                String accurateName = results.get(0).getName();
-                result.put("suggestedName", !accurateName.equalsIgnoreCase(query) ? accurateName : null);
-                result.put("results", results);
-
-                // ✅ 무조건 추천 결과 기준으로 카운트 반영
-                popularIngredientService.incrementSearchCount(accurateName);
-
-                return result;
-            }
-
-            // fallback 처리
-            SearchSourceBuilder fallbackBuilder = new SearchSourceBuilder()
+            // ✅ 1단계: prefixQuery (자동완성)
+            SearchSourceBuilder prefixBuilder = new SearchSourceBuilder()
                 .query(QueryBuilders.prefixQuery("name.keyword", query))
                 .size(20);
 
-            SearchRequest fallbackRequest = new SearchRequest("ingredients").source(fallbackBuilder);
-            SearchResponse fallbackResponse = client.search(fallbackRequest, RequestOptions.DEFAULT);
+            SearchResponse prefixResponse = client.search(
+                new SearchRequest("ingredients").source(prefixBuilder),
+                RequestOptions.DEFAULT
+            );
 
-            List<EncyclopediaSearchResponse> fallbackResults = Arrays.stream(fallbackResponse.getHits().getHits())
+            List<EncyclopediaSearchResponse> prefixResults = Arrays.stream(prefixResponse.getHits().getHits())
                 .map(hit -> EncyclopediaSearchResponse.from2(hit.getSourceAsMap()))
                 .collect(Collectors.toList());
+
+            if (!prefixResults.isEmpty()) {
+                // ✅ prefix 검색어도 그대로 카운트
+                popularIngredientService.incrementSearchCount(query);
+
+                result.put("suggestedName", null);
+                result.put("results", prefixResults);
+                return result;
+            }
+
+            // ✅ 2단계: 오타 대응 fuzzy match
+            SearchSourceBuilder fuzzyBuilder = new SearchSourceBuilder()
+                .query(QueryBuilders.matchQuery("name", query)
+                    .fuzziness(Fuzziness.TWO)
+                    .prefixLength(0)
+                    .maxExpansions(50)
+                    .fuzzyTranspositions(true))
+                .size(1);
+
+            SearchResponse fuzzyResponse = client.search(
+                new SearchRequest("ingredients").source(fuzzyBuilder),
+                RequestOptions.DEFAULT
+            );
+
+            List<EncyclopediaSearchResponse> fuzzyResults = Arrays.stream(fuzzyResponse.getHits().getHits())
+                .map(hit -> EncyclopediaSearchResponse.from2(hit.getSourceAsMap()))
+                .collect(Collectors.toList());
+
+            if (!fuzzyResults.isEmpty()) {
+                String accurateName = fuzzyResults.get(0).getName();
+
+                // ✅ 추천어로 카운트
+                popularIngredientService.incrementSearchCount(accurateName);
+
+                result.put("suggestedName", !accurateName.equalsIgnoreCase(query) ? accurateName : null);
+                result.put("results", fuzzyResults);
+                return result;
+            }
+
+            // ✅ fallback도 검색어 그대로 카운트
+            popularIngredientService.incrementSearchCount(query);
+
+            List<EncyclopediaSearchResponse> fallbackResults = encyclopediaRepository.findByNameContaining(query)
+                .stream()
+                .map(EncyclopediaSearchResponse::from)
+                .toList();
 
             result.put("suggestedName", null);
             result.put("results", fallbackResults);
@@ -105,30 +136,41 @@ public class EncyclopediaService {
         return EncyclopediaMapper.toDetailResponse(ingredient);
     }
 
-    public List<EncyclopediaSearchResponse> getIngredientsByType(String category, String sort, String order, int size) {
+    public IngredientListResponse getIngredientsByType(String category, String sort, String order, int size, int page) {
         if (!VALID_TYPES.contains(category)) {
             throw new IngredientException(ErrorCode.INGREDIENT_NOT_FOUND);
         }
 
+        // 1. 필터 조건
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery()
-                .filter(QueryBuilders.termQuery("category", category));
+            .filter(QueryBuilders.termQuery("category", category));
 
+        // 2. 정렬 조건
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder()
-                .query(boolQuery)
-                .size(size);
+            .query(boolQuery)
+            .from(page * size)  // ✅ 페이징 처리 시작 인덱스
+            .size(size);        // ✅ 한 페이지 크기
 
         if (sort != null && (sort.equals("gi") || sort.equals("sweetness"))) {
             SortOrder sortOrder = "asc".equalsIgnoreCase(order) ? SortOrder.ASC : SortOrder.DESC;
             sourceBuilder.sort(new FieldSortBuilder(sort).order(sortOrder));
         }
 
+        // 3. Elasticsearch 요청 생성
         SearchRequest request = new SearchRequest("ingredients").source(sourceBuilder);
 
         try {
             SearchResponse response = client.search(request, RequestOptions.DEFAULT);
-            return Arrays.stream(response.getHits().getHits())
-                    .map(hit -> EncyclopediaSearchResponse.from2(hit.getSourceAsMap()))
-                    .collect(Collectors.toList());
+
+            long totalHits = response.getHits().getTotalHits().value;
+            int totalPages = (int) Math.ceil((double) totalHits / size);
+
+            List<EncyclopediaSearchResponse> ingredients = Arrays.stream(response.getHits().getHits())
+                .map(hit -> EncyclopediaSearchResponse.from2(hit.getSourceAsMap()))
+                .collect(Collectors.toList());
+
+            return new IngredientListResponse(totalPages, ingredients);
+
         } catch (IOException e) {
             throw new IngredientException(ErrorCode.INGREDIENT_NOT_FOUND);
         }
