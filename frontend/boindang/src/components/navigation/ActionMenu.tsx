@@ -11,7 +11,7 @@ export default function ActionMenu({ onClose }: ActionMenuProps) {
   return (
     // 1. 배경 처리 수정: bg-black bg-opacity-30 -> bg-gray-900/75 (어둡게 비치도록)
     <div
-      className="fixed inset-0 bg-gray-900/75 z-50 flex items-end justify-center" // z-index 유지
+      className="fixed inset-0 bg-gray-900/25 z-50 flex items-end justify-center" // z-index 유지
       onClick={onClose} // 오버레이 클릭 시 메뉴 닫기
     >
       {/* 메뉴 컨테이너: 상단 테두리 추가 */}

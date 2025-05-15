@@ -11,6 +11,7 @@ const nextConfig: NextConfig = {
   images: {
     domains: [
       'boindang.s3.ap-northeast-2.amazonaws.com',
+      'd1d5plumlg2gxc.cloudfront.net',
     ],
   },
   /* config options here */
