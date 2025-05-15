@@ -15,6 +15,7 @@ public class AnalysisHelper {
     private static final Logger logger = LoggerFactory.getLogger(NutritionService.class);
 
     public static Map<String, NutrientResult> calculateRatios(ProductNutrition product, UserInfo user) {
+        logger.debug("변수 초기화 시작");
         Nutrition ns = product.getResult().getNutritionAnalysis().getNutrition();
         UserType userType = UserType.valueOf(user.getUserType());
 
