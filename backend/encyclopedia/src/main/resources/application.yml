@@ -46,6 +46,14 @@ eureka:
 #  client:
 #    enabled: false
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  server:
+    port: 1111
+
 springdoc:
   swagger-ui:
     path: /encyclopedia/swagger-ui
