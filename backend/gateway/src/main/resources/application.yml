@@ -67,6 +67,10 @@ spring:
           uri: lb://OCR-SERVICE
           predicates:
             - Path=/ocr/**
+        - id: community-service
+          uri: lb://COMMUNITY
+          predicates:
+            - Path=/community/**
 
 eureka:
   client:
