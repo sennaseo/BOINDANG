@@ -1,6 +1,7 @@
 package com.nutritionservice.nutrition.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nutritionservice.common.exception.exception.BusinessException;
+import com.nutritionservice.common.model.dto.ApiResponseStatus;
 import com.nutritionservice.common.service.EurekaService;
 import com.nutritionservice.nutrition.model.document.*;
 import com.nutritionservice.nutrition.model.dto.analysis.NutrientResult;
@@ -24,6 +25,7 @@ public class NutritionService {
 
     private final RestClient restClient;
     private final EurekaService eurekaService;
+    private final UserService userService;
 
 //    @PostConstruct
     public void testEncyclopediaApi() {
@@ -61,23 +63,34 @@ public class NutritionService {
         }
     }
 
-    public NutritionReport analyzeProductForUser(UserInfo userInfo, String productId) {
+    public NutritionReport analyzeProductForUser(String userId, String productId) {
+
+        // 0. 유저 조회
+        UserInfo userInfo = userService.getUserById(userId);
+
+        System.out.println("👤 [유저 정보 조회 완료]");
+        System.out.println(" - ID: " + userInfo.getId());
+        System.out.println(" - 성별: " + userInfo.getGender());
+        System.out.println(" - 키(cm): " + userInfo.getHeight());
+        System.out.println(" - 몸무게(kg): " + userInfo.getWeight());
+        System.out.println(" - 유저 타입: " + userInfo.getUserType());
+
         // 1. 제품 조회
         ProductNutrition product = productRepo.findById(productId)
-                .orElseThrow(() -> new RuntimeException("해당 제품이 존재하지 않습니다."));
+                .orElseThrow(() -> new BusinessException(ApiResponseStatus.MONGODB_DATA_NOT_FOUND));
 
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(product);
-//            System.out.println("📦 불러온 제품 전체 정보 (JSON):\n" + json);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        ProductResult result = product.getResult();
-
-        if (result == null || result.getNutritionAnalysis() == null || result.getIngredientAnalysis() == null) {
-            throw new RuntimeException("제품에 영양 또는 성분 분석 정보가 부족합니다.");
-        }
+//        ObjectMapper mapper = new ObjectMapper();
+//        try {
+//            String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(product);
+////            System.out.println("📦 불러온 제품 전체 정보 (JSON):\n" + json);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        ProductResult result = product.getResult();
+//
+//        if (result == null || result.getNutritionAnalysis() == null || result.getIngredientAnalysis() == null) {
+//            throw new RuntimeException("제품에 영양 또는 성분 분석 정보가 부족합니다.");
+//        }
 
         // 사용자 기준 영양소 비율/등급 계산
         Map<String, NutrientResult> ratios = AnalysisHelper.calculateRatios(product, userInfo);
@@ -109,12 +122,12 @@ public class NutritionService {
                     .retrieve()
                     .body(EncyclopediaResponse.class);
         } catch (Exception e) {
-            throw new RuntimeException("📛 백과사전 호출 실패: " + e.getMessage(), e);
+            throw new BusinessException(ApiResponseStatus.ENCYCLOPEDIA_CALL_FAILED);
         }
 
         // 유효성 검증
         if (encyclopediaResponse == null || encyclopediaResponse.getData() == null) {
-            throw new RuntimeException("📛 백과사전 응답이 null입니다.");
+            throw new BusinessException(ApiResponseStatus.ENCYCLOPEDIA_RESPONSE_NULL);
         }
 
         // 데이터 필드 검증
@@ -197,7 +210,7 @@ public class NutritionService {
 
         } catch (Exception e) {
             System.err.println("❌ 리포트 저장 실패: " + e.getMessage());
-            throw new RuntimeException("Mongo 저장 실패", e);
+            throw new BusinessException(ApiResponseStatus.MONGODB_SAVE_FAILED);
         }
     }
 
