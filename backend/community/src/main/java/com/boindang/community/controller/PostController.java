@@ -33,7 +33,7 @@ public class PostController {
 	private final PostService postService;
 
 	@Operation(summary = "게시글 목록 조회", description = "삭제되지 않은 게시글 전체를 조회합니다.")
-	@GetMapping
+	@GetMapping("/read")
 	public BaseResponse<PostListResponse> getAllPosts(
 		@RequestHeader("X-User-Id") String userId,
 		@RequestParam(required = false) String category,
@@ -56,7 +56,7 @@ public class PostController {
 	}
 
 	@Operation(summary = "게시글 작성", description = "새 게시글을 작성합니다.")
-	@PostMapping
+	@PostMapping("/write")
 	public BaseResponse<CreatePostResponse> createPost(
 		@RequestHeader("X-User-Id") String userId,
 		@RequestBody @Valid CreatePostRequest request
