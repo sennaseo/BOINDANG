@@ -10,7 +10,7 @@ interface QuizQuestionProps {
 
 export default function QuizQuestion({ quiz, onSelect, selected, onSubmit, index }: QuizQuestionProps) {
   console.log('POST 요청 quizId:', quiz.quizId, 'selected:', selected, 'options:', quiz.options);
-  console.log('선택한 보기:', quiz.options[selected]);
+  console.log('선택한 보기:', selected !== null ? quiz.options[selected] : '선택 안됨');
 
   return (
     <div>
