@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import QuizQuestion from '../../../components/quiz/QuizQuestion';
 import QuizResult from '../../../components/quiz/QuizResult';
@@ -61,7 +62,7 @@ export default function QuizPlayPage() {
       const res = await submitQuizAnswer(quiz.quizId, selected +1);
       setAnswerResult(res);
       if (res.correct) setScore(s => s + 1);
-    } catch (e) {
+    } catch {
       setAnswerResult({ correct: false, explanation: '정답 확인에 실패했습니다.', answer: -1 });
     }
   };
@@ -128,7 +129,7 @@ export default function QuizPlayPage() {
                   gravity={0.3}
                 />
               )}
-              <img
+              <Image
                 src="/assets/quiz/sugar_quiz_complete.png"
                 alt="퀴즈 완료"
                 className="w-80 h-80 object-contain mx-auto mb-4"

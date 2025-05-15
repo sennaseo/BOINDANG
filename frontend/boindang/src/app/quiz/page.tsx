@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import BottomNavBar from '../../components/navigation/BottomNavBar';
-
+import Image from 'next/image';
 export default function QuizIntroPage() {
   const router = useRouter();
 
@@ -13,7 +13,7 @@ export default function QuizIntroPage() {
       {/* 하단 연보라 원 */}
       <div className="absolute -bottom-24 -right-24 w-72 h-72 bg-[#c4b5fd] opacity-20 rounded-full z-0" />
       <div className="flex-1 flex flex-col items-center justify-center px-6 relative z-10">
-        <img
+        <Image
           src="/assets/quiz/sugar_quiz.png"
           alt="설탕 퀴즈"
           className="w-64 h-64 object-contain mb-8"
