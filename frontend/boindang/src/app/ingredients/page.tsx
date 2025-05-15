@@ -11,12 +11,12 @@ import FeaturedIngredientsCarousel from './components/FeaturedIngredientsSection
 
 const categoryIngredients = [
   { name: '단백질', imageSrc: '/assets/category_icon/danback.png' },
-  { name: '당류', imageSrc: '/assets/category_icon/dang.png' }, 
-  { name: '감미료', imageSrc: '/assets/category_icon/gammi.png' }, 
+  { name: '당류', imageSrc: '/assets/category_icon/dang.png' },
+  { name: '감미료', imageSrc: '/assets/category_icon/gammi.png' },
   { name: '식이섬유', imageSrc: '/assets/category_icon/sike.png' },
-  { name: '지방', imageSrc: '/assets/category_icon/jibang.png' }, 
-  { name: '식품 첨가물', imageSrc: '/assets/category_icon/chumga.png' },  
-  { name: '비타민', imageSrc: '/assets/category_icon/vita.png' }, 
+  { name: '지방', imageSrc: '/assets/category_icon/jibang.png' },
+  { name: '식품 첨가물', imageSrc: '/assets/category_icon/chumga.png' },
+  { name: '비타민', imageSrc: '/assets/category_icon/vita.png' },
   { name: '미네랄', imageSrc: '/assets/category_icon/mine.png' },
 ];
 
@@ -47,6 +47,13 @@ const surprisingBadIngredients = [
 
 const surprisingGoodIngredients = [
   {
+    id: 'vitaminD',
+    name: '비타민 D',
+    description: "칼슘 흡수를 돕고 뼈 건강 유지 및 면역 기능에 중요한 역할을 해요.",
+    tag: '뼈튼튼면역UP',
+    imageSrc: '/assets/ingre/vitamind.jpg' // 예시 이미지 경로
+  },
+  {
     id: 'omega3',
     name: '오메가-3 지방산',
     description: "혈행 개선, 두뇌 건강, 염증 감소에 도움을 줄 수 있는 착한 지방이에요.",
@@ -59,13 +66,6 @@ const surprisingGoodIngredients = [
     description: "장내 유익균을 늘려 장 건강과 면역력 강화에 도움을 줄 수 있어요.",
     tag: '장건강UP',
     imageSrc: '/assets/ingre/proby.jpg' // 예시 이미지 경로
-  },
-  {
-    id: 'vitaminD',
-    name: '비타민 D',
-    description: "칼슘 흡수를 돕고 뼈 건강 유지 및 면역 기능에 중요한 역할을 해요.",
-    tag: '뼈튼튼면역UP',
-    imageSrc: '/assets/ingre/vitamind.jpg' // 예시 이미지 경로
   },
 ];
 

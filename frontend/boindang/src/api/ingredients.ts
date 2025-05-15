@@ -3,7 +3,6 @@ import type {
   SearchPageApiResponse, 
   IngredientSearchResponseData,
   CategoryIngredientsApiResponse,
-  IngredientResult,
   CategoryIngredientsData
 } from '@/types/api/ingredients';
 
