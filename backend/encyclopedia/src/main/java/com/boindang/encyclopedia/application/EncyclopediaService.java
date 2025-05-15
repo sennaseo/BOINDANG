@@ -7,6 +7,8 @@ import com.boindang.encyclopedia.domain.IngredientDictionary;
 import com.boindang.encyclopedia.infrastructure.EncyclopediaRepository;
 import com.boindang.encyclopedia.presentation.dto.response.EncyclopediaDetailResponse;
 import com.boindang.encyclopedia.presentation.dto.response.EncyclopediaSearchResponse;
+import com.boindang.encyclopedia.presentation.dto.response.IngredientListResponse;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -139,30 +141,41 @@ public class EncyclopediaService {
         return EncyclopediaMapper.toDetailResponse(ingredient);
     }
 
-    public List<EncyclopediaSearchResponse> getIngredientsByType(String category, String sort, String order, int size) {
+    public IngredientListResponse getIngredientsByType(String category, String sort, String order, int size, int page) {
         if (!VALID_TYPES.contains(category)) {
             throw new IngredientException(ErrorCode.INGREDIENT_NOT_FOUND);
         }
 
+        // 1. 필터 조건
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery()
-                .filter(QueryBuilders.termQuery("category", category));
+            .filter(QueryBuilders.termQuery("category", category));
 
+        // 2. 정렬 조건
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder()
-                .query(boolQuery)
-                .size(size);
+            .query(boolQuery)
+            .from(page * size)  // ✅ 페이징 처리 시작 인덱스
+            .size(size);        // ✅ 한 페이지 크기
 
         if (sort != null && (sort.equals("gi") || sort.equals("sweetness"))) {
             SortOrder sortOrder = "asc".equalsIgnoreCase(order) ? SortOrder.ASC : SortOrder.DESC;
             sourceBuilder.sort(new FieldSortBuilder(sort).order(sortOrder));
         }
 
+        // 3. Elasticsearch 요청 생성
         SearchRequest request = new SearchRequest("ingredients").source(sourceBuilder);
 
         try {
             SearchResponse response = client.search(request, RequestOptions.DEFAULT);
-            return Arrays.stream(response.getHits().getHits())
-                    .map(hit -> EncyclopediaSearchResponse.from2(hit.getSourceAsMap()))
-                    .collect(Collectors.toList());
+
+            long totalHits = response.getHits().getTotalHits().value;
+            int totalPages = (int) Math.ceil((double) totalHits / size);
+
+            List<EncyclopediaSearchResponse> ingredients = Arrays.stream(response.getHits().getHits())
+                .map(hit -> EncyclopediaSearchResponse.from2(hit.getSourceAsMap()))
+                .collect(Collectors.toList());
+
+            return new IngredientListResponse(totalPages, ingredients);
+
         } catch (IOException e) {
             throw new IngredientException(ErrorCode.INGREDIENT_NOT_FOUND);
         }
