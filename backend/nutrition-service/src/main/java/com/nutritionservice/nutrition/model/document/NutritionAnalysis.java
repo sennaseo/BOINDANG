@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString
 public class NutritionAnalysis {
     @Field("nutrition")
     private Nutrition nutrition;

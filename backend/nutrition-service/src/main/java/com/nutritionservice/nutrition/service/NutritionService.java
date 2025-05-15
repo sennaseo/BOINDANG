@@ -6,16 +6,22 @@ import com.nutritionservice.common.service.EurekaService;
 import com.nutritionservice.nutrition.model.document.*;
 import com.nutritionservice.nutrition.model.dto.analysis.NutrientResult;
 import com.nutritionservice.nutrition.model.dto.external.*;
+import com.nutritionservice.nutrition.model.dto.response.NutritionReportHistoryResponse;
+import com.nutritionservice.nutrition.model.dto.response.NutritionReportResponse;
 import com.nutritionservice.nutrition.repository.NutritionReportRepository;
 import com.nutritionservice.nutrition.repository.ProductNutritionRepository;
 import com.nutritionservice.nutrition.util.UserTypeConverter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
 import java.time.LocalDateTime;
 import java.util.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class NutritionService {
@@ -25,13 +31,13 @@ public class NutritionService {
 
     private final RestClient restClient;
     private final EurekaService eurekaService;
+    private final Logger logger = LoggerFactory.getLogger(NutritionService.class);
     private final UserService userService;
 
-//    @PostConstruct
+    //    @PostConstruct
     public void testEncyclopediaApi() {
         List<String> testIngredients = List.of("말티톨", "말토덱스트린", "스테비아");
         EncyclopediaRequest request = new EncyclopediaRequest(testIngredients, "dieter");
-
 //        EncyclopediaResponse response = encyclopediaClient.getIngredientDetails(token, request);
 
         EncyclopediaResponse response;
@@ -63,7 +69,8 @@ public class NutritionService {
         }
     }
 
-    public NutritionReport analyzeProductForUser(String userId, String productId) {
+    public NutritionReportResponse analyzeProductForUser(String userId, String productId){
+
 
         // 0. 유저 조회
         UserInfo userInfo = userService.getUserById(userId);
@@ -76,8 +83,13 @@ public class NutritionService {
         System.out.println(" - 유저 타입: " + userInfo.getUserType());
 
         // 1. 제품 조회
+        logger.debug("제품 조회 시작");
         ProductNutrition product = productRepo.findById(productId)
-                .orElseThrow(() -> new BusinessException(ApiResponseStatus.MONGODB_DATA_NOT_FOUND));
+                .orElseThrow(() -> {
+                    logger.debug("제품 검색 중 오류 발생");
+                    throw new BusinessException(ApiResponseStatus.MONGODB_DATA_NOT_FOUND);
+                });
+        logger.debug("제품 조회 성공: "+product.toString());
 
 //        ObjectMapper mapper = new ObjectMapper();
 //        try {
@@ -93,7 +105,9 @@ public class NutritionService {
 //        }
 
         // 사용자 기준 영양소 비율/등급 계산
+        logger.debug("영양소 비율/등급 계산 시작");
         Map<String, NutrientResult> ratios = AnalysisHelper.calculateRatios(product, userInfo);
+        logger.debug("영양소 비율/등급 계산 끝");
 
         // 제품 성분 트리에서 전체 원재료 수집
         List<String> ingredientNames = new ArrayList<>();
@@ -206,7 +220,7 @@ public class NutritionService {
 
             NutritionReport saved = reportRepo.save(report);
             System.out.println("✅ 리포트 저장 완료 - ID: " + saved.getId());
-            return saved;
+            return NutritionReportResponse.from(saved); // ✅ 리팩토링 핵심
 
         } catch (Exception e) {
             System.err.println("❌ 리포트 저장 실패: " + e.getMessage());
@@ -223,6 +237,18 @@ public class NutritionService {
                 collectIngredientNames(child, result);
             }
         }
+    }
+
+    public List<NutritionReportHistoryResponse> getUserReportHistory(String userId) {
+        return reportRepo.findByUserIdOrderByAnalyzedAtDesc(userId).stream()
+                .map(NutritionReportHistoryResponse::from)
+                .toList();
+    }
+
+    public NutritionReportResponse getFullReportByProductId(String userId, String productId) {
+        NutritionReport report = reportRepo.findByUserIdAndProductId(userId, productId)
+                .orElseThrow(() -> new BusinessException(ApiResponseStatus.REPORT_NOT_FOUND));
+        return NutritionReportResponse.from(report);
     }
 
 }
