@@ -6,6 +6,8 @@ import com.nutritionservice.common.service.EurekaService;
 import com.nutritionservice.nutrition.model.document.*;
 import com.nutritionservice.nutrition.model.dto.analysis.NutrientResult;
 import com.nutritionservice.nutrition.model.dto.external.*;
+import com.nutritionservice.nutrition.model.dto.response.NutritionReportHistoryResponse;
+import com.nutritionservice.nutrition.model.dto.response.NutritionReportResponse;
 import com.nutritionservice.nutrition.repository.NutritionReportRepository;
 import com.nutritionservice.nutrition.repository.ProductNutritionRepository;
 import com.nutritionservice.nutrition.util.UserTypeConverter;
@@ -67,7 +69,8 @@ public class NutritionService {
         }
     }
 
-    public NutritionReport analyzeProductForUser(String userId, String productId) {
+    public NutritionReportResponse analyzeProductForUser(String userId, String productId){
+
 
         // 0. 유저 조회
         UserInfo userInfo = userService.getUserById(userId);
@@ -217,7 +220,7 @@ public class NutritionService {
 
             NutritionReport saved = reportRepo.save(report);
             System.out.println("✅ 리포트 저장 완료 - ID: " + saved.getId());
-            return saved;
+            return NutritionReportResponse.from(saved); // ✅ 리팩토링 핵심
 
         } catch (Exception e) {
             System.err.println("❌ 리포트 저장 실패: " + e.getMessage());
@@ -234,6 +237,18 @@ public class NutritionService {
                 collectIngredientNames(child, result);
             }
         }
+    }
+
+    public List<NutritionReportHistoryResponse> getUserReportHistory(String userId) {
+        return reportRepo.findByUserIdOrderByAnalyzedAtDesc(userId).stream()
+                .map(NutritionReportHistoryResponse::from)
+                .toList();
+    }
+
+    public NutritionReportResponse getFullReportByProductId(String userId, String productId) {
+        NutritionReport report = reportRepo.findByUserIdAndProductId(userId, productId)
+                .orElseThrow(() -> new BusinessException(ApiResponseStatus.REPORT_NOT_FOUND));
+        return NutritionReportResponse.from(report);
     }
 
 }
