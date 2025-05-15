@@ -86,6 +86,7 @@ public class NutritionService {
                     logger.debug("제품 검색 중 오류 발생");
                     throw new BusinessException(ApiResponseStatus.MONGODB_DATA_NOT_FOUND);
                 });
+        logger.debug("제품 조회 끝");
 
 //        ObjectMapper mapper = new ObjectMapper();
 //        try {
@@ -101,7 +102,9 @@ public class NutritionService {
 //        }
 
         // 사용자 기준 영양소 비율/등급 계산
+        logger.debug("영양소 비율/등급 계산 시작");
         Map<String, NutrientResult> ratios = AnalysisHelper.calculateRatios(product, userInfo);
+        logger.debug("영양소 비율/등급 계산 끝");
 
         // 제품 성분 트리에서 전체 원재료 수집
         List<String> ingredientNames = new ArrayList<>();
