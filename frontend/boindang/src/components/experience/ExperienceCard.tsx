@@ -72,6 +72,8 @@ export default function ExperienceCard({
             <Image
               src="/assets/experience/sugar_success.png"
               alt="신청 성공"
+              width={200}
+              height={200}
               className="absolute inset-0 w-full h-full object-contain z-20 pointer-events-none"
               style={{ background: 'rgba(0,0,0,0.4)' }}
             />

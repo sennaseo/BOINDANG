@@ -2,83 +2,173 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image'; // Next.js Image 컴포넌트 임포트
 import { User, PencilSimple, Heart, ChatCircle } from '@phosphor-icons/react';
 import BottomNavBar from '../../components/navigation/BottomNavBar';
+import { getCommunityPosts, getImageListByIds, toggleLikePost } from '../../api/community'; // getImageListByIds, toggleLikePost 임포트
+import { ApiPostItem } from '../../types/api/community';
 
 const categories = ["전체", "식단", "운동", "고민&질문", "꿀팁", "목표", "체험단"];
 const tabs = ["피드", "매거진"];
 
-// 임시 더미 데이터 타입 (필요시 확장)
-interface Post {
-  id: number;
-  authorName: string;
-  authorImage: string; // 임시로 Tailwind 배경색 클래스 사용
-  timeAgo: string;
-  content: string;
-  imageUrl?: string | null; // 이미지 URL 또는 placeholder 식별자, null 허용
-  likes: number;
-  isLiked: boolean;
-}
+// 기존 Post 인터페이스는 API 연동으로 인해 ApiPostItem으로 대체되거나,
+// ApiPostItem을 Post 형태로 변환하는 로직이 필요합니다. 여기서는 우선 ApiPostItem을 직접 사용합니다.
+// interface Post {
+//   id: number;
+//   authorName: string;
+//   authorImage: string;
+//   timeAgo: string;
+//   content: string;
+//   imageUrl?: string | null;
+//   likes: number;
+//   isLiked: boolean;
+// }
 
-// 초기 더미 데이터 확장
-const initialPosts: Post[] = [
-  { id: 1, authorName: '털털한자두7323', authorImage: 'bg-purple-200', timeAgo: '4분 전', content: '생선구이 맛집 추천좀 해주세요! 🐟', imageUrl: 'placeholder', likes: 12, isLiked: false },
-  { id: 2, authorName: '운동하는쿼카', authorImage: 'bg-blue-200', timeAgo: '30분 전', content: '오늘 오운완! 다들 득근하세요 💪 #운동인증', imageUrl: null, likes: 25, isLiked: true },
-  { id: 3, authorName: '식단조절러', authorImage: 'bg-green-200', timeAgo: '1시간 전', content: '저녁으로 샐러드랑 닭가슴살 먹었어요. 생각보다 맛있네요? 다음엔 다른 드레싱 시도해봐야지🥗', imageUrl: null, likes: 8, isLiked: false },
-  { id: 4, authorName: '꿀팁전도사', authorImage: 'bg-yellow-200', timeAgo: '2시간 전', content: '혈당 스파이크 막는 식후 15분 걷기! 짧지만 효과 좋아요.', imageUrl: null, likes: 55, isLiked: true },
-  { id: 5, authorName: '목표달성가자', authorImage: 'bg-red-200', timeAgo: '3시간 전', content: '이번 주 목표: 매일 만 보 걷기 도전! 같이 하실 분? 🙌', imageUrl: 'placeholder_walk', likes: 31, isLiked: false },
-  { id: 6, authorName: '고민상담소', authorImage: 'bg-indigo-200', timeAgo: '5시간 전', content: '식단 조절 너무 어려운데 다들 어떻게 하시나요? ㅠㅠ 간식 참기가 제일 힘들어요.', imageUrl: null, likes: 19, isLiked: false },
-  { id: 7, authorName: '체험단리뷰어', authorImage: 'bg-pink-200', timeAgo: '1일 전', content: '이번에 새로 나온 저당 간식 체험해봤는데, 생각보다 달고 맛있어서 놀랐어요! 자세한 후기는 블로그에... (는 농담이고 여기다 쓸게요 ㅋㅋ)', imageUrl: 'placeholder_snack', likes: 42, isLiked: true },
-  { id: 8, authorName: '요리왕비룡', authorImage: 'bg-teal-200', timeAgo: '2일 전', content: '두부면으로 만든 파스타! 밀가루 없이 맛있게 즐길 수 있어요. 레시피 공유합니다🍝', imageUrl: null, likes: 77, isLiked: false },
-];
+// 초기 더미 데이터는 API 연동으로 인해 제거됩니다.
+// const initialPosts: Post[] = [ ... ];
 
 export default function CommunityPage() {
   const [activeCategory, setActiveCategory] = useState("전체");
   const [activeTab, setActiveTab] = useState("피드");
-  const [posts, setPosts] = useState<Post[]>(initialPosts);
-  const [lastScrollY, setLastScrollY] = useState(0); // 이전 스크롤 위치
-  const [showFullHeader, setShowFullHeader] = useState(true); // 전체 헤더 표시 여부
+  const [posts, setPosts] = useState<ApiPostItem[]>([]);
+  const [imageUrlsMap, setImageUrlsMap] = useState<Map<number, string>>(new Map()); // 이미지 URL 맵 상태 추가
+  const [lastScrollY, setLastScrollY] = useState(0);
+  const [showFullHeader, setShowFullHeader] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // 좋아요 토글 핸들러
-  const handleLikeToggle = (postId: number) => {
+  useEffect(() => {
+    const fetchPostsAndImages = async () => {
+      setIsLoading(true);
+      setError(null);
+      setPosts([]); // 데이터 초기화
+      setImageUrlsMap(new Map()); // 이미지 맵 초기화
+
+      try {
+        const postData = await getCommunityPosts();
+        if (postData && postData.posts) {
+          setPosts(postData.posts);
+
+          // 이미지 ID 추출 및 이미지 URL 가져오기
+          const imageIdsToFetch = postData.posts
+            .map(post => post.imageId)
+            .filter((id): id is number => id !== null && id !== undefined);
+
+          if (imageIdsToFetch.length > 0) {
+            const uniqueImageIds = [...new Set(imageIdsToFetch)];
+            const imageList = await getImageListByIds(uniqueImageIds);
+            if (imageList) {
+              const newImageUrlsMap = new Map<number, string>();
+              imageList.forEach(image => {
+                newImageUrlsMap.set(image.imageId, image.imageUrl);
+              });
+              setImageUrlsMap(newImageUrlsMap);
+            }
+          }
+        } else {
+          setError("게시글을 불러오는데 실패했습니다.");
+        }
+      } catch (err) {
+        console.error(err);
+        setError("게시글을 불러오는 중 오류가 발생했습니다.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (activeTab === '피드') {
+      fetchPostsAndImages();
+    }
+  }, [activeTab]);
+
+  const handleLikeToggle = async (postIdToToggle: number) => {
+    const originalPosts = [...posts]; // 롤백을 위한 원본 데이터 복사
+
+    // 낙관적 업데이트: UI를 먼저 변경
     setPosts(currentPosts =>
       currentPosts.map(post => {
-        if (post.id === postId) {
-          // 좋아요 상태 반전 및 카운트 조정
+        if (post.postId === postIdToToggle) {
           return {
             ...post,
-            isLiked: !post.isLiked,
-            likes: post.isLiked ? post.likes - 1 : post.likes + 1,
+            likedByMe: !post.likedByMe,
+            likeCount: post.likedByMe ? post.likeCount - 1 : post.likeCount + 1,
           };
         }
         return post;
       })
     );
+
+    try {
+      const response = await toggleLikePost(postIdToToggle);
+      if (!response || !response.isSuccess) {
+        // API 호출 실패 또는 응답 실패 시 롤백
+        console.error("Failed to toggle like on server:", response?.message);
+        setPosts(originalPosts); // 원래 상태로 롤백
+        alert(response?.message || "좋아요 처리에 실패했습니다. 다시 시도해주세요.");
+      }
+      // 성공 시: UI는 이미 낙관적으로 업데이트 되었으므로 별도 처리 없음
+      // 필요하다면 여기서 서버로부터 최신 데이터를 다시 받아올 수도 있습니다.
+      // 예: fetchPostsAndImages(); // 단, 전체 목록을 다시 불러오는 것은 비효율적일 수 있음
+    } catch (error) {
+      // 네트워크 오류 등 예외 발생 시 롤백
+      console.error("Error in handleLikeToggle:", error);
+      setPosts(originalPosts);
+      alert("좋아요 처리 중 오류가 발생했습니다. 다시 시도해주세요.");
+    }
   };
 
-  // 스크롤 이벤트 핸들러
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-
-      if (currentScrollY <= 50) { // 상단 근처에서는 항상 표시
+      if (currentScrollY <= 50) {
         setShowFullHeader(true);
       } else {
-        if (currentScrollY > lastScrollY) { // 스크롤 다운
+        if (currentScrollY > lastScrollY) {
           setShowFullHeader(false);
-        } else { // 스크롤 업
+        } else {
           setShowFullHeader(true);
         }
       }
-      setLastScrollY(currentScrollY); // 이전 스크롤 위치 업데이트
+      setLastScrollY(currentScrollY);
     };
-
     window.addEventListener('scroll', handleScroll, { passive: true });
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
+    return () => window.removeEventListener('scroll', handleScroll);
   }, [lastScrollY]);
+
+  // 재시도 함수
+  const retryFetch = () => {
+    if (activeTab === '피드') {
+      // fetchPostsAndImages를 직접 호출하기 위해 useEffect 내부의 함수를 바깥으로 빼거나, 
+      // activeTab 상태를 변경하여 useEffect를 다시 트리거하는 방식을 고려할 수 있습니다.
+      // 여기서는 간단하게 activeTab을 잠시 다른 값으로 바꿨다가 되돌려 useEffect를 재실행합니다.
+      // 좀 더 나은 방식은 fetchPostsAndImages 함수를 useEffect 밖으로 빼고 직접 호출하는 것입니다.
+      const currentTab = activeTab;
+      setActiveTab(''); // 임시로 탭 변경하여 useEffect 트리거
+      setTimeout(() => setActiveTab(currentTab), 0);
+    }
+  };
+
+  if (isLoading && activeTab === '피드') {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <p>로딩 중...</p>
+      </div>
+    );
+  }
+
+  if (error && activeTab === '피드') {
+    return (
+      <div className="flex flex-col justify-center items-center min-h-screen p-4">
+        <p className="text-red-500 mb-4">{error}</p>
+        <button
+          onClick={retryFetch} // 재시도 함수 연결
+          className="px-4 py-2 bg-[#6C2FF2] text-white rounded hover:bg-[#5a27cc]"
+        >
+          재시도
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-background min-h-screen text-text-primary">
@@ -136,57 +226,61 @@ export default function CommunityPage() {
         </div>
       </div> {/* End of Sticky Header Container */}
 
-      {/* Feed or Magazine Content */}
-      {/* TODO: Display different content when Magazine tab is selected */}
       <main className="pt-4 pb-[70px] flex flex-col divide-y divide-gray-200">
-        {/* 피드 탭 활성 시 게시물 목록 렌더링 */}
-        {activeTab === '피드' && posts.map((post) => (
-          <Link key={post.id} href={`/community/${post.id}`} className="block bg-white p-4 shadow-sm hover:bg-gray-50 transition-colors duration-150">
-            {/* 사용자 정보 */}
-            <div className="flex items-center mb-3">
-              <div className={`w-8 h-8 rounded-full ${post.authorImage} mr-2`}></div>
-              <div>
-                <p className="text-sm font-semibold text-text-primary">{post.authorName}</p>
-                <p className="text-xs text-text-secondary">{post.timeAgo}</p>
+        {activeTab === '피드' && posts.map((post) => {
+          const imageUrl = post.imageId ? imageUrlsMap.get(post.imageId) : null;
+          return (
+            <Link key={post.postId} href={`/community/${post.postId}`} className="block bg-white p-4 shadow-sm hover:bg-gray-50 transition-colors duration-150">
+              <div className="flex items-center mb-3">
+                <div className={`w-8 h-8 rounded-full bg-purple-200 mr-2 flex items-center justify-center text-xs text-white`}>
+                  {post.username?.charAt(0) || 'U'}
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-text-primary">{post.username}</p>
+                  <p className="text-xs text-text-secondary">{new Date(post.createdAt).toLocaleString()}</p>
+                </div>
               </div>
-            </div>
-            {/* 본문 내용 - 이미지 유무에 따라 mb 조정 */}
-            <p className={`text-text-primary text-sm ${post.imageUrl ? 'mb-2' : 'mb-4'} line-clamp-3`}>{post.content}</p>
-            {/* 이미지 영역 (이미지 URL이 있을 경우) */}
-            {post.imageUrl && (
-              <div className="h-[180px] bg-gray-100 rounded-[22px] mb-4 flex items-center justify-center text-gray-400">
-                {/* TODO: 실제 이미지 컴포넌트 또는 img 태그 사용 */}
-                (이미지: {post.imageUrl})
+              <p className={`text-text-primary text-sm ${imageUrl ? 'mb-2' : 'mb-4'} line-clamp-3`}>{post.content}</p>
+              {imageUrl && (
+                <div className="relative h-[180px] bg-gray-50 rounded-[22px] mb-4 overflow-hidden">
+                  <Image
+                    src={imageUrl}
+                    alt={"게시글 이미지"}
+                    layout="fill"
+                    objectFit="contain"
+                    className="rounded-[22px]"
+                  />
+                </div>
+              )}
+              {!imageUrl && post.imageId && (
+                <div className="h-[180px] bg-gray-100 rounded-[22px] mb-4 flex items-center justify-center text-gray-400">
+                  이미지 로딩 중...
+                </div>
+              )}
+              <div className="flex items-center text-gray-600 mt-2">
+                <div
+                  className="w-1/2 flex justify-center items-center gap-x-1 cursor-pointer"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleLikeToggle(post.postId);
+                  }}
+                >
+                  <Heart size={22} weight="fill" color={post.likedByMe ? '#6C2FF2' : '#A0AEC0'} />
+                  <span className="text-sm">{post.likeCount}</span>
+                </div>
+                <div className="w-1/2 flex justify-center items-center gap-x-1 cursor-pointer">
+                  <ChatCircle size={22} weight="fill" color="#A0AEC0" />
+                  <span className="text-sm">{post.commentCount > 0 ? `${post.commentCount}개 댓글` : '댓글 달기'}</span>
+                </div>
               </div>
-            )}
-            {/* 좋아요 / 댓글 버튼 - Link 내부에서는 button 동작 방식 확인 필요 */}
-            <div className="flex items-center text-gray-600 mt-2">
-              <div
-                // onClick 핸들러는 Link 내부에서 직접 사용 시 이벤트 전파 문제 발생 가능성 있음
-                // 필요 시 이벤트 버블링 중단(e.stopPropagation()) 또는 별도 컴포넌트 분리 고려
-                className="w-1/2 flex justify-center items-center gap-x-1 cursor-pointer"
-                onClick={(e) => {
-                  e.preventDefault(); // Link 이동 방지
-                  e.stopPropagation(); // 이벤트 버블링 중단
-                  handleLikeToggle(post.id); // 기존 좋아요 토글 함수 호출
-                }}
-              >
-                <Heart size={22} weight="fill" color={post.isLiked ? '#6C2FF2' : '#A0AEC0'} />
-                <span className="text-sm">{post.likes}</span>
-              </div>
-              <div className="w-1/2 flex justify-center items-center gap-x-1 cursor-pointer">
-                <ChatCircle size={22} weight="fill" color="#A0AEC0" />
-                {/* TODO: 실제 댓글 수 표시 */}
-                <span className="text-sm">댓글 달기</span>
-              </div>
-            </div>
-          </Link>
-        ))}
+            </Link>
+          );
+        })}
 
-        {/* 매거진 탭 활성 시 */}
         {activeTab === '매거진' && (
           <div className="p-4 text-center text-gray-500">
-            매거진 콘텐츠가 여기에 표시됩니다.
+            매거진 콘텐츠가 여기에 표시됩니다. (현재 피드 데이터만 연동됨)
           </div>
         )}
       </main>

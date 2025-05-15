@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import localFont from "next/font/local";
+import { Toaster } from 'react-hot-toast';
 
 // QueryProvider import
 import QueryProvider from "@/components/providers/QueryProvider"; // 경로 확인!
@@ -59,6 +60,7 @@ export default function RootLayout({
             </div>
           </AuthInitializer>
         </QueryProvider>
+        <Toaster position="top-center" reverseOrder={false} />
       </body>
     </html>
   );
