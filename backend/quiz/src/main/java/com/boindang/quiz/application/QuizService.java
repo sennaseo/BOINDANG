@@ -1,5 +1,6 @@
 package com.boindang.quiz.application;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -33,15 +34,28 @@ public class QuizService {
 	public List<QuizResponse> generateQuizzes(Long userId) {
 		List<Long> solvedQuizIds = historyRepository.findQuizIdsByUserId(userId);
 
+		List<Long> quizIndex;
 		List<Quiz> quizzes;
-		List<Long> quiz_index;
-		if (CollectionUtils.isEmpty(solvedQuizIds)) {
-			quiz_index = quizRepository.findRandomQuizIds();
-			quizzes = quizRepository.findAllByIdWithOptions(quiz_index);
+
+		// 안 푼 문제 ID 가져오기
+		List<Long> unsolvedQuizIds = CollectionUtils.isEmpty(solvedQuizIds)
+			? quizRepository.findRandomQuizIds()
+			: quizRepository.findUnsolvedRandomQuizIds(solvedQuizIds);
+
+		int remainingCount = 5 - unsolvedQuizIds.size();
+
+		// 퀴즈 ID 최종 구성
+		if (remainingCount <= 0) {
+			quizIndex = unsolvedQuizIds.subList(0, 5); // 5개만
 		} else {
-			quiz_index = quizRepository.findUnsolvedRandomQuizIds(solvedQuizIds);
-			quizzes = quizRepository.findAllByIdWithOptions(quiz_index);
+			// 푼 문제 중에서 랜덤으로 남은 개수만큼 가져오기
+			List<Long> supplement = quizRepository.findRandomSolvedQuizIds(solvedQuizIds, remainingCount);
+			quizIndex = new ArrayList<>(unsolvedQuizIds);
+			quizIndex.addAll(supplement);
 		}
+
+		// 퀴즈 조회 + 옵션 포함
+		quizzes = quizRepository.findAllByIdWithOptions(quizIndex);
 
 		// DTO 변환 (셔플 포함)
 		return quizzes.stream()
