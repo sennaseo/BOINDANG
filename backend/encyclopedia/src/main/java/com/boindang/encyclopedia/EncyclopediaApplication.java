@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @OpenAPIDefinition(
-		info = @Info(title = "보인당 API", version = "v1", description = "보인당 API 명세서")
+		info = @Info(title = "보인당 백과사전 API", version = "v1", description = "보인당 API 명세서")
 )
 @EnableScheduling
 @SpringBootApplication
