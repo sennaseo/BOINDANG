@@ -28,13 +28,12 @@ public class NutritionService {
 
     private final RestClient restClient;
     private final EurekaService eurekaService;
+    private final Logger logger = LoggerFactory.getLogger(NutritionService.class);
 
     //    @PostConstruct
     public void testEncyclopediaApi() {
         List<String> testIngredients = List.of("말티톨", "말토덱스트린", "스테비아");
         EncyclopediaRequest request = new EncyclopediaRequest(testIngredients, "dieter");
-
-        Logger logger = LoggerFactory.getLogger(NutritionService.class);
 //        EncyclopediaResponse response = encyclopediaClient.getIngredientDetails(token, request);
 
         EncyclopediaResponse response;
@@ -68,7 +67,6 @@ public class NutritionService {
 
     public NutritionReport analyzeProductForUser(UserInfo userInfo, String productId) {
         // 1. 제품 조회
-
         ProductNutrition product = productRepo.findById(productId)
                 .orElseThrow(() -> new RuntimeException("해당 제품이 존재하지 않습니다."));
 
