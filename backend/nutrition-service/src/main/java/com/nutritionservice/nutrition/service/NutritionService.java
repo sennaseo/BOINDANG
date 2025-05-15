@@ -11,6 +11,7 @@ import com.nutritionservice.nutrition.model.dto.response.NutritionReportResponse
 import com.nutritionservice.nutrition.repository.NutritionReportRepository;
 import com.nutritionservice.nutrition.repository.ProductNutritionRepository;
 import com.nutritionservice.nutrition.util.UserTypeConverter;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -34,7 +35,7 @@ public class NutritionService {
     private final Logger logger = LoggerFactory.getLogger(NutritionService.class);
     private final UserService userService;
 
-    //    @PostConstruct
+    @PostConstruct
     public void testEncyclopediaApi() {
         List<String> testIngredients = List.of("말티톨", "말토덱스트린", "스테비아");
         EncyclopediaRequest request = new EncyclopediaRequest(testIngredients, "dieter");
