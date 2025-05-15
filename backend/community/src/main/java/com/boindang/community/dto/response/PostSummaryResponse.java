@@ -14,7 +14,6 @@ public class PostSummaryResponse {
 
 	private Long postId;
 	private String category;
-	private String title;
 	private String content;
 	private Long imageId;
 
@@ -30,7 +29,6 @@ public class PostSummaryResponse {
 		return PostSummaryResponse.builder()
 			.postId(post.getId())
 			.category(post.getCategory())
-			.title(post.getTitle())
 			.content(post.getContent())
 			.imageId(post.getImageId())
 			.username(username)

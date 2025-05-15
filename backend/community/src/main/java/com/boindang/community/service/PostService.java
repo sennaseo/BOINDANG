@@ -100,7 +100,6 @@ public class PostService {
 		Post post = Post.builder()
 			.userId(userId)
 			.category(request.getCategory())
-			.title(request.getTitle())
 			.content(request.getContent())
 			.imageId(request.getImageId())
 			.build();
