@@ -81,6 +81,12 @@ public class AnalysisHelper {
         logger.debug("탄수화물");
 
 
+        logger.debug("포화지방 값: {}", ns.getFat().getFatSub() != null ? ns.getFat().getFatSub().getSaturatedFat() : "fatSub가 null임");
+        logger.debug("당류 값: {}", ns.getCarbohydrate().getCarbSub() != null ? ns.getCarbohydrate().getCarbSub().getSugar() : "carbSub가 null임");
+
+        System.out.println("⚠ 현재 저장된 키 목록:");
+        result.forEach((k, v) -> System.out.printf("→ %s: %.1f%% [%s]\n", k, v.getPercent(), v.getGrade()));
+
         System.out.println("✅ 계산된 영양 비율 결과:");
         for (Map.Entry<String, NutrientResult> entry : result.entrySet()) {
             System.out.printf("- %s: %.1fg / %.1f%% → 등급: %s\n",
