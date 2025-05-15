@@ -4,7 +4,7 @@ import asyncio
 from app.services.ocr_service import call_clova_ocr_with_url
 from app.services.gpt_service import ask_gpt_ingredient, ask_gpt_nutrition
 from app.db.mongo_repository import save_product
-from app.utils.parser import clean_ingredient_text, clean_nutrition_text
+from app.utils.parser import clean_ingredient_text
 
 
 # 🧠 OCR → GPT 하나의 흐름을 처리하는 함수
