@@ -4,9 +4,21 @@ import { useRouter, useParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { ArrowLeft } from '@phosphor-icons/react';
-import { fetchExperienceDetail } from '../../../api/experience';
+import { fetchExperienceDetail, applyExperience } from '../../../api/experience';
 import { useAuthStore } from '../../../stores/authStore';
 import type { ExperienceDetail } from '../../../types/api/experience';
+
+function getTimeDiff(target: string) {
+  const now = new Date();
+  const end = new Date(target);
+  const diff = end.getTime() - now.getTime();
+  if (diff <= 0) return null;
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+  const minutes = Math.floor((diff / (1000 * 60)) % 60);
+  const seconds = Math.floor((diff / 1000) % 60);
+  return { days, hours, minutes, seconds };
+}
 
 export default function ExperienceDetailPage() {
   const router = useRouter();
@@ -17,6 +29,21 @@ export default function ExperienceDetailPage() {
   const [experience, setExperience] = useState<ExperienceDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [applying, setApplying] = useState(false);
+  const [countdown, setCountdown] = useState<{ days: number; hours: number; minutes: number; seconds: number } | null>(null);
+
+  const handleApply = async () => {
+    if (!accessToken || !campaignId) return;
+    setApplying(true);
+    try {
+      const res = await applyExperience(accessToken, campaignId);
+      alert(res.message);
+    } catch (e) {
+      alert('신청에 실패했습니다.');
+    } finally {
+      setApplying(false);
+    }
+  };
 
   useEffect(() => {
     if (!accessToken || !campaignId) return;
@@ -31,6 +58,15 @@ export default function ExperienceDetailPage() {
         setLoading(false);
       });
   }, [accessToken, campaignId]);
+
+  useEffect(() => {
+    if (!experience || experience.status !== '모집 예정') return;
+    setCountdown(getTimeDiff(experience.startDate));
+    const timer = setInterval(() => {
+      setCountdown(getTimeDiff(experience.startDate));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [experience]);
 
   if (loading) return <div>로딩 중...</div>;
   if (error || !experience) return <div>{error || '데이터 없음'}</div>;
@@ -99,11 +135,29 @@ export default function ExperienceDetailPage() {
 
       {/* 하단 고정 버튼 */}
       <div className="sticky bottom-0 left-0 right-0 w-full">
-        <button
-          className="w-full bg-[#6C2FF2] text-white py-3 rounded-none text-sm font-medium border-t"
-        >
-          신청하기
-        </button>
+        {experience.status === '모집 예정' && countdown ? (
+          <button
+            className="w-full bg-gray-300 text-white py-3 rounded-none text-sm font-medium border-t"
+            disabled
+          >
+            {`${countdown.days}일 ${countdown.hours}시간 ${countdown.minutes}분 ${countdown.seconds}초 후 신청`}
+          </button>
+        ) : experience.applied ? (
+          <button
+            className="w-full bg-gray-300 text-white py-3 rounded-none text-sm font-medium border-t"
+            disabled
+          >
+            신청완료
+          </button>
+        ) : (
+          <button
+            className="w-full bg-[#6C2FF2] text-white py-3 rounded-none text-sm font-medium border-t"
+            onClick={handleApply}
+            disabled={applying}
+          >
+            {applying ? '신청 중...' : '신청하기'}
+          </button>
+        )}
       </div>
     </div>
   );

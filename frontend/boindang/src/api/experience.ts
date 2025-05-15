@@ -37,3 +37,16 @@ export async function fetchExperienceDetail(
   if (!res.ok) throw new Error('체험단 상세 정보를 불러오지 못했습니다.');
   return res.json();
 }
+
+// 체험단 신청하기
+export async function applyExperience(accessToken: string, campaignId: number) {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/campaign/${campaignId}/apply`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+  });
+  if (!res.ok) throw new Error('체험단 신청에 실패했습니다.');
+  return res.json();
+}
