@@ -92,27 +92,9 @@ public class NutritionService {
 
         logger.debug("📄 [분석 리포트 생성 완료]");
 
-        try {
-            // 8. 기존 리포트 존재하면 update, 없으면 insert
-            Optional<NutritionReport> existing = reportRepo.findByUserId(userInfo.getId()).stream()
-                    .filter(r -> r.getProductId().equals(productId))
-                    .findFirst();
-
-            if (existing.isPresent()) {
-                report.setId(existing.get().getId());
-                logger.debug("🔄 기존 리포트 업데이트: " + product.getName());
-            } else {
-                logger.debug("🆕 신규 리포트 저장: " + product.getName());
-            }
-
-            NutritionReport saved = reportRepo.save(report);
-            logger.debug("✅ 리포트 저장 완료 - ID: " + saved.getId());
-            return NutritionReportResponse.from(saved); // ✅ 리팩토링 핵심
-
-        } catch (Exception e) {
-            logger.debug("❌ 리포트 저장 실패: " + e.getMessage());
-            throw new BusinessException(ApiResponseStatus.MONGODB_SAVE_FAILED);
-        }
+        // 8. 몽고디비에 저장
+        NutritionReport saved = saveOrUpdateReport(report);
+        return NutritionReportResponse.from(saved);
     }
 
     private UserInfo getUserInfoOrThrow(String userId) {
@@ -174,6 +156,17 @@ public class NutritionService {
                 collectIngredientNames(child, result);
             }
         }
+    }
+
+    private NutritionReport saveOrUpdateReport(NutritionReport report) {
+        Optional<NutritionReport> existing = reportRepo.findByUserId(report.getUserId()).stream()
+                .filter(r -> r.getProductId().equals(report.getProductId()))
+                .findFirst();
+
+        existing.ifPresent(e -> report.setId(e.getId()));
+        NutritionReport saved = reportRepo.save(report);
+        logger.debug("✅ 리포트 저장 완료 - ID: {}", saved.getId());
+        return saved;
     }
 
     public List<NutritionReportHistoryResponse> getUserReportHistory(String userId) {
