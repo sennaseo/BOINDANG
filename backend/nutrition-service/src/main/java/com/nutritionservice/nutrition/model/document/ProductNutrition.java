@@ -10,6 +10,7 @@ import org.bson.types.ObjectId;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString
 @Document("product")
 public class ProductNutrition {
     @Id
