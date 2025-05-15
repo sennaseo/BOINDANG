@@ -28,7 +28,18 @@ public enum ApiResponseStatus {
 
     // file
     FILE_SAVE_FAILED(false, HttpStatus.INTERNAL_SERVER_ERROR, 5001,"파일 저장에 실패했습니다."),
-    FILE_DELETE_FAILED(false, HttpStatus.INTERNAL_SERVER_ERROR, 5002,"파일 삭제에 실패했습니다.")
+    FILE_DELETE_FAILED(false, HttpStatus.INTERNAL_SERVER_ERROR, 5002,"파일 삭제에 실패했습니다."),
+
+    // 몽고디비
+    MONGODB_DATA_NOT_FOUND(false, HttpStatus.NOT_FOUND, 404, "해당 제품의 정보를 찾을 수 없습니다."),
+    MONGODB_SAVE_FAILED(false, HttpStatus.INTERNAL_SERVER_ERROR, 5003, "MongoDB 저장에 실패했습니다."),
+
+
+    // 백과사전
+    ENCYCLOPEDIA_CALL_FAILED(false, HttpStatus.INTERNAL_SERVER_ERROR, 5101, "백과사전 API 호출에 실패했습니다."),
+    ENCYCLOPEDIA_RESPONSE_NULL(false, HttpStatus.INTERNAL_SERVER_ERROR, 5102, "백과사전 응답이 null입니다."),
+    ENCYCLOPEDIA_INGREDIENT_EMPTY(false, HttpStatus.NO_CONTENT, 5103, "백과사전 성분 상세정보가 없습니다."),
+    ENCYCLOPEDIA_TOP_RISK_EMPTY(false, HttpStatus.NO_CONTENT, 5104, "우선순위 위험 성분 정보가 없습니다."),
 
     ;
 
