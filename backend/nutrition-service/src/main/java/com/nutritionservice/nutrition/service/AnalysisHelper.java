@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
+// 영양성분의 일일 권장량 비율에 따라 등급을 매겨주는 서비스
 public class AnalysisHelper {
     private static final Logger logger = LoggerFactory.getLogger(NutritionService.class);
 
@@ -22,7 +23,6 @@ public class AnalysisHelper {
         result.put("단백질", makeResult("protein", ns.getProtein().getGram(), ns.getProtein().getRatio(), userType));
         result.put("지방", makeResult("fat", ns.getFat().getGram(), ns.getFat().getRatio(), userType));
         result.put("탄수화물", makeResult("carbohydrate", ns.getCarbohydrate().getGram(), ns.getCarbohydrate().getRatio(), userType));
-        logger.debug("탄단지 삽입 완료\nresult: " + result.get("탄수화물") + result.get("단백질") + result.get("지방"));
 
         // ➕ 포화지방 / 트랜스지방
         if (ns.getFat() != null && ns.getFat().getSub() != null) {
@@ -43,7 +43,6 @@ public class AnalysisHelper {
                 ));
             }
         }
-        logger.debug("지방");
 
         // ➕ 당류 / 식이섬유
         if (ns.getCarbohydrate() != null && ns.getCarbohydrate().getSub() != null) {
@@ -64,7 +63,6 @@ public class AnalysisHelper {
                 ));
             }
         }
-        logger.debug("탄수화물");
 
         // ➕ 나트륨
         if (ns.getSodium() != null) {
@@ -74,7 +72,6 @@ public class AnalysisHelper {
             double sodiumRatio = ns.getSodium().getRatio();
             result.put("나트륨", makeResult("sodium", sodiumGram, sodiumRatio, userType));
         }
-        logger.debug("나트륨");
 
         // ➕ 콜레스테롤
         if (ns.getCholesterol() != null && ns.getCholesterol().getMg() != null) {
@@ -82,15 +79,11 @@ public class AnalysisHelper {
             double cholesterolRatio = ns.getCholesterol().getRatio();
             result.put("콜레스테롤", makeResult("cholesterol", cholesterolGram, cholesterolRatio, userType));
         }
-        logger.debug("콜레스테롤");
 
-        logger.debug("포화지방 값: {}", ns.getFat().getSub() != null ? ns.getFat().getSub().getSaturatedFat() : "sub이 null임");
-        logger.debug("당류 값: {}", ns.getCarbohydrate().getSub() != null ? ns.getCarbohydrate().getSub().getSugar() : "sub이 null임");
+//        logger.debug("⚠ 현재 저장된 키 목록:");
+//        result.forEach((k, v) -> System.out.printf("→ %s: %.1f%% [%s]\n", k, v.getPercent(), v.getGrade()));
 
-        System.out.println("⚠ 현재 저장된 키 목록:");
-        result.forEach((k, v) -> System.out.printf("→ %s: %.1f%% [%s]\n", k, v.getPercent(), v.getGrade()));
-
-        System.out.println("✅ 계산된 영양 비율 결과:");
+        logger.debug("✅ 계산된 영양 비율 결과:");
         for (Map.Entry<String, NutrientResult> entry : result.entrySet()) {
             System.out.printf("- %s: %.1fg / %.1f%% → 등급: %s\n",
                     entry.getKey(),

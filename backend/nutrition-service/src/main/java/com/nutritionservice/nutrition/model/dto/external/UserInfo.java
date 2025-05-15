@@ -1,14 +1,12 @@
 package com.nutritionservice.nutrition.model.dto.external;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class UserInfo {
     private String id;
     private String gender;   // "M" or "F"
