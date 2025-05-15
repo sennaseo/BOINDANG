@@ -12,9 +12,13 @@ import com.boindang.community.client.UserClient;
 import com.boindang.community.common.exception.CommunityException;
 import com.boindang.community.common.exception.ErrorCode;
 import com.boindang.community.dto.request.CreatePostRequest;
+import com.boindang.community.dto.response.CommentResponse;
 import com.boindang.community.dto.response.PostListResponse;
 import com.boindang.community.dto.response.PostResponse;
+import com.boindang.community.dto.response.PostSummaryResponse;
+import com.boindang.community.entity.Comment;
 import com.boindang.community.entity.Post;
+import com.boindang.community.repository.CommentRepository;
 import com.boindang.community.repository.LikeRepository;
 import com.boindang.community.repository.PostRepository;
 
@@ -26,6 +30,7 @@ public class PostService {
 
 	private final PostRepository postRepository;
 	private final LikeRepository likeRepository;
+	private final CommentRepository commentRepository;
 	private final UserClient userClient;
 
 	public PostListResponse getAllPosts(Long currentUserId, String category, int size, int page) {
@@ -51,11 +56,11 @@ public class PostService {
 		Map<Long, String> usernames = userClient.getUsernamesByIds(userIds);
 
 		// 최종 매핑
-		List<PostResponse> responseList = posts.stream()
+		List<PostSummaryResponse> responseList = posts.stream()
 			.map(post -> {
 				boolean likedByMe = likeRepository.existsByPostIdAndUserIdAndIsDeletedFalse(post.getId(), currentUserId);
 				String username = usernames.getOrDefault(post.getUserId(), "알 수 없음");
-				return PostResponse.from(post, likedByMe, username);
+				return PostSummaryResponse.from(post, likedByMe, username);
 			})
 			.toList();
 
@@ -69,7 +74,26 @@ public class PostService {
 		boolean likedByMe = likeRepository.existsByPostIdAndUserIdAndIsDeletedFalse(postId, currentUserId);
 		String username = userClient.getUsernameById(post.getUserId());
 
-		return PostResponse.from(post, likedByMe, username);
+		// ✅ 댓글 조회 (isDeleted == false 조건 포함)
+		List<Comment> comments = commentRepository.findByPostIdAndIsDeletedFalseOrderByCreatedAtAsc(postId);
+
+		// 댓글 작성자 ID 목록 추출 후 USER 서비스에 batch 요청
+		List<Long> commenterIds = comments.stream()
+			.map(Comment::getUserId)
+			.distinct()
+			.toList();
+
+		Map<Long, String> nicknames = userClient.getUsernamesByIds(commenterIds);
+
+		// ✅ 댓글 → DTO 변환
+		List<CommentResponse> commentResponses = comments.stream()
+			.map(comment -> {
+				String nickname = nicknames.getOrDefault(comment.getUserId(), "알 수 없음");
+				return CommentResponse.from(comment, currentUserId, nickname);
+			})
+			.toList();
+
+		return PostResponse.from(post, likedByMe, username, commentResponses);
 	}
 
 	public Long createPost(Long userId, CreatePostRequest request) {

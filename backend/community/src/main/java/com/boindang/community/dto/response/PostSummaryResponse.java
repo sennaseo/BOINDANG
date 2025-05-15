@@ -1,16 +1,16 @@
 package com.boindang.community.dto.response;
 
-import lombok.Builder;
-import lombok.Getter;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
 import com.boindang.community.entity.Post;
 
+import lombok.Builder;
+import lombok.Getter;
+
 @Getter
 @Builder
-public class PostResponse {
+public class PostSummaryResponse {
 
 	private Long postId;
 	private String category;
@@ -25,10 +25,9 @@ public class PostResponse {
 	private boolean likedByMe;     // 현재 사용자가 좋아요 눌렀는지 여부
 
 	private LocalDateTime createdAt;
-	private List<CommentResponse> comments;
 
-	public static PostResponse from(Post post, boolean likedByMe, String username, List<CommentResponse> comments) {
-		return PostResponse.builder()
+	public static PostSummaryResponse from(Post post, boolean likedByMe, String username) {
+		return PostSummaryResponse.builder()
 			.postId(post.getId())
 			.category(post.getCategory())
 			.title(post.getTitle())
@@ -39,7 +38,6 @@ public class PostResponse {
 			.likeCount(post.getLikeCount())
 			.likedByMe(likedByMe)
 			.createdAt(post.getCreatedAt())
-			.comments(comments)
 			.build();
 	}
 }

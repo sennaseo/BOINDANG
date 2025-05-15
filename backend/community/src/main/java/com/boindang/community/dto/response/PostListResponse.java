@@ -9,5 +9,5 @@ import lombok.Getter;
 @AllArgsConstructor
 public class PostListResponse {
 	private int totalPage;
-	private List<PostResponse> posts;
+	private List<PostSummaryResponse> posts;
 }
