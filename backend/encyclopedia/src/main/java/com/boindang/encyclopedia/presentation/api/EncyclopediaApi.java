@@ -1,8 +1,10 @@
-package com.boindang.encyclopedia.presentation;
+package com.boindang.encyclopedia.presentation.api;
 
 import com.boindang.encyclopedia.common.response.BaseResponse;
 import com.boindang.encyclopedia.presentation.dto.response.EncyclopediaDetailResponse;
 import com.boindang.encyclopedia.presentation.dto.response.EncyclopediaSearchResponse;
+import com.boindang.encyclopedia.presentation.dto.response.IngredientListResponse;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -211,10 +213,11 @@ public interface EncyclopediaApi {
             ))
     })
     @GetMapping("/category")
-    BaseResponse<List<EncyclopediaSearchResponse>> getIngredientsByCategory(
+    BaseResponse<IngredientListResponse> getIngredientsByCategory(
             @Parameter(description = "성분 유형", required = true) @RequestParam String category,
             @Parameter(description = "정렬 기준 (gi | sweetness)") @RequestParam(required = false) String sort,
             @Parameter(description = "정렬 방향 (asc | desc)") @RequestParam(defaultValue = "desc") String order,
-            @Parameter(description = "조회 개수") @RequestParam(defaultValue = "20") int size
+            @Parameter(description = "조회 개수") @RequestParam(defaultValue = "20") int size,
+            @Parameter(description = "페이지 번호") @RequestParam(defaultValue = "0") int page
     );
 }
