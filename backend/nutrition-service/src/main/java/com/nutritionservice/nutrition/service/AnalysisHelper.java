@@ -22,9 +22,51 @@ public class AnalysisHelper {
         result.put("단백질", makeResult("protein", ns.getProtein().getGram(), ns.getProtein().getRatio(), userType));
         result.put("지방", makeResult("fat", ns.getFat().getGram(), ns.getFat().getRatio(), userType));
         result.put("탄수화물", makeResult("carbohydrate", ns.getCarbohydrate().getGram(), ns.getCarbohydrate().getRatio(), userType));
-
         logger.debug("탄단지 삽입 완료\nresult: " + result.get("탄수화물") + result.get("단백질") + result.get("지방"));
 
+        // ➕ 포화지방 / 트랜스지방
+        if (ns.getFat() != null && ns.getFat().getSub() != null) {
+            if (ns.getFat().getSub().getSaturatedFat() != null) {
+                result.put("포화지방", makeResult(
+                        "saturatedFat",
+                        ns.getFat().getSub().getSaturatedFat().getGram(),
+                        ns.getFat().getSub().getSaturatedFat().getRatio(),
+                        userType
+                ));
+            }
+            if (ns.getFat().getSub().getTransFat() != null) {
+                result.put("트랜스지방", makeResult(
+                        "transFat",
+                        ns.getFat().getSub().getTransFat().getGram(),
+                        ns.getFat().getSub().getTransFat().getRatio(),
+                        userType
+                ));
+            }
+        }
+        logger.debug("지방");
+
+        // ➕ 당류 / 식이섬유
+        if (ns.getCarbohydrate() != null && ns.getCarbohydrate().getSub() != null) {
+            if (ns.getCarbohydrate().getSub().getSugar() != null) {
+                result.put("당류", makeResult(
+                        "sugar",
+                        ns.getCarbohydrate().getSub().getSugar().getGram(),
+                        ns.getCarbohydrate().getSub().getSugar().getRatio(),
+                        userType
+                ));
+            }
+            if (ns.getCarbohydrate().getSub().getFiber() != null) {
+                result.put("식이섬유", makeResult(
+                        "fiber",
+                        ns.getCarbohydrate().getSub().getFiber().getGram(),
+                        ns.getCarbohydrate().getSub().getFiber().getRatio(),
+                        userType
+                ));
+            }
+        }
+        logger.debug("탄수화물");
+
+        // ➕ 나트륨
         if (ns.getSodium() != null) {
             double sodiumGram = ns.getSodium().getMg() != null
                     ? ns.getSodium().getMg() / 1000.0
@@ -33,6 +75,8 @@ public class AnalysisHelper {
             result.put("나트륨", makeResult("sodium", sodiumGram, sodiumRatio, userType));
         }
         logger.debug("나트륨");
+
+        // ➕ 콜레스테롤
         if (ns.getCholesterol() != null && ns.getCholesterol().getMg() != null) {
             double cholesterolGram = ns.getCholesterol().getMg() / 1000.0;
             double cholesterolRatio = ns.getCholesterol().getRatio();
@@ -40,49 +84,8 @@ public class AnalysisHelper {
         }
         logger.debug("콜레스테롤");
 
-        if (ns.getFat() != null && ns.getFat().getFatSub() != null) {
-            if (ns.getFat().getFatSub().getSaturatedFat() != null) {
-                result.put("포화지방", makeResult(
-                        "saturatedFat",
-                        ns.getFat().getFatSub().getSaturatedFat().getGram(),
-                        ns.getFat().getFatSub().getSaturatedFat().getRatio(),
-                        userType
-                ));
-            }
-            if (ns.getFat().getFatSub().getTransFat() != null) {
-                result.put("트랜스지방", makeResult(
-                        "transFat",
-                        ns.getFat().getFatSub().getTransFat().getGram(),
-                        ns.getFat().getFatSub().getTransFat().getRatio(),
-                        userType
-                ));
-            }
-        }
-        logger.debug("지방");
-
-        if (ns.getCarbohydrate() != null && ns.getCarbohydrate().getCarbSub() != null) {
-            if (ns.getCarbohydrate().getCarbSub().getSugar() != null) {
-                result.put("당류", makeResult(
-                        "sugar",
-                        ns.getCarbohydrate().getCarbSub().getSugar().getGram(),
-                        ns.getCarbohydrate().getCarbSub().getSugar().getRatio(),
-                        userType
-                ));
-            }
-            if (ns.getCarbohydrate().getCarbSub().getFiber() != null) {
-                result.put("식이섬유", makeResult(
-                        "fiber",
-                        ns.getCarbohydrate().getCarbSub().getFiber().getGram(),
-                        ns.getCarbohydrate().getCarbSub().getFiber().getRatio(),
-                        userType
-                ));
-            }
-        }
-        logger.debug("탄수화물");
-
-
-        logger.debug("포화지방 값: {}", ns.getFat().getFatSub() != null ? ns.getFat().getFatSub().getSaturatedFat() : "fatSub가 null임");
-        logger.debug("당류 값: {}", ns.getCarbohydrate().getCarbSub() != null ? ns.getCarbohydrate().getCarbSub().getSugar() : "carbSub가 null임");
+        logger.debug("포화지방 값: {}", ns.getFat().getSub() != null ? ns.getFat().getSub().getSaturatedFat() : "sub이 null임");
+        logger.debug("당류 값: {}", ns.getCarbohydrate().getSub() != null ? ns.getCarbohydrate().getSub().getSugar() : "sub이 null임");
 
         System.out.println("⚠ 현재 저장된 키 목록:");
         result.forEach((k, v) -> System.out.printf("→ %s: %.1f%% [%s]\n", k, v.getPercent(), v.getGrade()));
@@ -97,6 +100,7 @@ public class AnalysisHelper {
         }
 
         return result;
+
     }
 
     private static NutrientResult makeResult(String key, double actual, double percent, UserType userType) {

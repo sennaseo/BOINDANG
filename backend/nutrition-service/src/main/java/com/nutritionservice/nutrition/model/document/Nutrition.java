@@ -11,8 +11,8 @@ import lombok.*;
 public class Nutrition {
     private Integer Kcal;
     private Nutrient protein;
-    private Nutrient carbohydrate;
-    private Nutrient fat;
+    private CarbohydrateNutrient carbohydrate;
+    private FatNutrient fat;
     private Nutrient sodium;
     private Nutrient cholesterol;
 }
