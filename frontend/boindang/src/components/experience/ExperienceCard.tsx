@@ -69,7 +69,7 @@ export default function ExperienceCard({
             <div className="absolute inset-0 bg-black/40 z-10 rounded-t-2xl pointer-events-none" />
           )}
           {applied && (
-            <img
+            <Image
               src="/assets/experience/sugar_success.png"
               alt="신청 성공"
               className="absolute inset-0 w-full h-full object-contain z-20 pointer-events-none"

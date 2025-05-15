@@ -38,7 +38,7 @@ export default function ExperienceDetailPage() {
     try {
       const res = await applyExperience(accessToken, campaignId);
       alert(res.message);
-    } catch (e) {
+    } catch {
       alert('신청에 실패했습니다.');
     } finally {
       setApplying(false);
