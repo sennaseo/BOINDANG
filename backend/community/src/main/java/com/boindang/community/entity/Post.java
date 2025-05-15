@@ -22,9 +22,6 @@ public class Post {
 
 	private String category;
 
-	@Column(nullable = false, length = 255)
-	private String title;
-
 	@Lob
 	@Column(nullable = false)
 	private String content;
