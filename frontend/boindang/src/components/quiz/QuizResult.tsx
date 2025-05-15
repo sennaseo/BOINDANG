@@ -1,4 +1,5 @@
 import { Quiz, QuizAnswerResult } from '../../types/api/quiz';
+import Image from 'next/image';
 
 interface QuizResultProps {
   quiz: Quiz;
@@ -18,7 +19,7 @@ export default function QuizResult({ quiz, selected, onNext, isLast, index, answ
         <div className="text-3xl font-extrabold text-center mb-4 mt-4">Q{index + 1}</div>
         <h2 className="text-lg font-bold mb-4 text-center">{quiz.question}</h2>
         <div className="flex justify-center mb-4">
-          <img
+          <Image
             src={answerResult?.correct ? '/assets/quiz/sugar_O.png' : '/assets/quiz/sugar_X.png'}
             alt={answerResult?.correct ? '정답' : '오답'}
             className="w-24 h-24 object-contain"
