@@ -2,6 +2,7 @@ package com.boindang.encyclopedia.presentation.dto.response;
 
 import com.boindang.encyclopedia.domain.Encyclopedia;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,10 +20,12 @@ public class EncyclopediaSearchTestResponse {
 	public static EncyclopediaSearchTestResponse from(Encyclopedia entity) {
 		Map<String, Object> parsedData = null;
 		try {
-			parsedData = new ObjectMapper().readValue(entity.getData(), new TypeReference<>() {});
+			ObjectMapper mapper = new ObjectMapper();
+			// 💡 문자열 내부의 쌍따옴표를 자동 처리하도록 옵션 설정 (권장)
+			mapper.configure(DeserializationFeature.FAIL_ON_TRAILING_TOKENS, false);
+			parsedData = mapper.readValue(entity.getData(), new TypeReference<>() {});
 		} catch (Exception e) {
-			// 로그로만 처리 (실패해도 전체 응답 막진 않게)
-			System.err.println("JSON 파싱 오류: " + e.getMessage());
+			System.err.println("❗ JSON 파싱 오류: " + e.getMessage());
 		}
 
 		return EncyclopediaSearchTestResponse.builder()
@@ -31,5 +34,6 @@ public class EncyclopediaSearchTestResponse {
 			.data(parsedData)
 			.build();
 	}
+
 
 }
