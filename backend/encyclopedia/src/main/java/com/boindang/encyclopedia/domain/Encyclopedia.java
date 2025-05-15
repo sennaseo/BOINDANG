@@ -15,7 +15,6 @@ import lombok.Getter;
 @Table(name = "encyclopedia_json")
 public class Encyclopedia {
 	@Id
-	@GeneratedValue
 	private String id;
 
 	private String name;
