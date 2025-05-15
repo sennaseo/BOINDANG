@@ -14,7 +14,6 @@ public class PostResponse {
 
 	private Long postId;
 	private String category;
-	private String title;
 	private String content;
 	private Long imageId;
 
@@ -31,7 +30,6 @@ public class PostResponse {
 		return PostResponse.builder()
 			.postId(post.getId())
 			.category(post.getCategory())
-			.title(post.getTitle())
 			.content(post.getContent())
 			.imageId(post.getImageId())
 			.username(username)
