@@ -56,6 +56,8 @@ export default function ExperiencePage() {
           openDateTime: item.startDate
             ? item.startDate.slice(5, 10).replace('-', '/') + ' ' + item.startDate.slice(11, 16)
             : '',
+          applied: item.applied,
+          status: item.status,
         }))
       );
       setTotalPages(data.totalPages);

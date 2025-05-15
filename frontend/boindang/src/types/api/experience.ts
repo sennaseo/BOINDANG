@@ -8,6 +8,7 @@ export interface Experience {
     status: string;
     capacity: number;
     hashtags: string[];
+    applied: boolean;
   }
   
   export interface ExperienceListResponse {
@@ -31,4 +32,5 @@ export interface ExperienceDetail {
   applicantCount: number;
   hashtags: string[];
   notices: string[];
+  applied: boolean;
 }

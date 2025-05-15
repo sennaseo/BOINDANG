@@ -2,6 +2,20 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 
+function getCardStatusLabel(remainingDays: number | string, status: string, openDateTime?: string) {
+  if (status === '모집 예정' && openDateTime) {
+    // openDateTime: '05/10 00:00' 형태로 들어옴
+    const [monthDay, time] = openDateTime.split(' ');
+    const [month, day] = monthDay.split('/');
+    return `${month}월 ${day}일 ${time} 오픈`;
+  }
+  if (status === '진행중') {
+    return '모집중';
+  }
+  // 마감/종료면 아무것도 표시하지 않음
+  return '';
+}
+
 interface ExperienceCardProps {
   id: string;
   title: string;
@@ -11,6 +25,8 @@ interface ExperienceCardProps {
   remainingDays: number | string;
   maxParticipants?: number;
   openDateTime?: string;
+  applied: boolean;
+  status?: string;
 }
 
 export type { ExperienceCardProps };
@@ -23,7 +39,10 @@ export default function ExperienceCard({
   remainingDays,
   maxParticipants = 0,
   openDateTime = '',
+  applied,
+  status = '',
 }: ExperienceCardProps) {
+  const statusLabel = getCardStatusLabel(remainingDays, status, openDateTime);
   return (
     <Link href={`/experience/${id}`}>
       <motion.div 
@@ -39,16 +58,23 @@ export default function ExperienceCard({
             fill
             className="object-cover"
           />
-          <div className="absolute top-4 left-4 bg-black/60 text-white px-3 py-1 rounded-full text-xs">
-            {typeof remainingDays === 'string' ? remainingDays : `${remainingDays}일 남음`}
-          </div>
-          {openDateTime && (
-            <div className="absolute bottom-4 left-4 bg-[#6C2FF2] text-white px-3 py-1 rounded-full text-xs">
-              {openDateTime} 오픈
+          {statusLabel && (
+            <div
+              className={`absolute top-4 left-4 px-3 py-1 rounded-full text-xs text-white ${status === '진행중' ? 'bg-[#6C2FF2]' : 'bg-black/60'}`}
+            >
+              {statusLabel}
             </div>
           )}
           {typeof remainingDays === 'string' && remainingDays === '종료' && (
             <div className="absolute inset-0 bg-black/40 z-10 rounded-t-2xl pointer-events-none" />
+          )}
+          {applied && (
+            <img
+              src="/assets/experience/sugar_success.png"
+              alt="신청 성공"
+              className="absolute inset-0 w-full h-full object-contain z-20 pointer-events-none"
+              style={{ background: 'rgba(0,0,0,0.4)' }}
+            />
           )}
         </div>
 
