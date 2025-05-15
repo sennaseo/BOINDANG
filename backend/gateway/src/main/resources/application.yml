@@ -71,7 +71,8 @@ spring:
           uri: lb://COMMUNITY
           predicates:
             - Path=/community/**
-
+          filters:
+            - StripPrefix=1
 eureka:
   client:
     enabled: true
