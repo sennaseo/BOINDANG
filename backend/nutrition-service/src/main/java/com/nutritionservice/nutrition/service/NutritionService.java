@@ -67,8 +67,12 @@ public class NutritionService {
 
     public NutritionReport analyzeProductForUser(UserInfo userInfo, String productId) {
         // 1. 제품 조회
+        logger.debug("제품 조회 시작");
         ProductNutrition product = productRepo.findById(productId)
-                .orElseThrow(() -> new RuntimeException("해당 제품이 존재하지 않습니다."));
+                .orElseThrow(() -> {
+                    logger.debug("제품 검색 중 오류 발생");
+                    throw new RuntimeException("해당 제품이 존재하지 않습니다.");
+                });
 
         ObjectMapper mapper = new ObjectMapper();
         try {
