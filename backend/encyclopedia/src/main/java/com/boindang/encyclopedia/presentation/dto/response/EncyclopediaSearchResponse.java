@@ -41,13 +41,5 @@ public class EncyclopediaSearchResponse {
                 .riskLevel(riskLabel)
                 .build();
     }
-    public static EncyclopediaSearchResponse from3(Encyclopedia entity) {
-        return EncyclopediaSearchResponse.builder()
-            .id(String.valueOf(entity.getId()))
-            .name(entity.getName())
-            .engName(entity.getEngName())
-            .type(entity.getType())
-            .riskLevel(entity.getRiskLevel().getLabel())
-            .build();
-    }
+
 }
