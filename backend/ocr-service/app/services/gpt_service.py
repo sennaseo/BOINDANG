@@ -96,7 +96,7 @@ async def ask_gpt_nutrition(nutrition_text: str) -> dict:
 
     대상: 영양정보 텍스트
 
-    1. nutritionSummary
+    1. nutrition
     - carbohydrate, protein, fat 구조로 나눌 것
     - 각 항목: gram, ratio 포함
 
@@ -105,7 +105,7 @@ async def ask_gpt_nutrition(nutrition_text: str) -> dict:
     
     아래 형식의 JSON만 반환하라:
     {
-      "nutritionSummary": {
+      "nutrition": {
         "Kcal": ...,
         "carbohydrate": {
           "gram": ...,
