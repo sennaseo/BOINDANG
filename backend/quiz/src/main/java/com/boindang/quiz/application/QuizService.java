@@ -3,6 +3,7 @@ package com.boindang.quiz.application;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -63,7 +64,6 @@ public class QuizService {
 				List<String> options = quiz.getOptions().stream()
 					.map(QuizOption::getContent)
 					.collect(Collectors.toList());
-				Collections.shuffle(options);
 				return new QuizResponse(
 					quiz.getId(),
 					quiz.getTitle(),
@@ -80,28 +80,34 @@ public class QuizService {
 		Quiz quiz = quizRepository.findById(request.quizId())
 			.orElseThrow(() -> new QuizException(ErrorCode.QUIZ_NOT_FOUND));
 
-		// 2. 보기 ID 유효성 검증 (도메인 책임)
+		// 2. 보기 ID 유효성 검증
 		if (!quiz.hasOption(request.selectedOptionId())) {
 			throw new QuizException(ErrorCode.OPTION_QUIZ_MISMATCH);
 		}
 
-		// 3. 선택한 보기 엔티티 조회
+		// 3. 선택한 보기
 		QuizOption selectedOption = quiz.getOptions().stream()
-			.filter(option -> option.getOptionId() == request.selectedOptionId()) // ✅ int == int
+			.filter(option -> option.getOptionId() == request.selectedOptionId())
 			.findFirst()
-			.orElseThrow(() -> new QuizException(ErrorCode.INVALID_QUIZ_OPTION)); // 방어적 처리
+			.orElseThrow(() -> new QuizException(ErrorCode.INVALID_QUIZ_OPTION));
 
-		// 4. 정답 판별 (도메인 책임)
+		// 4. 정답 판별
 		boolean isCorrect = quiz.isCorrect(selectedOption.getOptionId());
 
-		// 5. 풀이 이력 저장
-		QuizSolvedHistory history = new QuizSolvedHistory(
-			userId,
-			quiz,
-			isCorrect,
-			request.selectedOptionId()
-		);
-		historyRepository.save(history);
+		// 5. 기존 풀이 기록 확인 (있으면 업데이트, 없으면 저장)
+		Optional<QuizSolvedHistory> existing = historyRepository.findByUserIdAndQuizId(userId, quiz.getId());
+
+		if (existing.isPresent()) {
+			existing.get().update(isCorrect, request.selectedOptionId());
+		} else {
+			QuizSolvedHistory history = new QuizSolvedHistory(
+				userId,
+				quiz,
+				isCorrect,
+				request.selectedOptionId()
+			);
+			historyRepository.save(history);
+		}
 
 		// 6. 응답 반환
 		return new QuizAnswerResponse(

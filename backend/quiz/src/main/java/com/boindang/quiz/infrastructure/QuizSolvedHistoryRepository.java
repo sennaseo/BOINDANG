@@ -1,6 +1,7 @@
 package com.boindang.quiz.infrastructure;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -17,6 +18,8 @@ public interface QuizSolvedHistoryRepository extends JpaRepository<QuizSolvedHis
 	int countByUserIdAndIsCorrectTrue(Long userId);
 
 	List<QuizSolvedHistory> findAllByUserId(Long userId);
+
+	Optional<QuizSolvedHistory> findByUserIdAndQuizId(Long userId, Long quizId);
 
 }
 
