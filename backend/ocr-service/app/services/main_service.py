@@ -38,8 +38,8 @@ async def process_images(image_urls: dict, ingredient_url: str, nutrition_url: s
     print("🎯 [GPT 분석 완료]")
 
     result = {
-        "ingredient_analysis": result_ingredient,
-        "nutrition_analysis": result_nutrition
+        "ingredientAnalysis": result_ingredient,
+        "nutritionAnalysis": result_nutrition
     }
 
     # 제품명 추출

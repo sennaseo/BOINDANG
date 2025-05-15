@@ -24,8 +24,8 @@ def save_product(image_urls:dict, product_name, result):
         {"name": product_name},
         {
             "$set": {
-                "ingredient_image_url": image_urls["ingredient_image_url"],
-                "nutrition_image_url": image_urls["nutrition_image_url"],
+                "ingredientImageUrl": image_urls["ingredient_image_url"],
+                "nutritionImageUrl": image_urls["nutrition_image_url"],
                 "result": result,
                 "updatedAt": datetime.utcnow()
             }
