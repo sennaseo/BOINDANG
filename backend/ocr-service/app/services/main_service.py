@@ -50,8 +50,8 @@ async def process_images(ingredient_url: str, nutrition_url: str):
     inserted_id = save_product(product_name, result)
 
     response = {
-        "product_id": inserted_id,
-        "product_name": product_name,
+        "productId": inserted_id,
+        "productName": product_name,
         "result": result
     }
 
