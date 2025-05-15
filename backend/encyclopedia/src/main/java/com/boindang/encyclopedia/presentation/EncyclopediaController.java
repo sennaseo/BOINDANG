@@ -5,6 +5,8 @@ import com.boindang.encyclopedia.common.response.BaseResponse;
 import com.boindang.encyclopedia.presentation.api.EncyclopediaApi;
 import com.boindang.encyclopedia.presentation.dto.response.EncyclopediaDetailResponse;
 import com.boindang.encyclopedia.presentation.dto.response.EncyclopediaSearchResponse;
+import com.boindang.encyclopedia.presentation.dto.response.IngredientListResponse;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -43,14 +45,14 @@ public class EncyclopediaController implements EncyclopediaApi {
 
     @Override
     @GetMapping("/category")
-    public BaseResponse<List<EncyclopediaSearchResponse>> getIngredientsByCategory(
+    public BaseResponse<IngredientListResponse> getIngredientsByCategory(
         @RequestParam String category,
         @RequestParam(required = false) String sort,
         @RequestParam(defaultValue = "desc") String order,
-        @RequestParam(defaultValue = "20") int size
+        @RequestParam(defaultValue = "20") int size,
+        @RequestParam(defaultValue = "0") int page
     ) {
-        List<EncyclopediaSearchResponse> result = encyclopediaService.getIngredientsByType(category, sort, order, size);
-        return BaseResponse.success(result);
+        return BaseResponse.success(encyclopediaService.getIngredientsByType(category, sort, order, size, page));
     }
 
 }
