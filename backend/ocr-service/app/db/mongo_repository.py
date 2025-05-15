@@ -16,7 +16,7 @@ db = client[dbname]
 print("Mongo URI:", MONGODB_URI)
 print("DB name:", db.name)
 
-def save_product(product_name, result):
+def save_product(image_urls:dict, product_name, result):
     print("🧪 save_product() 함수 시작")
 
     # upsert 시도
@@ -24,6 +24,8 @@ def save_product(product_name, result):
         {"name": product_name},
         {
             "$set": {
+                "ingredient_image_url": image_urls["ingredient_image_url"],
+                "nutrition_image_url": image_urls["nutrition_image_url"],
                 "result": result,
                 "updatedAt": datetime.utcnow()
             }
