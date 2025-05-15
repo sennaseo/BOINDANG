@@ -86,7 +86,7 @@ public class NutritionService {
                     logger.debug("제품 검색 중 오류 발생");
                     throw new BusinessException(ApiResponseStatus.MONGODB_DATA_NOT_FOUND);
                 });
-        logger.debug("제품 조회 끝");
+        logger.debug("제품 조회 성공: "+product.toString());
 
 //        ObjectMapper mapper = new ObjectMapper();
 //        try {
