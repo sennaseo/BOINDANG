@@ -11,7 +11,6 @@ import com.nutritionservice.nutrition.model.dto.response.NutritionReportResponse
 import com.nutritionservice.nutrition.repository.NutritionReportRepository;
 import com.nutritionservice.nutrition.repository.ProductNutritionRepository;
 import com.nutritionservice.nutrition.util.UserTypeConverter;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -19,7 +18,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
-import java.time.LocalDateTime;
 import java.util.*;
 
 @Slf4j
@@ -35,180 +33,136 @@ public class NutritionService {
     private final Logger logger = LoggerFactory.getLogger(NutritionService.class);
     private final UserService userService;
 
-    @PostConstruct
-    public void testEncyclopediaApi() {
-        List<String> testIngredients = List.of("말티톨", "말토덱스트린", "스테비아");
-        EncyclopediaRequest request = new EncyclopediaRequest(testIngredients, "dieter");
-//        EncyclopediaResponse response = encyclopediaClient.getIngredientDetails(token, request);
-
-        EncyclopediaResponse response;
-
-        try {
-            String url = eurekaService.getUrl("ENCYCLOPEDIA") + "/encyclopedia/user-type";
-            System.out.println("url: " + url);
-            response = restClient.post()
-                    .uri(url)
-                    .header("X-User-Id", "1")
-                    .body(request)
-                    .retrieve()
-                    .body(EncyclopediaResponse.class);
-        } catch (Exception e) {
-            throw new RuntimeException("힝 이게 머노: " + e.getMessage(), e);
-        }
-
-        System.out.println("📘 백과사전 응답:");
-        if (response != null && response.getData() != null) {
-            response.getData().getIngredients().forEach(detail -> {
-                System.out.printf("- %s | 위험도: %s | GI: %d | 메시지: %s\n",
-                        detail.getName(),
-                        detail.getRiskLevel(),
-                        detail.getGi(),
-                        detail.getShortMessage());
-            });
-        } else {
-            System.out.println("❌ 응답이 null이거나 데이터가 없습니다. → response = " + response);
-        }
-    }
-
     public NutritionReportResponse analyzeProductForUser(String userId, String productId){
 
         // 0. 유저 조회
-        UserInfo userInfo = userService.getUserById(userId);
-
-        System.out.println("👤 [유저 정보 조회 완료]");
+        UserInfo userInfo = getUserInfoOrThrow(userId);
 
         // 1. 제품 조회
-        logger.debug("제품 조회 시작");
         ProductNutrition product = productRepo.findById(productId)
                 .orElseThrow(() -> {
-                    logger.debug("제품 검색 중 오류 발생");
                     throw new BusinessException(ApiResponseStatus.MONGODB_DATA_NOT_FOUND);
                 });
-        logger.debug("제품 조회 성공: "+product.toString());
 
-        logger.debug("영양소 비율/등급 계산 시작");
+        // 2. 영양성분 별 등급 계산
         Map<String, NutrientResult> ratios = AnalysisHelper.calculateRatios(product, userInfo);
-        logger.debug("영양소 비율/등급 계산 끝");
 
-        // 제품 성분 트리에서 전체 원재료 수집
+        // 3. 제품 성분 트리에서 원재료 리스트 조회
         List<String> ingredientNames = new ArrayList<>();
         for (IngredientNode node : product.getResult().getIngredientAnalysis().getIngredientTree()) {
             collectIngredientNames(node, ingredientNames);
         }
 
-        // 백과사전 API 호출
+        // 4. 백과사전 API 호출
         String userType = UserTypeConverter.toEnglish(userInfo.getUserType());
+        EncyclopediaResponse encyclopediaResponse = fetchEncyclopediaData(ingredientNames, userType, userId);
 
-        // 백과사전 requestDto
-        EncyclopediaRequest encyclopediaRequest = new EncyclopediaRequest(ingredientNames, userType);
-        logger.debug("원재료 -> "+ ingredientNames);
-        logger.debug("유저타입 -> " + userType);
-
-//        String token = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMCIsImlhdCI6MTc0NzExMzM3MiwiZXhwIjoxNzQ3MzcyNTcyfQ.MQNJBZGWVnwKebMxLSvW-dgKOblln1jwKvg5ieVyJ4M";  // 실제 토큰 입력 필요
-//        EncyclopediaResponse encyclopediaResponse = encyclopediaClient.getIngredientDetails(token, encyclopediaRequest);
-
-        // 백과사전 API 호출 (유레카)
-        EncyclopediaResponse encyclopediaResponse;
-        try {
-            String url = eurekaService.getUrl("ENCYCLOPEDIA") + "/user-type";
-            System.out.println("🔗 백과사전 호출 URL: " + url);
-            encyclopediaResponse = restClient.post()
-                    .uri(url)
-                    .header("X-User-Id", userInfo.getId())
-                    .body(encyclopediaRequest)
-                    .retrieve()
-                    .body(EncyclopediaResponse.class);
-        } catch (Exception e) {
-            throw new BusinessException(ApiResponseStatus.ENCYCLOPEDIA_CALL_FAILED);
-        }
-
-        // 유효성 검증
-        if (encyclopediaResponse == null || encyclopediaResponse.getData() == null) {
-            throw new BusinessException(ApiResponseStatus.ENCYCLOPEDIA_RESPONSE_NULL);
-        }
-
-        // 데이터 필드 검증
+        // 데이터 필드 검증, (원재료 디테일 + 상위 위험 성분)
         List<IngredientDetail> allDetails = encyclopediaResponse.getData().getIngredients();
         List<TopRisk> topRisks = encyclopediaResponse.getData().getTopRisks();
 
         if (allDetails == null || allDetails.isEmpty()) {
-            System.out.println("⚠️ 백과사전 성분 상세정보가 없습니다. → ingredientDetails=null");
+            logger.debug("⚠️ 백과사전 성분 상세정보가 없습니다. → ingredientDetails=null");
             allDetails = new ArrayList<>();
         }
-
         if (topRisks == null || topRisks.isEmpty()) {
-            System.out.println("⚠️ 우선순위 위험 성분 정보가 없습니다. → topRisks=null");
+            logger.debug("⚠️ 우선순위 위험 성분 정보가 없습니다. → topRisks=null");
             topRisks = new ArrayList<>();
         }
 
+        // 5. 원재료 용도별로 분리하여 매핑
+        Map<String, List<IngredientDetail>> categorizedMap = categorizeIngredients(product, allDetails);
 
-        // 6. 원재료 용도별로 분리하여 매핑
-        Map<String, List<String>> categorized = product.getResult()
-                .getIngredientAnalysis()
-                .getCategorizedIngredients();
-
-        Map<String, List<IngredientDetail>> categorizedMap = new LinkedHashMap<>();
-
-        List<String> orderedCategories = List.of(
-                "감미료", "산도조절제", "유화제", "점질제", "착향료", "착색료", "보존제", "산화방지제", "팽창제", "기타"
-        );
-
-        for (String category : orderedCategories) {
-            List<String> namesInCategory = categorized.getOrDefault(category, List.of());
-
-            List<IngredientDetail> matched = new ArrayList<>();
-            for (String name : namesInCategory) {
-                allDetails.stream()
-                        .filter(detail -> detail.getName().equals(name))
-                        .findFirst()
-                        .ifPresent(matched::add);
-            }
-            categorizedMap.put(category, matched);
-        }
-
-
-        // 7. 제품 분석 summary 저장
-//        Nutrition nutrition = product.getResult().getNutritionAnalysis().getNutrition();
+        // 6. 제품 분석 summary + Kcal 정보 저장
         String nutritionSummary = product.getResult().getNutritionAnalysis().getSummary();
         String ingredientSummary = product.getResult().getIngredientAnalysis().getSummary();
-
         int kcal = product.getResult().getNutritionAnalysis().getNutrition().getKcal();
 
-        // 8. NutritionReport 구성
-        NutritionReport report = NutritionReport.builder()
-                .userId(userInfo.getId())
-                .productId(productId)
-                .productName(product.getName())
-                .analyzedAt(LocalDateTime.now())
-                .kcal(kcal)
-                .ratios(ratios)
-                .categorizedIngredients(categorizedMap)
-                .topRisks(topRisks)
-                .nutritionSummary(nutritionSummary)
-                .ingredientSummary(ingredientSummary) // 추가
-                .build();
+        // 7. NutritionReport 구성
+        NutritionReport report = NutritionReport.from(
+                userInfo.getId(),
+                product,
+                kcal,
+                ratios,
+                categorizedMap,
+                topRisks,
+                nutritionSummary,
+                ingredientSummary
+                );
+
+        logger.debug("📄 [분석 리포트 생성 완료]");
 
         try {
-            // 9. 기존 리포트 존재하면 update, 없으면 insert
+            // 8. 기존 리포트 존재하면 update, 없으면 insert
             Optional<NutritionReport> existing = reportRepo.findByUserId(userInfo.getId()).stream()
                     .filter(r -> r.getProductId().equals(productId))
                     .findFirst();
 
             if (existing.isPresent()) {
                 report.setId(existing.get().getId());
-                System.out.println("🔄 기존 리포트 업데이트: " + product.getName());
+                logger.debug("🔄 기존 리포트 업데이트: " + product.getName());
             } else {
-                System.out.println("🆕 신규 리포트 저장: " + product.getName());
+                logger.debug("🆕 신규 리포트 저장: " + product.getName());
             }
 
             NutritionReport saved = reportRepo.save(report);
-            System.out.println("✅ 리포트 저장 완료 - ID: " + saved.getId());
+            logger.debug("✅ 리포트 저장 완료 - ID: " + saved.getId());
             return NutritionReportResponse.from(saved); // ✅ 리팩토링 핵심
 
         } catch (Exception e) {
-            System.err.println("❌ 리포트 저장 실패: " + e.getMessage());
+            logger.debug("❌ 리포트 저장 실패: " + e.getMessage());
             throw new BusinessException(ApiResponseStatus.MONGODB_SAVE_FAILED);
         }
+    }
+
+    private UserInfo getUserInfoOrThrow(String userId) {
+        UserInfo userInfo = userService.getUserById(userId);
+        logger.debug("👤 유저 정보 조회 - userInfo: {}", userInfo);
+        return userInfo;
+    }
+
+    private EncyclopediaResponse fetchEncyclopediaData(List<String> ingredientNames, String userType, String userId) {
+        EncyclopediaRequest req = new EncyclopediaRequest(ingredientNames, userType);
+        EncyclopediaResponse response;
+        try {
+            String url = eurekaService.getUrl("ENCYCLOPEDIA") + "/user-type";
+            logger.debug("🔗 백과사전 호출 URL: {}", url);
+            response = restClient.post()
+                    .uri(url)
+                    .header("X-User-Id", userId)
+                    .body(req)
+                    .retrieve()
+                    .body(EncyclopediaResponse.class);
+        } catch (Exception e) {
+            throw new BusinessException(ApiResponseStatus.ENCYCLOPEDIA_CALL_FAILED);
+        }
+
+        if (response == null || response.getData() == null) {
+            throw new BusinessException(ApiResponseStatus.ENCYCLOPEDIA_RESPONSE_NULL);
+        }
+        return response;
+    }
+
+    private Map<String, List<IngredientDetail>> categorizeIngredients(
+            ProductNutrition product,
+            List<IngredientDetail> allDetails
+    ) {
+        Map<String, List<String>> categorized = product.getResult()
+                .getIngredientAnalysis()
+                .getCategorizedIngredients();
+
+        Map<String, List<IngredientDetail>> result = new LinkedHashMap<>();
+        List<String> order = List.of("감미료", "산도조절제", "유화제", "점질제", "착향료", "착색료", "보존제", "산화방지제", "팽창제", "기타");
+
+        for (String category : order) {
+            List<String> names = categorized.getOrDefault(category, List.of());
+            List<IngredientDetail> matched = allDetails.stream()
+                    .filter(d -> names.contains(d.getName()))
+                    .toList();
+            result.put(category, matched);
+        }
+
+        return result;
     }
 
     private void collectIngredientNames(IngredientNode node, List<String> result) {

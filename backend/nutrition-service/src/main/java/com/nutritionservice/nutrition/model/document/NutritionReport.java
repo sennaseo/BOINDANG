@@ -35,4 +35,30 @@ public class NutritionReport {
 
     private String nutritionSummary;
     private String ingredientSummary;
+
+
+    public static NutritionReport from(
+            String userId,
+            ProductNutrition product,
+            int totalKcal,
+            Map<String, NutrientResult> ratios,
+            Map<String, List<IngredientDetail>> categorizedIngredients,
+            List<TopRisk> topRisks,
+            String nutritionSummary,
+            String ingredientSummary
+    ) {
+        return NutritionReport.builder()
+                .userId(userId)
+                .productId(product.getId().toHexString())
+                .productName(product.getName())
+                .analyzedAt(LocalDateTime.now())
+                .kcal(totalKcal)
+                .ratios(ratios)
+                .categorizedIngredients(categorizedIngredients)
+                .topRisks(topRisks)
+                .nutritionSummary(nutritionSummary)
+                .ingredientSummary(ingredientSummary)
+                .build();
+    }
+
 }

@@ -31,28 +31,12 @@ public class NutritionController {
         return ApiResponse.success(nutritionService.getFullReportByProductId(userId, productId));
     }
 
-
     @GetMapping("/analyze")
     public ApiResponse<NutritionReportResponse> analyze(
             @RequestHeader("X-User-Id") String userId,
             @RequestParam String productId
     ) {
-
-//        UserInfo userInfo = userService.getUserById(userId);
-//        NutritionReport report = nutritionService.analyzeProductForUser(userInfo, productId);
-
-        System.out.println("analyze 함수 호출 ㅋ");
-
         NutritionReportResponse response = nutritionService.analyzeProductForUser(userId, productId);
-        System.out.println("📄 [분석 리포트 생성 완료]");
-//        System.out.println(" - 제품명: " + report.getProductName());
-//        System.out.println(" - 분석 시각: " + report.getAnalyzedAt());
-//        System.out.println(" - 열량(kcal): " + report.getKcal());
-//        System.out.println(" - 카테고리별 성분 수: " +
-//                (report.getCategorizedIngredients() != null ? report.getCategorizedIngredients().size() : 0));
-
-
-//        NutritionReportResponse response = NutritionReportMapper.from(report);
         return ApiResponse.success(response);
     }
 }
