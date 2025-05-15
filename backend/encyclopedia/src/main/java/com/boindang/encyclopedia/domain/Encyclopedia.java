@@ -22,6 +22,4 @@ public class Encyclopedia {
 	@Column(columnDefinition = "json")
 	private String data; // 또는 Map<String, Object>
 
-	@Enumerated(EnumType.STRING)
-	private IngredientDictionary.RiskLevel riskLevel;
 }
