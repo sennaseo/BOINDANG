@@ -40,7 +40,9 @@ public class ImageService {
                 .build();
     }
 
-    public Image saveMetadata(Long userId, String fileKey) {
+    public Image saveMetadata(Long userId, MetaUploadReqDto metaUploadReqDto) {
+        String fileKey = metaUploadReqDto.getFileKey();
+
         if (userId == null) {
             throw new MissingUserIdException("유저 ID가 없습니다");
         }
