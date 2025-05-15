@@ -11,5 +11,4 @@ import lombok.RequiredArgsConstructor;
 @Builder
 public class MetaUploadReqDto {
     String fileKey;
-
 }

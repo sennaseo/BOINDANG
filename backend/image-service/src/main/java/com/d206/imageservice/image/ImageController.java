@@ -52,8 +52,8 @@ public class ImageController {
                     @ApiResponse(responseCode = "500", description = "오류 발생!"),
             })
     @PostMapping("/metadata")
-    public ResponseEntity<ApiResponses<Image>> saveMetadata(@RequestHeader("X-User-Id") Long userId, @RequestBody String fileKey) {
-        Image image = imageService.saveMetadata(userId, fileKey);
+    public ResponseEntity<ApiResponses<Image>> saveMetadata(@RequestHeader("X-User-Id") Long userId, @RequestBody MetaUploadReqDto metaUploadReqDto) {
+        Image image = imageService.saveMetadata(userId, metaUploadReqDto);
         return ResponseEntity.ok(ApiResponses.success(image));
     }
 
