@@ -10,6 +10,7 @@ import com.boindang.encyclopedia.common.response.BaseResponse;
 import com.boindang.encyclopedia.presentation.dto.request.ReportRequest;
 import com.boindang.encyclopedia.presentation.dto.response.UserReportResponse;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -21,6 +22,7 @@ public class ReportController {
 
 	private final ReportService reportService;
 
+	@Operation(summary = "성분 이름 목록으로 성분 정보 목록 조회 (for Yujin)", description = "성분리스트 보내면 정보 쭈루룩 + 위험 성분 top3까G")
 	@PostMapping("/user-type")
 	public BaseResponse<UserReportResponse> getReport(
 		@RequestBody ReportRequest request

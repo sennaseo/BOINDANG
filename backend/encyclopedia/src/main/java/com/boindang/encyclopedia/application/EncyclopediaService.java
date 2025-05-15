@@ -13,11 +13,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.elasticsearch.common.unit.Fuzziness;
-import org.elasticsearch.search.suggest.Suggest;
-import org.elasticsearch.search.suggest.SuggestBuilder;
-import org.elasticsearch.search.suggest.SuggestBuilders;
-import org.elasticsearch.search.suggest.completion.CompletionSuggestion;
-import org.elasticsearch.search.suggest.term.TermSuggestionBuilder;
 import org.springframework.stereotype.Service;
 
 import org.elasticsearch.action.search.SearchRequest;
