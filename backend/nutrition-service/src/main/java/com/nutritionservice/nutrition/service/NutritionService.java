@@ -123,7 +123,7 @@ public class NutritionService {
         // 백과사전 API 호출 (유레카)
         EncyclopediaResponse encyclopediaResponse;
         try {
-            String url = eurekaService.getUrl("ENCYCLOPEDIA") + "/encyclopedia/user-type";
+            String url = eurekaService.getUrl("ENCYCLOPEDIA") + "encyclopedia/user-type";
             System.out.println("🔗 백과사전 호출 URL: " + url);
             encyclopediaResponse = restClient.post()
                     .uri(url)
