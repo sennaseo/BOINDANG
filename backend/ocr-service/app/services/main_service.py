@@ -47,7 +47,13 @@ async def process_images(ingredient_url: str, nutrition_url: str):
     product_name = result_ingredient.get("basicInfo", {}).get("name", "Unknown Product")
 
     # MongoDB 저장
-    save_product(product_name, result)
-    print(f"✅ 제품 분석 완료 - 제품명: {product_name}")
+    inserted_id = save_product(product_name, result)
 
-    return result
+    response = {
+        inserted_id,
+        product_name,
+        result
+    }
+
+    print(f"✅ 제품 분석 완료 - 제품명: {product_name}, ID: {inserted_id}")
+    return response
