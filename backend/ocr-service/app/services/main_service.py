@@ -18,7 +18,6 @@ async def ocr_and_gpt(image_url: str, mode: str):
         text = clean_ingredient_text(text)
         result = await ask_gpt_ingredient(text)
     elif mode == "nutrition":
-        # text = clean_nutrition_text(text)
         result = await ask_gpt_nutrition(text)
     else:
         raise ValueError("Invalid mode: must be 'ingredient' or 'nutrition'")
@@ -27,7 +26,7 @@ async def ocr_and_gpt(image_url: str, mode: str):
 
 
 # 🧪 병렬 처리 메인 서비스
-async def process_images(ingredient_url: str, nutrition_url: str):
+async def process_images(image_urls: dict, ingredient_url: str, nutrition_url: str):
     print("🚀 [비동기 OCR → GPT 병렬 실행 시작]")
 
     # 두 흐름을 병렬로 실행
@@ -47,12 +46,12 @@ async def process_images(ingredient_url: str, nutrition_url: str):
     product_name = result_ingredient.get("basicInfo", {}).get("name", "Unknown Product")
 
     # MongoDB 저장
-    inserted_id = save_product(product_name, result)
+    inserted_id = save_product(image_urls, product_name, result)
 
     response = {
         "productId": inserted_id,
         "productName": product_name,
-        "result": result
+        "result": result,
     }
 
     print(f"✅ 제품 분석 완료 - 제품명: {product_name}, ID: {inserted_id}")
