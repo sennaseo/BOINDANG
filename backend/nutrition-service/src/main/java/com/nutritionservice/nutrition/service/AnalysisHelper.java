@@ -16,6 +16,10 @@ public class AnalysisHelper {
 
     public static Map<String, NutrientResult> calculateRatios(ProductNutrition product, UserInfo user) {
         logger.debug("변수 초기화 시작");
+        logger.debug("getResult: " + product.getResult());
+        logger.debug("getNutritionAnalysis: " + product.getResult().getNutritionAnalysis());
+        logger.debug("getNutrition: " + product.getResult().getNutritionAnalysis().getNutrition());
+        
         Nutrition ns = product.getResult().getNutritionAnalysis().getNutrition();
         logger.debug("ns: " + ns.toString());
         UserType userType = UserType.valueOf(user.getUserType());
