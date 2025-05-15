@@ -49,7 +49,7 @@ public class EncyclopediaController implements EncyclopediaApi {
         @RequestParam String category,
         @RequestParam(required = false) String sort,
         @RequestParam(defaultValue = "desc") String order,
-        @RequestParam(defaultValue = "20") int size,
+        @RequestParam(defaultValue = "15") int size,
         @RequestParam(defaultValue = "0") int page
     ) {
         return BaseResponse.success(encyclopediaService.getIngredientsByType(category, sort, order, size, page));
