@@ -29,7 +29,9 @@ springdoc:
     path: /nutrition/v3/api-docs
 
   logging:
-    level: debug
+    level:
+      root: INFO
+      com.nutritionservice: DEBUG
 
 #  logging:
 #    level:
