@@ -9,11 +9,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.boindang.community.dto.request.CreatePostRequest;
 import com.boindang.community.dto.response.BaseResponse;
 import com.boindang.community.dto.response.CreatePostResponse;
+import com.boindang.community.dto.response.PostListResponse;
 import com.boindang.community.dto.response.PostResponse;
 import com.boindang.community.service.PostService;
 
@@ -32,9 +34,15 @@ public class PostController {
 
 	@Operation(summary = "게시글 목록 조회", description = "삭제되지 않은 게시글 전체를 조회합니다.")
 	@GetMapping
-	public BaseResponse<List<PostResponse>> getAllPosts(@RequestHeader("X-User-Id") String userId) {
+	public BaseResponse<PostListResponse> getAllPosts(
+		@RequestHeader("X-User-Id") String userId,
+		@RequestParam(required = false) String category,
+		@RequestParam(defaultValue = "10") int size,
+		@RequestParam(defaultValue = "0") int page
+
+	) {
 		return BaseResponse.success(200, "게시글 목록 조회가 완료되었습니다."
-			, postService.getAllPosts(Long.parseLong(userId)));
+			, postService.getAllPosts(Long.parseLong(userId), category, size, page));
 	}
 
 	@Operation(summary = "게시글 상세 조회", description = "게시글 ID로 상세 내용을 조회합니다.")
