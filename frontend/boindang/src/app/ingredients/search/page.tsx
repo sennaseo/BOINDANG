@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, XCircle } from '@phosphor-icons/react';
+import { ArrowLeft, XCircle, Warning, CaretRight, CheckCircle } from '@phosphor-icons/react';
 import BottomNavBar from '@/components/navigation/BottomNavBar';
 import type { IngredientResult } from '@/types/api/ingredients';
 import { useSearchIngredientsQuery } from '@/hooks/queries/useSearchIngredientsQuery';
@@ -13,7 +13,7 @@ export default function IngredientSearchPage() {
   const router = useRouter();
 
   const trimmedSearchTerm = searchTerm.trim();
-  const shouldAttemptSearch = trimmedSearchTerm.length >= 2;
+  const shouldAttemptSearch = trimmedSearchTerm.length >= 1;
 
   const {
     data: apiResponseData,
@@ -43,7 +43,7 @@ export default function IngredientSearchPage() {
   };
 
   const handleGoBack = () => {
-    router.back();
+    router.push('/ingredients');
   };
 
   const errorMessage = error instanceof Error ? error.message : typeof error === 'string' ? error : null;
@@ -98,7 +98,7 @@ export default function IngredientSearchPage() {
 
           {showInitialMessage && (
             <p className="text-gray-400 text-center mt-10">
-              궁금한 영양 성분을 2자 이상 검색해보세요.
+              궁금한 영양 성분을 검색해보세요.
             </p>
           )}
 
@@ -129,14 +129,46 @@ export default function IngredientSearchPage() {
                         <span className="font-semibold">{apiResponseData.originalQuery}</span> 검색 결과입니다.
                       </p>
                     )}
-                  <ul className="space-y-2">
+                  <ul className="">
                     {searchResults.map((result) => (
-                      <li key={result.id} className="p-3 bg-gray-100 rounded-md shadow-sm hover:bg-gray-200 cursor-pointer">
-                        <h3 className="font-semibold text-gray-800">{result.name} ({result.engName})</h3>
-                        <div className="text-xs text-gray-600">
-                          <span>타입: {result.type}</span>
-                          <span className="mx-1">|</span>
-                          <span>위험도: {result.riskLevel}</span>
+                      <li
+                        key={result.id}
+                        className="flex items-center justify-between p-4 border-b border-gray-200 last:border-b-0 hover:bg-gray-50 cursor-pointer"
+                        onClick={() => router.push(`/ingredients/detail/${result.id}`)}
+                      >
+                        <div className="flex items-center flex-1 min-w-0">
+                          {/* 텍스트 정보 */}
+                          <div className="min-w-0">
+                            <h3 className="font-semibold text-gray-900 text-base">
+                              {result.name} ({result.engName})
+                            </h3>
+                            <p className="text-sm text-gray-500">{result.type}</p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center space-x-2 flex-shrink-0 ml-4">
+                          {/* 안심 태그 */}
+                          {result.riskLevel === '안심' && (
+                            <span className="flex items-center bg-green-100 text-green-800 text-xs font-bold px-3 py-1 rounded-full">
+                              <CheckCircle size={14} weight="fill" className="mr-1 text-green-600" />
+                              안심
+                            </span>
+                          )}
+                          {/* 주의 태그 */}
+                          {result.riskLevel === '주의' && (
+                            <span className="flex items-center bg-yellow-100 text-yellow-800 text-xs font-bold px-3 py-1 rounded-full">
+                              <Warning size={14} weight="fill" className="mr-1 text-yellow-600" />
+                              주의
+                            </span>
+                          )}
+                          {/* 위험 태그 */}
+                          {result.riskLevel === '위험' && (
+                            <span className="flex items-center bg-red-100 text-red-800 text-xs font-bold px-3 py-1 rounded-full">
+                              <XCircle size={14} weight="fill" className="mr-1 text-red-600" />
+                              위험
+                            </span>
+                          )}
+                          <CaretRight size={20} className="text-gray-400" />
                         </div>
                       </li>
                     ))}

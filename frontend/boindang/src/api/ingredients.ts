@@ -1,5 +1,10 @@
-import apiClient from '@/lib/apiClient'; // apiClient 경로에 맞게 수정해주세요.
-import type { SearchPageApiResponse, IngredientSearchResponseData } from '@/types/api/ingredients';
+import apiClient from '@/lib/apiClient'; 
+import type { 
+  SearchPageApiResponse, 
+  IngredientSearchResponseData,
+  CategoryIngredientsApiResponse,
+  CategoryIngredientsData
+} from '@/types/api/ingredients';
 
 interface SearchIngredientsParams {
   query: string;
@@ -41,5 +46,41 @@ export const searchIngredients = async ({
       throw error;
     }
     throw new Error('알 수 없는 오류로 성분 검색에 실패했습니다.');
+  }
+};
+
+interface FetchCategoryIngredientsParams {
+  categoryName: string;
+  page?: number;
+}
+
+/**
+ * 특정 카테고리의 성분 목록을 가져오는 API 호출 함수
+ * @param categoryName 조회할 성분 카테고리명
+ * @param page 페이지 번호
+ * @returns 해당 카테고리의 성분 목록과 총 페이지 수 ({ ingredients: IngredientResult[], totalPages: number })
+ */
+export const fetchCategoryIngredients = async ({
+  categoryName,
+  page,
+}: FetchCategoryIngredientsParams): Promise<CategoryIngredientsData> => {
+  try {
+    const response = await apiClient.get<CategoryIngredientsApiResponse>('/encyclopedia/category', {
+      params: {
+        category: categoryName,
+        page,
+      },
+    });
+
+    if (response.data.isSuccess && response.data.data) {
+      return response.data.data;
+    }
+    throw new Error(response.data.message || '카테고리별 성분 목록을 가져오는데 실패했습니다.');
+  } catch (error) {
+    console.error(`Error fetching ingredients for category ${categoryName}:`, error);
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error('알 수 없는 오류로 카테고리별 성분 목록을 가져오는데 실패했습니다.');
   }
 };

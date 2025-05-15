@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 
 const handImg = '/assets/sugarcube/sugar_hand.png';
 const faceImg = '/assets/sugarcube/sugar_face.png';
@@ -19,8 +20,6 @@ function handStyle(angle: number, show: boolean, isRight?: boolean) {
     opacity: show ? 1 : 0,
     transition: 'opacity 0.5s',
     position: 'absolute' as const,
-    width: '16px',
-    height: '16px',
     pointerEvents: 'none' as const,
   };
 }
@@ -44,26 +43,32 @@ export default function SugarcubeMascot() {
       style={{ height: '90px' }}
     >
       {/* 왼손 */}
-      <img
+      <Image
         src={handImg}
         alt="왼손"
         style={handStyle(LEFT_ANGLE, showHands)}
         draggable={false}
+        width={16}
+        height={16}
       />
       {/* 오른손 */}
-      <img
+      <Image
         src={handImg}
         alt="오른손"
         style={handStyle(RIGHT_ANGLE, showHands, true)}
         draggable={false}
+        width={16}
+        height={16}
       />
       {/* 얼굴(몸통) */}
-      <img
+      <Image
         src={faceImg}
         alt="각설탕 얼굴"
-        className={`absolute left-1/2 -translate-x-1/2 translate-x-[10px] bottom-10 w-20 h-20 transition-all duration-500 ${showFace ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}
+        className={`absolute left-1/2 -translate-x-1/2 translate-x-[10px] bottom-10 transition-all duration-500 ${showFace ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}
         style={{ zIndex: 30, pointerEvents: 'none' }}
         draggable={false}
+        width={80}
+        height={80}
       />
     </div>
   );
