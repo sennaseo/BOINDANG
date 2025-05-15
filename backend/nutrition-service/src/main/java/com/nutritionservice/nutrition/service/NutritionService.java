@@ -86,20 +86,6 @@ public class NutritionService {
                 });
         logger.debug("제품 조회 성공: "+product.toString());
 
-//        ObjectMapper mapper = new ObjectMapper();
-//        try {
-//            String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(product);
-////            System.out.println("📦 불러온 제품 전체 정보 (JSON):\n" + json);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//        ProductResult result = product.getResult();
-//
-//        if (result == null || result.getNutritionAnalysis() == null || result.getIngredientAnalysis() == null) {
-//            throw new RuntimeException("제품에 영양 또는 성분 분석 정보가 부족합니다.");
-//        }
-
-        // 사용자 기준 영양소 비율/등급 계산
         logger.debug("영양소 비율/등급 계산 시작");
         Map<String, NutrientResult> ratios = AnalysisHelper.calculateRatios(product, userInfo);
         logger.debug("영양소 비율/등급 계산 끝");
@@ -124,7 +110,7 @@ public class NutritionService {
         // 백과사전 API 호출 (유레카)
         EncyclopediaResponse encyclopediaResponse;
         try {
-            String url = eurekaService.getUrl("ENCYCLOPEDIA") + "encyclopedia/user-type";
+            String url = eurekaService.getUrl("ENCYCLOPEDIA") + "/user-type";
             System.out.println("🔗 백과사전 호출 URL: " + url);
             encyclopediaResponse = restClient.post()
                     .uri(url)
