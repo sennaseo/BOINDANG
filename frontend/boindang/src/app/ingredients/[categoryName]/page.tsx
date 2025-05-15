@@ -51,7 +51,7 @@ const CategoryIngredientsPage = () => {
   const mainScrollRef = useRef<HTMLElement | null>(null);
 
   // 무한 스크롤 상태
-  const [page, setPage] = useState<number>(1);
+  const [page, setPage] = useState<number>(0);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
 
@@ -59,7 +59,6 @@ const CategoryIngredientsPage = () => {
     router.back();
   };
 
-  // loadMoreIngredients 함수를 useEffect보다 먼저 선언
   const loadMoreIngredients = useCallback(async () => {
     if (isLoadingMore || !hasMore || !decodedCategoryName) return;
 
@@ -67,25 +66,23 @@ const CategoryIngredientsPage = () => {
     const nextPage = page + 1;
 
     try {
-      const fetchedMoreIngredients = await fetchCategoryIngredients({
+      const fetchedData = await fetchCategoryIngredients({
         categoryName: decodedCategoryName,
+        page: nextPage,
       });
 
-      if (fetchedMoreIngredients.length > 0) {
-        if (nextPage === 1) { 
-          setIngredients(fetchedMoreIngredients);
-        }
+      if (fetchedData.ingredients.length > 0) {
+        setIngredients(prevIngredients => [...prevIngredients, ...fetchedData.ingredients]);
+        setPage(nextPage);
+        setHasMore(nextPage < fetchedData.totalPages - 1);
       } else {
         setHasMore(false);
       }
-      setHasMore(false); 
-
     } catch (err) {
       console.error("Failed to load more ingredients:", err);
-      setHasMore(false); 
     }
     setIsLoadingMore(false);
-  }, [isLoadingMore, hasMore, decodedCategoryName, page, setIngredients, setHasMore, setIsLoadingMore]);
+  }, [isLoadingMore, hasMore, decodedCategoryName, page]);
 
   useEffect(() => {
     const mainElement = mainScrollRef.current;
@@ -108,7 +105,7 @@ const CategoryIngredientsPage = () => {
     if (mainElement) {
       mainElement.addEventListener('scroll', handleScroll, { passive: true });
     }
-    
+
     return () => {
       if (mainElement) {
         mainElement.removeEventListener('scroll', handleScroll);
@@ -125,25 +122,18 @@ const CategoryIngredientsPage = () => {
       }
       setIsLoading(true);
       setError(null);
-      setPage(1); // 페이지 초기화
-      setIngredients([]); // 기존 목록 초기화
-      setHasMore(true); // 더 불러올 데이터가 있다고 가정
+      setPage(0);
+      setIngredients([]);
+      setHasMore(true);
 
       try {
-        // 실제 API 호출 시에는 page, ITEMS_PER_PAGE 등을 파라미터로 넘겨야 합니다.
-        const fetchedIngredients = await fetchCategoryIngredients({ 
+        const fetchedData = await fetchCategoryIngredients({
           categoryName: decodedCategoryName,
-          // page: 1, // API가 페이지네이션을 지원하도록 수정 필요
-          // size: ITEMS_PER_PAGE // API가 페이지네이션을 지원하도록 수정 필요
+          page: 0,
         });
-        // 임시: API가 아직 페이지네이션을 지원하지 않는 경우, 모든 데이터를 한 번에 가져온다고 가정
-        // 이후 API 수정 시 아래 로직은 페이지네이션에 맞게 변경되어야 합니다.
-        setIngredients(fetchedIngredients);
-        setHasMore(false); // 모든 데이터를 한 번에 가져왔으므로 false로 설정 (페이지네이션 구현 시 수정)
-        
-        // 페이지네이션 지원 API의 경우 아래와 같이 수정:
-        // setIngredients(fetchedIngredients);
-        // setHasMore(fetchedIngredients.length === ITEMS_PER_PAGE); 
+
+        setIngredients(fetchedData.ingredients);
+        setHasMore(0 < fetchedData.totalPages - 1);
 
       } catch (err) {
         if (err instanceof Error) {
@@ -214,12 +204,12 @@ const CategoryIngredientsPage = () => {
             </button>
             <div className="flex items-center ml-3 flex-grow min-w-0">
               {categoryIconSrc && (
-                <Image 
-                  src={categoryIconSrc} 
-                  alt={`${decodedCategoryName} icon`} 
+                <Image
+                  src={categoryIconSrc}
+                  alt={`${decodedCategoryName} icon`}
                   width={28}
                   height={28}
-                  className="mr-2 flex-shrink-0" 
+                  className="mr-2 flex-shrink-0"
                 />
               )}
               <h1 className="text-lg font-bold text-gray-800 truncate">
@@ -249,12 +239,12 @@ const CategoryIngredientsPage = () => {
             </button>
             <div className="flex items-center ml-3 flex-grow min-w-0">
               {categoryIconSrc && (
-                <Image 
-                  src={categoryIconSrc} 
-                  alt={`${decodedCategoryName} icon`} 
+                <Image
+                  src={categoryIconSrc}
+                  alt={`${decodedCategoryName} icon`}
                   width={28}
                   height={28}
-                  className="mr-2 flex-shrink-0" 
+                  className="mr-2 flex-shrink-0"
                 />
               )}
               <h1 className="text-lg font-bold text-gray-800 truncate">
@@ -293,11 +283,11 @@ const CategoryIngredientsPage = () => {
               </button>
               <div className="flex items-center flex-grow overflow-hidden mx-2">
                 {categoryIconSrc && (
-                  <Image 
-                    src={categoryIconSrc} 
-                    alt={`${decodedCategoryName} icon`} 
+                  <Image
+                    src={categoryIconSrc}
+                    alt={`${decodedCategoryName} icon`}
                     width={22}
-                    height={22} 
+                    height={22}
                     className="mr-1.5 flex-shrink-0"
                   />
                 )}
@@ -311,7 +301,7 @@ const CategoryIngredientsPage = () => {
             </>
           ) : (
             <>
-              <div 
+              <div
                 className={`pt-4 px-4 pb-2 flex items-center`}
                 style={{ height: `${HEADER_INITIAL_BACK_BUTTON_AREA_HEIGHT}px` }}
               >
@@ -319,17 +309,17 @@ const CategoryIngredientsPage = () => {
                   <ArrowLeft size={24} />
                 </button>
               </div>
-              <div 
+              <div
                 className={`px-4 py-3 flex items-center justify-between border-b border-gray-200`}
                 style={{ height: `${HEADER_INITIAL_TITLE_AREA_HEIGHT}px` }}
               >
                 <div className="flex items-center">
                   {categoryIconSrc && (
-                    <Image 
-                      src={categoryIconSrc} 
-                      alt={`${decodedCategoryName} icon`} 
-                      width={28} 
-                      height={28} 
+                    <Image
+                      src={categoryIconSrc}
+                      alt={`${decodedCategoryName} icon`}
+                      width={28}
+                      height={28}
                       className="mr-2 flex-shrink-0"
                     />
                   )}
@@ -346,12 +336,12 @@ const CategoryIngredientsPage = () => {
           )}
         </div>
 
-        <main 
+        <main
           ref={mainScrollRef}
-          style={{ 
-            height: scrollableAreaHeight, 
+          style={{
+            height: scrollableAreaHeight,
             paddingTop: isScrolled ? `${HEADER_SCROLLED_TOTAL_HEIGHT}px` : '0px'
-          }} 
+          }}
           className="flex-grow overflow-y-auto bg-white"
         >
           {isLoading && ingredients.length === 0 ? (
@@ -404,9 +394,9 @@ const CategoryIngredientsPage = () => {
                 </div>
               )}
               {!hasMore && ingredients.length > 0 && !isLoadingMore && (
-                 <div className="p-4 text-center text-gray-500 text-sm">
-                   모든 성분을 불러왔습니다.
-                 </div>
+                <div className="p-4 text-center text-gray-500 text-sm">
+                  모든 성분을 불러왔습니다.
+                </div>
               )}
             </>
           ) : (
@@ -443,11 +433,10 @@ const CategoryIngredientsPage = () => {
                         setSortOrder(option.key);
                         setIsModalOpen(false);
                       }}
-                      className={`w-full flex items-center justify-between text-left px-3 py-2.5 rounded-md text-sm font-medium transition-colors ${
-                        sortOrder === option.key
-                          ? 'bg-purple-100 text-purple-700'
-                          : 'text-gray-700 hover:bg-gray-100'
-                      }`}
+                      className={`w-full flex items-center justify-between text-left px-3 py-2.5 rounded-md text-sm font-medium transition-colors ${sortOrder === option.key
+                        ? 'bg-purple-100 text-purple-700'
+                        : 'text-gray-700 hover:bg-gray-100'
+                        }`}
                     >
                       {option.label}
                       {sortOrder === option.key && <Check size={18} className="text-purple-600" weight="bold" />}

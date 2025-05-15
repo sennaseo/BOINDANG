@@ -3,7 +3,8 @@ import type {
   SearchPageApiResponse, 
   IngredientSearchResponseData,
   CategoryIngredientsApiResponse,
-  IngredientResult
+  IngredientResult,
+  CategoryIngredientsData
 } from '@/types/api/ingredients';
 
 interface SearchIngredientsParams {
@@ -51,26 +52,24 @@ export const searchIngredients = async ({
 
 interface FetchCategoryIngredientsParams {
   categoryName: string;
-  // sort?: 'gi' | 'sweetness';
-  // order?: 'asc' | 'desc';
-  // size?: number;
+  page?: number;
 }
 
 /**
  * 특정 카테고리의 성분 목록을 가져오는 API 호출 함수
  * @param categoryName 조회할 성분 카테고리명
- * @returns 해당 카테고리의 성분 목록 (IngredientResult[])
+ * @param page 페이지 번호
+ * @returns 해당 카테고리의 성분 목록과 총 페이지 수 ({ ingredients: IngredientResult[], totalPages: number })
  */
 export const fetchCategoryIngredients = async ({
   categoryName,
-}: FetchCategoryIngredientsParams): Promise<IngredientResult[]> => {
+  page,
+}: FetchCategoryIngredientsParams): Promise<CategoryIngredientsData> => {
   try {
     const response = await apiClient.get<CategoryIngredientsApiResponse>('/encyclopedia/category', {
       params: {
         category: categoryName,
-        // sort,
-        // order,
-        // size,
+        page,
       },
     });
 

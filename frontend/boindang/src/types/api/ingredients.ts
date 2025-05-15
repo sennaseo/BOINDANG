@@ -99,9 +99,17 @@ export interface ApiErrorResponse {
 }
 
 /**
+ * 카테고리별 성분 목록 조회 API의 data 필드 타입
+ */
+export interface CategoryIngredientsData {
+  totalPages: number;
+  ingredients: IngredientResult[];
+}
+
+/**
  * 카테고리별 성분 목록 조회 API의 전체 응답 타입
  */
-export type CategoryIngredientsApiResponse = ApiResponse<IngredientResult[]>;
+export type CategoryIngredientsApiResponse = ApiResponse<CategoryIngredientsData>;
 
 // --- 프론트엔드용 타입 정의 시작 ---
 
