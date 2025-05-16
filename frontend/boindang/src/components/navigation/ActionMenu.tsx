@@ -53,13 +53,6 @@ export default function ActionMenu({ onClose }: ActionMenuProps) {
             <BookmarkSimple size={28} weight="fill" />
             <span>체험단</span>
           </Link>
-
-          {/* 커뮤니티 - 새로운 메뉴 항목 */}
-          {/* TODO: 커뮤니티 페이지 경로로 변경 */}
-          <Link href="/community" className="flex flex-col items-center gap-1 text-gray-700 text-sm" onClick={onClose}>
-            <ChatCircleDots size={28} weight="fill" />
-            <span>커뮤니티</span>
-          </Link>
         </div>
 
         {/* 닫기 버튼 */}
