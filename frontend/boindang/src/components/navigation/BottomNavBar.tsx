@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { House, Pill, Plus, ForkKnife, DotsThreeCircle } from '@phosphor-icons/react';
+import { House, Pill, Plus, ChatCircleDots, User } from '@phosphor-icons/react';
 import ActionMenu from './ActionMenu';
 
 
@@ -58,15 +58,19 @@ export default function BottomNavBar() {
       <nav className="fixed bottom-0 left-0 right-0 w-full md:max-w-[440px] md:mx-auto h-[80px] bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.05)] flex items-center justify-around px-4 z-40"> {/* z-index 조정 */}
         {/* 홈 */}
         <Link href="/" className="flex flex-col items-center justify-center w-1/5">
-          <House size={26} weight="fill" color={pathname === '/' ? activeColor : inactiveColor} />
-          <span className="text-xs mt-1" style={{ color: pathname === '/' ? activeColor : inactiveColor }}>홈</span>
+          <div className="flex flex-col items-center transform -translate-y-1">
+            <House size={26} weight="fill" color={pathname === '/' ? activeColor : inactiveColor} />
+            <span className="text-xs mt-1" style={{ color: pathname === '/' ? activeColor : inactiveColor }}>홈</span>
+          </div>
         </Link>
 
         {/* 성분 */}
         {/* TODO: 성분 페이지 경로로 변경 */}
         <Link href="/ingredients" className="flex flex-col items-center justify-center w-1/5">
-          <Pill size={26} weight="fill" color={pathname === '/ingredients' ? activeColor : inactiveColor} />
-          <span className="text-xs mt-1" style={{ color: pathname === '/ingredients' ? activeColor : inactiveColor }}>성분</span>
+          <div className="flex flex-col items-center transform -translate-y-1">
+            <Pill size={26} weight="fill" color={pathname === '/ingredients' ? activeColor : inactiveColor} />
+            <span className="text-xs mt-1" style={{ color: pathname === '/ingredients' ? activeColor : inactiveColor }}>성분</span>
+          </div>
         </Link>
 
         {/* 중앙 + 버튼: z-index 조정 */}
@@ -127,7 +131,7 @@ export default function BottomNavBar() {
           {/* +버튼 */}
           <button
             onClick={toggleActionMenu}
-            className="bg-[#6C2FF2] rounded-full w-14 h-14 flex items-center justify-center text-white shadow-md transform -translate-y-3 focus:outline-none z-40"
+            className="bg-[#6C2FF2] rounded-full w-16 h-16 flex items-center justify-center text-white shadow-md transform -translate-y-1.5 focus:outline-none z-40"
             aria-label="메뉴 열기"
             style={{ position: 'relative', zIndex: 40 }}
           >
@@ -135,18 +139,22 @@ export default function BottomNavBar() {
           </button>
         </div>
 
-        {/* 식품 */}
-        {/* TODO: 식품 페이지 경로로 변경 */}
-        <Link href="/foods" className="flex flex-col items-center justify-center w-1/5">
-          <ForkKnife size={26} weight="fill" color={pathname === '/foods' ? activeColor : inactiveColor} />
-          <span className="text-xs mt-1" style={{ color: pathname === '/foods' ? activeColor : inactiveColor }}>식품</span>
+        {/* 커뮤니티 (기존 식품 자리) */}
+        {/* TODO: 커뮤니티 페이지 경로 확인 */}
+        <Link href="/community" className="flex flex-col items-center justify-center w-1/5">
+          <div className="flex flex-col items-center transform -translate-y-1">
+            <ChatCircleDots size={26} weight="fill" color={pathname === '/community' ? activeColor : inactiveColor} />
+            <span className="text-xs mt-1" style={{ color: pathname === '/community' ? activeColor : inactiveColor }}>커뮤니티</span>
+          </div>
         </Link>
 
-        {/* 더보기 */}
-        {/* TODO: 더보기 페이지 경로로 변경 */}
+        {/* 마이 (기존 더보기 자리) */}
+        {/* TODO: 마이페이지 경로 확인 후 /more 와 비교하는 로직 수정 필요 */}
         <Link href="/more" className="flex flex-col items-center justify-center w-1/5">
-          <DotsThreeCircle size={26} weight="fill" color={pathname === '/more' ? activeColor : inactiveColor} />
-          <span className="text-xs mt-1" style={{ color: pathname === '/more' ? activeColor : inactiveColor }}>더보기</span>
+          <div className="flex flex-col items-center transform -translate-y-1">
+            <User size={26} weight="fill" color={pathname === '/more' ? activeColor : inactiveColor} />
+            <span className="text-xs mt-1" style={{ color: pathname === '/more' ? activeColor : inactiveColor }}>마이</span>
+          </div>
         </Link>
       </nav>
     </>

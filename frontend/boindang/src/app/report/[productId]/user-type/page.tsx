@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import ReportTabNav from "@/components/navigation/ReportTabNav";     
 import { CaretLeft } from "@phosphor-icons/react";
 import Image from "next/image";
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { getReport } from "@/api/report";
 
 // --- 타입 정의 시작 ---
@@ -47,8 +47,8 @@ const getKeywordStyle = (keyword: string) => {
 
 export default function UserTypePage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const productId = searchParams.get('productId');
+  const params = useParams();
+  const productId = params.productId as string;
 
   const [reportData, setReportData] = useState<ReportResultData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -109,10 +109,10 @@ export default function UserTypePage() {
   return (
     <div className="min-h-screen bg-gray-50 p-4 pb-20">
       <header className="flex items-center mb-2">
-        <button onClick={() => router.back()} className="mr-2 text-2xl"><CaretLeft/></button>
+        <button onClick={() => router.push(`/report/${productId}`)} className="mr-2 text-2xl"><CaretLeft/></button>
         <h1 className="text-2xl font-bold mx-auto">리포트 ({reportData.productName || "제품"})</h1>
       </header>
-      <ReportTabNav />
+      <ReportTabNav productId={productId} />
 
       {/* TODO: 사용자 타입 정보가 API에 있다면 동적으로 변경 */}
       <section className="mb-4">
