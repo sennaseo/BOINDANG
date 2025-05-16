@@ -56,7 +56,7 @@ interface ReportResultData {
   totalWeight?: string; // API 응답에 없으므로, 필요시 추가 또는 고정값 사용
   kcal?: number;
   estimatedGi?: number;
-  giGrade?: string;
+  giIndex?: number;
   nutrientRatios?: NutrientRatio[];
   nutrientDetails?: NutrientDetail[];
   categorizedIngredients?: CategorizedIngredients;
@@ -104,9 +104,9 @@ export default function ReportPage({ params: paramsPromise }: ReportPageProps) {
   }, [productId]);
 
   // GI 지수 게이지 차트 데이터
-  const giGaugeData = report?.estimatedGi !== undefined ? [
-    { name: '백분율', value: report.estimatedGi, color: '#FFFFFF' },
-    { name: '남은 비율', value: 100 - report.estimatedGi, color: 'transparent' }
+  const giGaugeData = report?.giIndex !== undefined ? [
+    { name: '백분율', value: report.giIndex, color: '#FFFFFF' },
+    { name: '남은 비율', value: 100 - report.giIndex, color: 'transparent' }
   ] : [
     { name: '백분율', value: 0, color: '#FFFFFF' },
     { name: '남은 비율', value: 100, color: 'transparent' }
@@ -170,7 +170,7 @@ export default function ReportPage({ params: paramsPromise }: ReportPageProps) {
       </header>
 
       {/* 제품명 표시 */}
-      <div className="text-3xl font-bold text-gray-800 text-center mb-8 bg-white rounded-2xl shadow-md p-5 transform transition-all hover:shadow-lg">
+      <div className="text-xl font-bold text-gray-800 text-start mb-8 bg-white rounded-2xl shadow-md p-5 transform transition-all hover:shadow-lg">
         {report.productName || "제품명 없음"}
       </div>
 
@@ -179,7 +179,7 @@ export default function ReportPage({ params: paramsPromise }: ReportPageProps) {
         <div className="bg-white rounded-2xl shadow-md p-5 transform transition-all hover:shadow-lg">
           <div className="flex items-center mb-4">
             <ChartLine size={22} className="text-violet-600 mr-2" weight="bold" />
-            <h2 className="font-bold text-lg text-gray-800">통합 GI 지수 ({report.giGrade || '정보없음'})</h2>
+            <h2 className="font-bold text-lg text-gray-800">통합 GI 지수 ({report.giIndex || '정보없음'})</h2>
           </div>
           <div className="flex flex-col items-center">
             <div className="relative" style={{ width: 160, height: 100 }}>
@@ -222,12 +222,13 @@ export default function ReportPage({ params: paramsPromise }: ReportPageProps) {
                     <Cell fill="url(#giColorGradient)" />
                     <Cell fill="transparent" />
                   </Pie>
+                  <Tooltip formatter={(value: number) => `${value.toFixed(1)}%`} />
                 </PieChart>
               </ResponsiveContainer>
               <div 
                 className="absolute bottom-0 left-1/2 w-[2px] h-[60px] bg-gray-800 origin-bottom z-10 transition-transform duration-500 ease-out"
                 style={{ 
-                  transform: `translateX(-50%) rotate(${(report.estimatedGi || 0) * 1.8 - 90}deg)`
+                  transform: `translateX(-50%) rotate(${(report.giIndex || 0) * 1.8 - 90}deg)`
                 }}
               >
                 <div className="w-[6px] h-[6px] rounded-full bg-gray-800 absolute -top-[3px] -left-[2px]"></div>
