@@ -350,9 +350,6 @@ export default function ReportPage({ params: paramsPromise }: ReportPageProps) {
           <ChartLine size={18} weight="bold" />
           식품 상세 리포트 보러가기
         </Link>
-        <button className="bg-gray-200 text-gray-400 rounded-xl py-4 font-bold" disabled>
-          분석 결과 저장하기
-        </button>
         <Link 
           href="/" 
           className="flex items-center justify-center gap-2 bg-white border border-violet-600 text-violet-600 rounded-xl py-4 font-bold transition-all hover:bg-violet-50 active:scale-[0.98]"

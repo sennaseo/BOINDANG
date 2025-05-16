@@ -7,6 +7,8 @@ import { User, PencilSimple, Heart, ChatCircle } from '@phosphor-icons/react';
 import BottomNavBar from '../../components/navigation/BottomNavBar';
 import { getCommunityPosts, getImageListByIds, toggleLikePost } from '../../api/community'; // getImageListByIds, toggleLikePost 임포트
 import { ApiPostItem } from '../../types/api/community';
+import NewsCard from '../../components/news/NewsCard'; // NewsCard 컴포넌트 import
+import { newsData } from '../../data/news'; // newsData import
 
 const categories = ["전체", "식단", "운동", "고민&질문", "꿀팁", "목표", "체험단"];
 const tabs = ["피드", "매거진"];
@@ -138,7 +140,7 @@ export default function CommunityPage() {
   // 재시도 함수
   const retryFetch = () => {
     if (activeTab === '피드') {
-      // fetchPostsAndImages를 직접 호출하기 위해 useEffect 내부의 함수를 바깥으로 빼거나, 
+      // fetchPostsAndImages를 직접 호출하기 위해 useEffect 내부의 함수를 바깥으로 빼거나,
       // activeTab 상태를 변경하여 useEffect를 다시 트리거하는 방식을 고려할 수 있습니다.
       // 여기서는 간단하게 activeTab을 잠시 다른 값으로 바꿨다가 되돌려 useEffect를 재실행합니다.
       // 좀 더 나은 방식은 fetchPostsAndImages 함수를 useEffect 밖으로 빼고 직접 호출하는 것입니다.
@@ -146,6 +148,8 @@ export default function CommunityPage() {
       setActiveTab(''); // 임시로 탭 변경하여 useEffect 트리거
       setTimeout(() => setActiveTab(currentTab), 0);
     }
+    // 매거진 탭에 대한 재시도 로직은 현재 newsData가 정적이라 불필요하지만,
+    // 추후 API 연동 시 추가될 수 있습니다.
   };
 
   if (isLoading && activeTab === '피드') {
@@ -279,8 +283,12 @@ export default function CommunityPage() {
         })}
 
         {activeTab === '매거진' && (
-          <div className="p-4 text-center text-gray-500">
-            매거진 콘텐츠가 여기에 표시됩니다. (현재 피드 데이터만 연동됨)
+          <div className="p-4"> {/* news/page.tsx의 main padding과 유사하게 적용 */}
+            <div className="space-y-4"> {/* news/page.tsx의 카드 목록 스타일 적용 */}
+              {newsData.map((news) => (
+                <NewsCard key={news.id} news={news} />
+              ))}
+            </div>
           </div>
         )}
       </main>
