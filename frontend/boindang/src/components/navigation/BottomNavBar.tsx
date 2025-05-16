@@ -131,11 +131,15 @@ export default function BottomNavBar() {
           {/* +버튼 */}
           <button
             onClick={toggleActionMenu}
-            className="bg-[#6C2FF2] rounded-full w-16 h-16 flex items-center justify-center text-white shadow-md transform -translate-y-1.5 focus:outline-none z-40"
+            className="bg-[#6C2FF2] rounded-full w-[60px] h-[60px] flex items-center justify-center text-white shadow-md transform -translate-y-1 focus:outline-none z-40"
             aria-label="메뉴 열기"
             style={{ position: 'relative', zIndex: 40 }}
           >
-            <Plus size={28} weight="bold" />
+            <Plus
+              size={30}
+              weight="bold"
+              className={`transition-transform duration-500 ease-in-out ${isActionMenuOpen ? 'rotate-[135deg]' : 'rotate-0'}`}
+            />
           </button>
         </div>
 
