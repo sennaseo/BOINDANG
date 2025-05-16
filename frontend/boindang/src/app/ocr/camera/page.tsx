@@ -72,8 +72,8 @@ interface NutritionSummaryResult {
 }
 
 interface OcrData {
-  ingredient_analysis?: OcrAnalysisResult | null;
-  nutrition_analysis?: {
+  ingredientAnalysis?: OcrAnalysisResult | null;
+  nutritionAnalysis?: {
     summary?: string;
     nutritionSummary?: NutritionSummaryResult | null;
     // 기타 필요한 필드들...
@@ -380,6 +380,24 @@ export default function OcrCameraPage() {
           console.log("ocrResponse.data에서 분석 데이터 추출 시도:", responseObject.data);
           actualData = responseObject.data as OcrData;
         } else if (
+          responseObject.hasOwnProperty('result') &&
+          typeof responseObject.result === 'object' &&
+          responseObject.result !== null
+        ) {
+          console.log("ocrResponse.result에서 분석 데이터 추출 시도:", responseObject.result);
+          actualData = responseObject.result as OcrData;
+        } else if (
+          responseObject.hasOwnProperty('ingredientAnalysis') ||
+          responseObject.hasOwnProperty('nutritionAnalysis')
+        ) {
+          if (
+            (responseObject.hasOwnProperty('ingredientAnalysis') && responseObject.ingredientAnalysis !== undefined) ||
+            (responseObject.hasOwnProperty('nutritionAnalysis') && responseObject.nutritionAnalysis !== undefined)
+          ) {
+            console.log("ocrResponse에서 직접 분석 데이터 추출 시도 (카멜 케이스 키 기반 - fallback):", responseObject);
+            actualData = responseObject as OcrData;
+          }
+        } else if (
           responseObject.hasOwnProperty('ingredient_analysis') ||
           responseObject.hasOwnProperty('nutrition_analysis')
         ) {
@@ -387,7 +405,7 @@ export default function OcrCameraPage() {
             (responseObject.hasOwnProperty('ingredient_analysis') && responseObject.ingredient_analysis !== undefined) ||
             (responseObject.hasOwnProperty('nutrition_analysis') && responseObject.nutrition_analysis !== undefined)
           ) {
-            console.log("ocrResponse에서 직접 분석 데이터 추출 시도:", responseObject);
+            console.log("ocrResponse에서 직접 분석 데이터 추출 시도 (스네이크 케이스 키 기반 - fallback):", responseObject);
             actualData = responseObject as OcrData;
           }
         }
@@ -402,12 +420,12 @@ export default function OcrCameraPage() {
       }
       console.log("최종 분석 데이터(actualData) 성공적으로 추출됨:", actualData);
 
-      const ingAnalysis = actualData.ingredient_analysis;
-      const nutAnalysis = actualData.nutrition_analysis;
+      const ingAnalysis = actualData.ingredientAnalysis;
+      const nutAnalysis = actualData.nutritionAnalysis;
 
       // OCR 결과 유효성 검사 (actualData 사용)
       if (ingAnalysis === null && nutAnalysis === null) {
-        console.warn("OCR 분석 결과, ingredient_analysis와 nutrition_analysis 모두 명시적으로 null입니다:", actualData);
+        console.warn("OCR 분석 결과, ingredientAnalysis와 nutritionAnalysis 모두 명시적으로 null입니다:", actualData);
         setError("이미지 분석에 실패했습니다.\n두 정보 모두 인식되지 않았습니다.");
         setIsProcessing(false);
         return;
@@ -486,7 +504,7 @@ export default function OcrCameraPage() {
 
       if (ingAnalysis === undefined || nutAnalysis === undefined) {
         if (!(ingAnalysis === null && nutAnalysis === null)) {
-          console.error("OCR API 응답 데이터에 주요 분석 필드(ingredient_analysis 또는 nutrition_analysis)가 누락되었습니다:", actualData);
+          console.error("OCR API 응답 데이터에 주요 분석 필드(ingredientAnalysis 또는 nutritionAnalysis)가 누락되었습니다:", actualData);
           setError("OCR 분석 정보가 완전하지 않습니다.\n다시 시도해주세요.");
           setIsProcessing(false);
           return;
@@ -576,7 +594,7 @@ export default function OcrCameraPage() {
   };
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-black text-white">
+    <div className="flex flex-col h-screen w-full max-w-md mx-auto bg-black text-white relative overflow-hidden">
       {/* 상단 바: X 버튼, 촬영 가이드 버튼 - 에러 없을 때만 표시 */}
       {!isProcessing && !error && (
         <div className="h-16 flex justify-between items-center p-4 z-10">
