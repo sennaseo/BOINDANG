@@ -58,7 +58,7 @@ export default function ActionMenu({ onClose }: ActionMenuProps) {
         {/* 닫기 버튼 */}
         <button
           onClick={onClose}
-          className="bg-[#6C2FF2] rounded-full w-14 h-14 flex items-center justify-center text-white shadow-md focus:outline-none"
+          className="bg-[#6C2FF2] rounded-full w-15 h-15 flex items-center justify-center text-white shadow-md transform -translate-y-2 focus:outline-none"
           aria-label="메뉴 닫기"
         >
           <X size={24} weight="bold" />
