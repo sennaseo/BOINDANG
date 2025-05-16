@@ -30,6 +30,8 @@ public class NutritionReport {
     private LocalDateTime analyzedAt;
 
     private int kcal;
+    private int giIndex;
+    private String giGrade;
     private Map<String, NutrientResult> ratios;
 
     private Map<String, List<IngredientDetail>> categorizedIngredients;
@@ -42,12 +44,9 @@ public class NutritionReport {
     public static NutritionReport from(
             String userId,
             ProductNutrition product,
-            int totalKcal,
             Map<String, NutrientResult> ratios,
             Map<String, List<IngredientDetail>> categorizedIngredients,
-            List<TopRisk> topRisks,
-            String nutritionSummary,
-            String ingredientSummary
+            List<TopRisk> topRisks
     ) {
         return NutritionReport.builder()
                 .userId(userId)
@@ -56,12 +55,14 @@ public class NutritionReport {
                 .nutritionImageUrl(product.getNutritionImageUrl())
                 .ingredientImageUrl(product.getIngredientImageUrl())
                 .analyzedAt(LocalDateTime.now())
-                .kcal(totalKcal)
+                .kcal(product.getResult().getNutritionAnalysis().getNutrition().getKcal())
+                .giIndex(product.getResult().getIngredientAnalysis().getGiIndex().getValue())
+                .giGrade(product.getResult().getIngredientAnalysis().getGiIndex().getGrade())
                 .ratios(ratios)
                 .categorizedIngredients(categorizedIngredients)
                 .topRisks(topRisks)
-                .nutritionSummary(nutritionSummary)
-                .ingredientSummary(ingredientSummary)
+                .nutritionSummary(product.getResult().getNutritionAnalysis().getSummary())
+                .ingredientSummary(product.getResult().getIngredientAnalysis().getSummary())
                 .build();
     }
 

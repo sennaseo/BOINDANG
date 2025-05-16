@@ -22,7 +22,7 @@ public class NutritionReportResponse {
 
     private int kcal;           // 총 열량
 
-    private int estimatedGi;    // 통합 GI
+    private int giIndex;    // 통합 GI
     private String giGrade;     // 안전 / 주의 / 위험
 
     private List<NutrientRatio> nutrientRatios;   // 탄단지 비율
@@ -39,8 +39,8 @@ public class NutritionReportResponse {
                 .nutritionImageUrl(report.getNutritionImageUrl())
                 .ingredientImageUrl(report.getIngredientImageUrl())
                 .kcal(report.getKcal())
-                .estimatedGi(58) // TODO: 실제 로직으로 대체 가능
-                .giGrade("위험")  // TODO: 실제 로직으로 대체 가능
+                .giIndex(report.getGiIndex())
+                .giGrade(report.getGiGrade())
                 .nutrientRatios(toRatios(report.getRatios()))
                 .nutrientDetails(toDetails(report.getRatios()))
                 .categorizedIngredients(report.getCategorizedIngredients())
