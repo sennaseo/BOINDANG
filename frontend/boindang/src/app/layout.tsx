@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import localFont from "next/font/local";
@@ -30,20 +30,22 @@ export const metadata: Metadata = {
   title: "보인당",
   description: "보인당 앱",
   manifest: "/manifest.json",
-  themeColor: '#ffffff',
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-    viewportFit: 'cover',
-  },
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "default",
     title: "보인당",
   },
   applicationName: "보인당",
+};
+
+// Viewport 설정 추가
+export const viewport: Viewport = {
+  themeColor: "#ffffff", // 기본 테마 색상 (흰색)
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover', // 또는 'auto'로 테스트해볼 수 있음
 };
 
 export default function RootLayout({
