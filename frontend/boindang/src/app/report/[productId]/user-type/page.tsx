@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import ReportTabNav from "@/components/navigation/ReportTabNav";     
 import { CaretLeft } from "@phosphor-icons/react";
-import Image from "next/image";
 import { useParams, useRouter } from 'next/navigation';
 import { getReport } from "@/api/report";
 
