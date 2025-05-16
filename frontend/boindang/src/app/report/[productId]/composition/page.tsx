@@ -148,13 +148,13 @@ export default function CompositionPage() {
       const mainDetail = findNutrient(mainNutrient.name);
       if (!mainDetail) return null; // 해당 주 영양소가 없으면 skip
 
-      let subData: CompositionSubDataItem[] = [];
+      let subData: CompositionSubDataItem[] | undefined = [];
       let accountedSubValue = 0;
 
       mainNutrient.sub.forEach(subNutrientInfo => {
         const subDetail = findNutrient(subNutrientInfo.name);
         if (subDetail && subDetail.value > 0) {
-          subData.push({
+          subData!.push({
             id: slugify(subDetail.name),
             label: subDetail.name,
             value: subDetail.value,
@@ -167,22 +167,22 @@ export default function CompositionPage() {
       // "기타" 항목 추가 (주요 영양소 값에서 하위 항목 값들을 뺀 나머지)
       const otherValue = mainDetail.value - accountedSubValue;
       if (otherValue > 0.1 && mainNutrient.sub.length > 0) { // 유의미한 값일 때만 "기타" 추가
-        subData.push({
+        subData!.push({
           id: slugify(`기타 ${mainNutrient.name}`),
           label: "기타",
           value: parseFloat(otherValue.toFixed(1)), // 소수점 한자리
           color: "#bfdbfe", // 기타 색상
         });
       }
-       // subData가 비어있다면 null로 설정하여 차트에서 올바르게 처리되도록 함
-      if (subData.length === 0) subData = undefined as any;
+       // subData가 비어있다면 undefined로 설정하여 차트에서 올바르게 처리되도록 함
+      if (subData?.length === 0) subData = undefined;
 
       return {
         id: slugify(mainDetail.name),
         label: mainDetail.name,
         value: mainDetail.value,
         color: mainNutrient.color,
-        subData: subData.length > 0 ? subData : undefined,
+        subData: subData && subData.length > 0 ? subData : undefined,
       };
     }).filter(item => item !== null) as CompositionChartDataItem[];
   }, [reportData]);

@@ -30,8 +30,21 @@ interface ReportResultData {
   giGrade?: string;
   nutrientRatios?: { name: string; percent: number }[];
   nutrientDetails?: NutrientDetail[];
-  categorizedIngredients?: { [key: string]: any[] }; // 간략화
-  topRisks?: any[]; // 간략화
+  categorizedIngredients?: { 
+    [key: string]: {
+      name: string;
+      description?: string[];
+      gi?: number;
+      shortMessage?: string;
+      riskLevel?: string;
+    }[]
+  };
+  topRisks?: { 
+    name: string; 
+    keyword: string; 
+    title: string; 
+    detail: string 
+  }[];
 }
 
 interface ApiReportResponse {
