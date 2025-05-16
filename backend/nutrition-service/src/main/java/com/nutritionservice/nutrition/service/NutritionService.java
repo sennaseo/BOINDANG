@@ -73,26 +73,18 @@ public class NutritionService {
         // 5. 원재료 용도별로 분리하여 매핑
         Map<String, List<IngredientDetail>> categorizedMap = categorizeIngredients(product, allDetails);
 
-        // 6. 제품 분석 summary + Kcal 정보 저장
-        String nutritionSummary = product.getResult().getNutritionAnalysis().getSummary();
-        String ingredientSummary = product.getResult().getIngredientAnalysis().getSummary();
-        int kcal = product.getResult().getNutritionAnalysis().getNutrition().getKcal();
-
-        // 7. NutritionReport 구성
+        // 6. NutritionReport 구성
         NutritionReport report = NutritionReport.from(
                 userInfo.getId(),
                 product,
-                kcal,
                 ratios,
                 categorizedMap,
-                topRisks,
-                nutritionSummary,
-                ingredientSummary
+                topRisks
                 );
 
         logger.debug("📄 [분석 리포트 생성 완료]");
 
-        // 8. 몽고디비에 저장
+        // 7. 몽고디비에 저장
         NutritionReport saved = saveOrUpdateReport(report);
         return NutritionReportResponse.from(saved);
     }
