@@ -101,7 +101,7 @@ export default function ReportPage({ params: paramsPromise }: ReportPageProps) {
       };
       fetchReport();
     }
-  }, []);
+  }, [productId]);
 
   // GI 지수 게이지 차트 데이터
   const giGaugeData = report?.estimatedGi !== undefined ? [
