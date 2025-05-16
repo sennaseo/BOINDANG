@@ -58,6 +58,28 @@ const guideMessages = {
   }
 };
 
+// OCR API 응답 데이터 인터페이스 정의 (예시)
+interface OcrAnalysisResult {
+  summary?: string;
+  ingredientTree?: unknown[]; // 실제 타입으로 대체 필요
+  // 기타 필요한 필드들...
+}
+
+interface NutritionSummaryResult {
+  Kcal?: number;
+  // 기타 영양 정보 필드들...
+}
+
+interface OcrData {
+  ingredientAnalysis?: OcrAnalysisResult | null;
+  nutritionAnalysis?: {
+    summary?: string;
+    nutritionSummary?: NutritionSummaryResult | null;
+    // 기타 필요한 필드들...
+  } | null;
+  // 기타 최상위 API 응답 필드들...
+}
+
 // Base64 문자열을 Blob 객체로 변환하는 헬퍼 함수
 async function base64ToBlob(base64: string, fileType: string): Promise<Blob> {
   const byteString = atob(base64.split(',')[1]);
@@ -350,7 +372,153 @@ export default function OcrCameraPage() {
         router.push('/'); 
       }
 
-    } catch (err: unknown) { // err 타입을 unknown으로 변경
+      let actualData: OcrData | undefined | null = null;
+      if (ocrResponse && typeof ocrResponse === 'object' && ocrResponse !== null) {
+        const responseObject = ocrResponse as Record<string, unknown>;
+
+        if (
+          responseObject.hasOwnProperty('data') &&
+          typeof responseObject.data === 'object' &&
+          responseObject.data !== null
+        ) {
+          console.log("ocrResponse.data에서 분석 데이터 추출 시도:", responseObject.data);
+          actualData = responseObject.data as OcrData;
+        } else if (
+          responseObject.hasOwnProperty('result') &&
+          typeof responseObject.result === 'object' &&
+          responseObject.result !== null
+        ) {
+          console.log("ocrResponse.result에서 분석 데이터 추출 시도:", responseObject.result);
+          actualData = responseObject.result as OcrData;
+        } else if (
+          responseObject.hasOwnProperty('ingredientAnalysis') ||
+          responseObject.hasOwnProperty('nutritionAnalysis')
+        ) {
+          if (
+            (responseObject.hasOwnProperty('ingredientAnalysis') && responseObject.ingredientAnalysis !== undefined) ||
+            (responseObject.hasOwnProperty('nutritionAnalysis') && responseObject.nutritionAnalysis !== undefined)
+          ) {
+            console.log("ocrResponse에서 직접 분석 데이터 추출 시도 (카멜 케이스 키 기반 - fallback):", responseObject);
+            actualData = responseObject as OcrData;
+          }
+        } else if (
+          responseObject.hasOwnProperty('ingredient_analysis') ||
+          responseObject.hasOwnProperty('nutrition_analysis')
+        ) {
+          if (
+            (responseObject.hasOwnProperty('ingredient_analysis') && responseObject.ingredient_analysis !== undefined) ||
+            (responseObject.hasOwnProperty('nutrition_analysis') && responseObject.nutrition_analysis !== undefined)
+          ) {
+            console.log("ocrResponse에서 직접 분석 데이터 추출 시도 (스네이크 케이스 키 기반 - fallback):", responseObject);
+            actualData = responseObject as OcrData;
+          }
+        }
+      }
+
+      console.log("--- [Debug] actualData 추출 시도 후 ---");
+      if (!actualData) {
+        console.error("[!!! Critical !!!] 유효한 OCR 분석 데이터를 찾을 수 없거나 API 응답 형식이 예상과 다릅니다:", ocrResponse);
+        setError("OCR 분석 결과를 처리할 수 없습니다.\n응답 형식을 확인해주세요.");
+        setIsProcessing(false);
+        return;
+      }
+      console.log("최종 분석 데이터(actualData) 성공적으로 추출됨:", actualData);
+
+      const ingAnalysis = actualData.ingredientAnalysis;
+      const nutAnalysis = actualData.nutritionAnalysis;
+
+      // OCR 결과 유효성 검사 (actualData 사용)
+      if (ingAnalysis === null && nutAnalysis === null) {
+        console.warn("OCR 분석 결과, ingredientAnalysis와 nutritionAnalysis 모두 명시적으로 null입니다:", actualData);
+        setError("이미지 분석에 실패했습니다.\n두 정보 모두 인식되지 않았습니다.");
+        setIsProcessing(false);
+        return;
+      }
+
+      let isIngredientInvalid: boolean = false;
+      if (ingAnalysis) {
+        isIngredientInvalid = Boolean(
+          (typeof ingAnalysis.summary === 'string' &&
+            (ingAnalysis.summary.includes("불가능합니다") ||
+              ingAnalysis.summary.includes("정보가 없어") ||
+              ingAnalysis.summary.includes("제공되어 성분 정보가 없어"))) ||
+          (Array.isArray(ingAnalysis.ingredientTree) &&
+            ingAnalysis.ingredientTree.length === 0)
+        );
+        console.log("[Debug] Ingredient Analysis:", ingAnalysis.summary, "isInvalid:", isIngredientInvalid);
+      } else if (ingAnalysis === undefined && nutAnalysis?.summary?.includes("식품이 아닌")) {
+        isIngredientInvalid = true;
+        console.log("[Debug] Ingredient undefined, Nut non-food. isIngredientInvalid:", isIngredientInvalid);
+      } else if (ingAnalysis === undefined && nutAnalysis?.summary?.includes("비식품입니다")) {
+        isIngredientInvalid = true;
+        console.log("[Debug] Ingredient undefined, Nut non-food (bisikpum). isIngredientInvalid:", isIngredientInvalid);
+      } else {
+        console.log("[Debug] Ingredient Analysis: No specific invalid condition met or ingAnalysis is null/undefined.", ingAnalysis);
+      }
+
+
+      let isNutritionInvalid: boolean = false;
+      if (nutAnalysis) {
+        isNutritionInvalid = Boolean(
+          (typeof nutAnalysis.summary === 'string' &&
+            (nutAnalysis.summary.includes("식품이 아닌 제품입니다") ||
+              nutAnalysis.summary.includes("정보가 없는 식품이거나") ||
+              nutAnalysis.summary.includes("분석할 수 없습니다") ||
+              nutAnalysis.summary.includes("비식품입니다"))) ||
+          (nutAnalysis.nutritionSummary && typeof nutAnalysis.nutritionSummary.Kcal === 'number' &&
+            nutAnalysis.nutritionSummary.Kcal === 0 &&
+            (!nutAnalysis.summary || !nutAnalysis.summary.includes("영양 정보가 없는 식품이거나"))
+          )
+        );
+        console.log("[Debug] Nutrition Analysis:", nutAnalysis.summary, "isInvalid:", isNutritionInvalid);
+        if (nutAnalysis.nutritionSummary) {
+          console.log("[Debug] Nutrition Kcal:", nutAnalysis.nutritionSummary.Kcal);
+        }
+      } else if (nutAnalysis === undefined && ingAnalysis?.summary?.includes("불가능합니다")) {
+        isNutritionInvalid = true;
+        console.log("[Debug] Nutrition undefined, Ing impossible. isNutritionInvalid:", isNutritionInvalid);
+      } else {
+        console.log("[Debug] Nutrition Analysis: No specific invalid condition met or nutAnalysis is null/undefined.", nutAnalysis);
+      }
+
+      const finalIsIngredientInvalid = isIngredientInvalid;
+      const finalIsNutritionInvalid = isNutritionInvalid;
+      const bothAnalysesUndefined = ingAnalysis === undefined && nutAnalysis === undefined;
+
+      console.log("[Debug] Final Validation Check:", {
+        finalIsIngredientInvalid,
+        finalIsNutritionInvalid,
+        ingSummary: ingAnalysis?.summary,
+        nutSummary: nutAnalysis?.summary,
+        ingTreeLength: ingAnalysis?.ingredientTree?.length,
+        nutKcal: nutAnalysis?.nutritionSummary?.Kcal,
+        bothAnalysesUndefined
+      });
+
+      if (finalIsIngredientInvalid || finalIsNutritionInvalid || bothAnalysesUndefined) {
+        console.warn("OCR 분석 결과, 유효하지 않은 이미지로 판단됨 (최종 결정):", {
+          isIngredientInvalid: finalIsIngredientInvalid,
+          isNutritionInvalid: finalIsNutritionInvalid,
+          actualData
+        });
+        setError("이미지 인식에 실패했습니다.\n내용이 잘 보이도록 다시 촬영해주세요.");
+        setIsProcessing(false);
+        return;
+      }
+
+      if (ingAnalysis === undefined || nutAnalysis === undefined) {
+        if (!(ingAnalysis === null && nutAnalysis === null)) {
+          console.error("OCR API 응답 데이터에 주요 분석 필드(ingredientAnalysis 또는 nutritionAnalysis)가 누락되었습니다:", actualData);
+          setError("OCR 분석 정보가 완전하지 않습니다.\n다시 시도해주세요.");
+          setIsProcessing(false);
+          return;
+        }
+      }
+
+      console.log("OCR 분석 결과 유효함, /report로 이동");
+      router.push('/report');
+
+    } catch (err: unknown) {
       console.error("OCR 처리 중 오류 발생:", err);
       let errorMessage = "이미지 처리 중 알 수 없는 오류가 발생했습니다.";
 
@@ -417,9 +585,9 @@ export default function OcrCameraPage() {
   };
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-black text-white">
-      {/* 상단 바: X 버튼, 촬영 가이드 버튼 */}
-      {!isProcessing && (
+    <div className="flex flex-col h-screen w-full max-w-md mx-auto bg-black text-white relative overflow-hidden">
+      {/* 상단 바: X 버튼, 촬영 가이드 버튼 - 에러 없을 때만 표시 */}
+      {!isProcessing && !error && (
         <div className="h-16 flex justify-between items-center p-4 z-10">
           <button className="p-2" onClick={handleCloseClick}>
             <X size={28} weight="bold" />
