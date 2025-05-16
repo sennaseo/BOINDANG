@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.boindanguser.common.model.dto.ApiResponses;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -60,11 +61,11 @@ public class UserService {
 		try {
 			String url = eurekaService.getUrl("AUTH") + "auth/createToken/" + user.getId();
 			System.out.println("url: " + url);
-			ApiResponse<JwtTokenDto> apiResponse = restClient.get()
+			ApiResponses<JwtTokenDto> apiResponse = restClient.get()
 				.uri(url)
 				.retrieve()
-				.body(new ParameterizedTypeReference<ApiResponse<JwtTokenDto>>() {});
-			return apiResponse.getResult();
+				.body(new ParameterizedTypeReference<ApiResponses<JwtTokenDto>>() {});
+			return apiResponse.getData();
 		} catch (Exception e) {
 			throw new RuntimeException("Access Token 생성 중 오류 발생: " + e.getMessage(), e);
 		}
