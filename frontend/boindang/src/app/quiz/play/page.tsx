@@ -73,6 +73,12 @@ export default function QuizPlayPage() {
     setStep(s => s + 1);
   };
 
+  const handlePrev = () => {
+    setSelected(null);
+    setAnswerResult(null);
+    setStep(s => s - 1);
+  };
+
   const handleRetry = () => {
     setStep(0);
     setSelected(null);
@@ -81,16 +87,13 @@ export default function QuizPlayPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col max-w-screen-sm mx-auto">
-      <div className="flex-1 flex flex-col justify-start px-6 pt-8 pb-24 relative">
+    <div className="min-h-screen bg-white flex flex-col max-w-screen-sm mx-auto relative pb-28">
+      <div className="flex-1 flex flex-col justify-start px-6 pt-8">
         {/* 진행도 표시 (문제 풀이 중에만) */}
         {loading ? (
           <div className="text-center mt-16 text-lg">퀴즈를 불러오는 중...</div>
         ) : step < quizList.length && (
           <div className="w-full max-w-xs mx-auto mb-2">
-            {/* <div className="text-lg font-bold text-center mb-1">
-              Q{step + 1} / {quizList.length}
-            </div> */}
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div
                 className="bg-[#6C2FF2] h-2 rounded-full transition-all duration-300"
@@ -107,16 +110,22 @@ export default function QuizPlayPage() {
                   quiz={quiz}
                   selected={selected}
                   onNext={handleNext}
+                  onPrev={handlePrev}
+                  showPrev={step > 0}
                   isLast={step === quizList.length - 1}
                   index={step}
                   answerResult={answerResult}
+                  fixedButton
                 />
               : <QuizQuestion
                   quiz={quiz}
                   onSelect={handleSelect}
                   selected={selected}
                   onSubmit={handleSubmit}
+                  onPrev={handlePrev}
+                  showPrev={step > 0}
                   index={step}
+                  fixedButton
                 />
           ) : (
             <div className="text-center mt-16">
@@ -132,6 +141,8 @@ export default function QuizPlayPage() {
               <Image
                 src="/assets/quiz/sugar_quiz_complete.png"
                 alt="퀴즈 완료"
+                width={256}
+                height={256}
                 className="w-80 h-80 object-contain mx-auto mb-4"
               />
               <h2 className="text-2xl font-bold mb-2">영양 지식이 쌓였어요!</h2>
@@ -143,7 +154,6 @@ export default function QuizPlayPage() {
             </div>
           )}
         </div>
-        {/* 하단 고정 버튼은 QuizResult에서 처리 */}
       </div>
       <BottomNavBar />
     </div>

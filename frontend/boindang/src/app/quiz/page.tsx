@@ -16,6 +16,8 @@ export default function QuizIntroPage() {
         <Image
           src="/assets/quiz/sugar_quiz.png"
           alt="설탕 퀴즈"
+          width={256}
+          height={256}
           className="w-64 h-64 object-contain mb-8"
         />
         <h1 className="text-2xl font-bold mb-2 text-center">
