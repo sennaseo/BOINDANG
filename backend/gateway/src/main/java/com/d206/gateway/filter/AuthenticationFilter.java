@@ -49,19 +49,8 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
 				"/**/swagger-ui/**",
 				"/favicon.ico"
 		);
-
-		if (excludedPatterns.stream().anyMatch(pattern -> {
-			boolean matches = pathMatcher.match(pattern, path);
-			if (matches) {
-				log.debug("제외된 패턴과 일치: 패턴 '{}', 경로 '{}'", pattern, path);
-			}
-			return matches;
-		})) {
-			log.info("인증이 필요 없는 경로입니다. 필터 체인 계속 진행: {}", path);
-			return chain.filter(exchange);
-		}
-
 		if (excludedPatterns.stream().anyMatch(pattern -> pathMatcher.match(pattern, path))) {
+			log.info("인증이 필요 없는 경로입니다. 필터 체인 계속 진행: {}", path);
 			return chain.filter(exchange);
 		}
 
@@ -80,16 +69,11 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
 			.contentType(MediaType.APPLICATION_JSON)
 			.bodyValue(requestBody)
 			.retrieve()
-			.onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
-				clientResponse -> Mono.error(new RuntimeException("Unauthorized")))
-			.bodyToMono(AuthResponse.class) // 인증 서버에서 userId 반환한다고 가정
+			.bodyToMono(AuthResponse.class)
 			.flatMap(response -> {
-				if (!response.isSuccess() || response.getResult() == null) {
-					return onError(exchange, "Invalid token", HttpStatus.UNAUTHORIZED);
-				}
 
 				ServerHttpRequest modifiedRequest = exchange.getRequest().mutate()
-					.header("X-User-Id", String.valueOf(response.getResult()))
+					.header("X-User-Id", String.valueOf(response))
 					.build();
 				return chain.filter(exchange.mutate().request(modifiedRequest).build());
 			});
@@ -111,10 +95,15 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
 	}
 
 	@Data
-	public static class AuthResponse {
-		private boolean success;
-		private int code;
-		private String message;
-		private Integer result; // userId
+	public class AuthResponse<T> {
+		private boolean isSuccess;
+		private T data;
+		private ErrorResponse error;
+
+		@Data
+		public static class ErrorResponse {
+			private int code;
+			private String message;
+		}
 	}
 }
