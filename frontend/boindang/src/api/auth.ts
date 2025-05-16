@@ -5,6 +5,7 @@ import type {
   CheckUsernameResponse,
   LoginRequestPayload,
   LoginResponse,
+  SignUpResult,
 } from '@/types/api/authTypes';
 
 /**
@@ -52,3 +53,9 @@ export const postLogin = async (
   const response = await apiClient.post<LoginResponse>('/user/login', loginData);
   return response.data; // axios는 실제 응답 데이터를 'data' 속에 담아줍니다.
 };
+
+export const getUserInfo = async (): Promise<SignUpResult> => {
+  const response = await apiClient.get<SignUpResult>('/user/me');
+  return response.data;
+};
+

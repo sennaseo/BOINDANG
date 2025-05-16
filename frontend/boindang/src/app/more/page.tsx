@@ -1,12 +1,63 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import BottomNavBar from "@/components/navigation/BottomNavBar";
 import { DotsThreeVertical, List } from "@phosphor-icons/react";
 import { motion } from "framer-motion";
 import Image from 'next/image';
 import Link from 'next/link';
+import { getUserInfo } from "@/api/auth";
+import type { SignUpResult } from "@/types/api/authTypes";
 
 export default function MorePage() {
+    const [result, setUserInfo] = useState<SignUpResult | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchUserInfo = async () => {
+            try {
+                setLoading(true);
+                const result = await getUserInfo();
+                console.log(result);
+                if (result) {
+                    setUserInfo(result);
+                } else {
+                    setError("사용자 정보를 불러오는데 실패했습니다.");
+                }
+            } catch (err) {
+                setError(err instanceof Error ? err.message : "알 수 없는 에러가 발생했습니다.");
+            }
+            setLoading(false);
+        };
+
+        fetchUserInfo();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex flex-col mx-5 pt-15 pb-20 min-h-screen justify-center items-center">
+                <p>로딩 중...</p>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="flex flex-col mx-5 pt-15 pb-20 min-h-screen justify-center items-center">
+                <p>오류: {error}</p>
+            </div>
+        );
+    }
+
+    if (!result) {
+        return (
+            <div className="flex flex-col mx-5 pt-15 pb-20 min-h-screen justify-center items-center">
+                <p>사용자 정보를 찾을 수 없습니다.</p>
+            </div>
+        );
+    }
+
     return (
         <div className="flex flex-col mx-5 pt-15 pb-20 min-h-screen justify-between">
             <div className="flex flex-row justify-between items-center">
@@ -20,7 +71,7 @@ export default function MorePage() {
             </div>
             
             <div className="relative my-auto text-[#363636]">
-                <h2 className="text-xl font-bold">안녕하세요 youmin님</h2>
+                <h2 className="text-xl font-bold">안녕하세요 {result.nickname}님</h2>
                 <p className="text-xl font-bold mt-1">오늘도 건강하게 드셨나요?</p>
             </div>
             
