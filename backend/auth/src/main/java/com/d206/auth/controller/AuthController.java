@@ -1,5 +1,6 @@
 package com.d206.auth.controller;
 
+import com.d206.auth.common.ApiResponses;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,25 +21,25 @@ public class AuthController {
 	private final AuthService authService;
 
 	@GetMapping("/createToken/{userId}")
-	public ApiResponse<JwtTokenDto> createToken(@PathVariable Long userId) {
-		return ApiResponse.success(authService.createToken(userId));
+	public ApiResponses<JwtTokenDto> createToken(@PathVariable Long userId) {
+		return ApiResponses.success(authService.createToken(userId));
 	}
 
 	@PostMapping("/refresh")
-	public ApiResponse<JwtTokenDto> refreshToken(@RequestBody JwtTokenDto jwtTokenDto) {
-		return ApiResponse.success(authService.refreshToken(jwtTokenDto.getRefreshToken()));
+	public ApiResponses<JwtTokenDto> refreshToken(@RequestBody JwtTokenDto jwtTokenDto) {
+		return ApiResponses.success(authService.refreshToken(jwtTokenDto.getRefreshToken()));
 	}
 
 	@PostMapping("/validate")
-	public ApiResponse<Long> validateToken(@RequestBody JwtTokenDto jwtTokenDto) {
+	public ApiResponses<Long> validateToken(@RequestBody JwtTokenDto jwtTokenDto) {
 		System.out.println("request token: " + jwtTokenDto.getAccessToken());
-		return ApiResponse.success(authService.validateToken(jwtTokenDto.getAccessToken()));
+		return ApiResponses.success(authService.validateToken(jwtTokenDto.getAccessToken()));
 	}
 
 	@PostMapping("/invalidate")
-	public ApiResponse<Long> invalidateToken(@RequestBody JwtTokenDto jwtTokenDto) {
+	public ApiResponses<Long> invalidateToken(@RequestBody JwtTokenDto jwtTokenDto) {
 		System.out.println("request token: " + jwtTokenDto.getAccessToken());
-		return ApiResponse.success(authService.invalidateToken(jwtTokenDto.getAccessToken()));
+		return ApiResponses.success(authService.invalidateToken(jwtTokenDto.getAccessToken()));
 	}
 
 }
