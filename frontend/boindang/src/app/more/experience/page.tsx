@@ -86,8 +86,12 @@ export default function ExperiencePage() {
               className="border border-gray-200 rounded-xl p-4 flex items-center"
             >
               <div className="w-20 h-20 bg-gray-100 rounded-lg mr-4 relative overflow-hidden">
-                {/* 실제 이미지가 없으므로 임시 회색 상자로 대체 */}
-                <div className="w-full h-full bg-gray-200"></div>
+                <Image
+                  src={exp.image}
+                  alt={exp.title}
+                  fill
+                  className="object-cover"
+                />
               </div>
               <div className="flex-1">
                 <h3 className="font-bold text-[#363636]">{exp.title}</h3>
