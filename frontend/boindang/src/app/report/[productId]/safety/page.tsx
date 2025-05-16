@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import ReportTabNav from "@/components/navigation/ReportTabNav";
 import { CaretLeft, Info } from "@phosphor-icons/react";
 import dynamic from "next/dynamic";
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { getReport } from "@/api/report";
 
 // 동적 import, SSR 비활성화
@@ -26,8 +26,8 @@ interface ReportResultData {
   productName?: string;
   totalWeight?: string;
   kcal?: number;
-  estimatedGi?: number;
-  giGrade?: string;
+  giGrade?: string; 
+  giIndex?: number;
   nutrientRatios?: { name: string; percent: number }[];
   nutrientDetails?: NutrientDetail[];
   categorizedIngredients?: { 
@@ -91,20 +91,17 @@ const statusInfo: Record<StatusType, { color: string; text: string; description:
 
 // API grade를 내부 status 키로 매핑
 const apiGradeToStatusType: { [key: string]: StatusType } = {
-  '위험': 'danger',
+  '결핍': 'deficiency',
+  '권장': 'recommend',
   '주의': 'caution',
-  '안전': 'recommend', // '안전'을 기본 'recommend'로 매핑. percent에 따라 'deficiency'로 조정
-  '경고': 'danger', // API 응답에 '경고'가 있다면 danger로 매핑 (예시)
+  '위험': 'danger',
 };
 
 // nutrientDetails의 grade와 percent를 기반으로 최종 StatusType 결정
-function determineNutrientStatus(apiGrade: string, percent: number): StatusType {
+function determineNutrientStatus(apiGrade: string): StatusType {
   const baseStatus = apiGradeToStatusType[apiGrade] || 'unknown';
-
-  if (baseStatus === 'recommend') { 
-    if (percent < 30) return 'deficiency'; // 예시: 30% 미만이면 결핍
-    // 특정 영양소별로 다른 기준 적용 가능
-  }
+  
+  // 이제 매핑이 직접적으로 이루어지므로 추가 로직이 필요하지 않음
   return baseStatus;
 }
 
@@ -117,8 +114,8 @@ const nutrientIconMap: { [key: string]: string } = {
 
 export default function SafetyPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const productId = searchParams.get('productId');
+  const params = useParams();
+  const productId = params.productId as string;
 
   const [reportData, setReportData] = useState<ReportResultData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -161,12 +158,65 @@ export default function SafetyPage() {
     setSelectedStatus(selectedStatus === status ? null : status);
   };
 
-  // 스타일 반환 함수 (기존 로직 활용)
-  const getBorderColor = (status: StatusType) => statusInfo[status] ? `border-${statusInfo[status].color}-400` : 'border-gray-400';
-  const getTextColor = (status: StatusType) => statusInfo[status] ? `text-${statusInfo[status].color}-500` : 'text-gray-500';
-  const getBgColor = (status: StatusType) => statusInfo[status] ? `bg-${statusInfo[status].color}-500` : 'bg-gray-500';
-  const getActiveBgColor = (status: StatusType) => statusInfo[status] ? `bg-${statusInfo[status].color}-100` : 'bg-gray-100';
-  const getLightBgColor = (status: StatusType) => statusInfo[status] ? `bg-${statusInfo[status].color}-50` : 'bg-gray-50';
+  // 인라인 스타일용 색상 반환 함수
+  const getStatusBorderColor = (status: StatusType) => {
+    const colorMap = {
+      deficiency: '#3b82f6', // blue
+      recommend: '#22c55e',  // green
+      caution: '#eab308',    // yellow
+      danger: '#ef4444',     // red
+      unknown: '#6b7280'     // gray
+    };
+    return colorMap[status] || colorMap.unknown;
+  };
+
+  // 텍스트 색상을 위한 인라인 스타일 함수
+  const getStatusTextColor = (status: StatusType) => {
+    const colorMap = {
+      deficiency: '#3b82f6', // blue-500
+      recommend: '#22c55e',  // green-500
+      caution: '#eab308',    // yellow-500
+      danger: '#ef4444',     // red-500
+      unknown: '#6b7280'     // gray-500
+    };
+    return colorMap[status] || colorMap.unknown;
+  };
+
+  // 배경 색상을 위한 인라인 스타일 함수
+  const getStatusBgColor = (status: StatusType) => {
+    const colorMap = {
+      deficiency: '#3b82f6', // blue-500
+      recommend: '#22c55e',  // green-500
+      caution: '#eab308',    // yellow-500
+      danger: '#ef4444',     // red-500
+      unknown: '#6b7280'     // gray-500
+    };
+    return colorMap[status] || colorMap.unknown;
+  };
+
+  // 연한 배경 색상을 위한 인라인 스타일 함수
+  const getStatusLightBgColor = (status: StatusType) => {
+    const colorMap = {
+      deficiency: '#dbeafe', // blue-50
+      recommend: '#dcfce7',  // green-50
+      caution: '#fef9c3',    // yellow-50
+      danger: '#fee2e2',     // red-50
+      unknown: '#f9fafb'     // gray-50
+    };
+    return colorMap[status] || colorMap.unknown;
+  };
+
+  // 활성화된 배경 색상을 위한 인라인 스타일 함수
+  const getStatusActiveBgColor = (status: StatusType) => {
+    const colorMap = {
+      deficiency: '#bfdbfe', // blue-100
+      recommend: '#bbf7d0',  // green-100
+      caution: '#fef08a',    // yellow-100
+      danger: '#fecaca',     // red-100
+      unknown: '#f3f4f6'     // gray-100
+    };
+    return colorMap[status] || colorMap.unknown;
+  };
 
   const dynamicNutritionData = useMemo(() => {
     if (!reportData?.nutrientDetails) return [];
@@ -174,9 +224,9 @@ export default function SafetyPage() {
       id: nutrient.name, // 고유 ID로 사용
       name: nutrient.name,
       value: nutrient.percent, // 프로그레스 바에 사용할 값 (0-100)
-      status: determineNutrientStatus(nutrient.grade, nutrient.percent),
+      status: determineNutrientStatus(nutrient.grade),
       icon: nutrientIconMap[nutrient.name] || nutrientIconMap.default,
-      description: statusInfo[determineNutrientStatus(nutrient.grade, nutrient.percent)]?.description || '',
+      description: statusInfo[determineNutrientStatus(nutrient.grade)]?.description || '',
       apiValue: nutrient.value, // 실제 g/mg 값 (필요시 사용)
       apiGrade: nutrient.grade,
     }));
@@ -207,20 +257,23 @@ export default function SafetyPage() {
   }
   
   // GI 지수 관련 텍스트 및 스타일
-  const estimatedGi = reportData.estimatedGi ?? 0;
-  const giGradeText = reportData.giGrade || '정보없음';
-  let giMessage = `이 제품의 예상 GI 지수는 ${estimatedGi}으로, `; 
+  const giIndex = reportData.giIndex ?? 0;
+  const giGrade = reportData.giGrade ?? 'unknown';
+  let giMessage = `이 제품의 예상 GI 지수는 ${giIndex}으로, `; 
   let giMessageColor = "text-gray-700";
 
-  if (giGradeText === '위험' || giGradeText === '경고') {
-    giMessage += `혈당 지수를 <span class="font-bold text-red-500">${giGradeText} 수준</span>으로 증가시킬 수 있어요. 각별한 주의가 필요합니다.`;
+  if (giGrade === '위험') {
+    giMessage += `혈당 지수를 <span class="font-bold text-red-500">${giGrade} 수준</span>으로 증가시킬 수 있어요. 각별한 주의가 필요합니다.`;
     giMessageColor = "text-red-600";
-  } else if (giGradeText === '주의') {
-    giMessage += `혈당 지수를 <span class="font-bold text-yellow-500">${giGradeText} 수준</span>으로 증가시킬 수 있어요. 섭취량 조절이 필요할 수 있습니다.`;
+  } else if (giGrade === '주의') {
+    giMessage += `혈당 지수를 <span class="font-bold text-yellow-500">${giGrade} 수준</span>으로 증가시킬 수 있어요. 섭취량 조절이 필요할 수 있습니다.`;
     giMessageColor = "text-yellow-600";
-  } else if (giGradeText === '안전' || giGradeText === '권장') {
-    giMessage += `혈당 지수가 <span class="font-bold text-green-500">${giGradeText} 수준</span>입니다. 비교적 안심하고 섭취할 수 있습니다.`;
+  } else if (giGrade === '권장') {
+    giMessage += `혈당 지수가 <span class="font-bold text-green-500">${giGrade} 수준</span>입니다. 비교적 안심하고 섭취할 수 있습니다.`;
     giMessageColor = "text-green-600";
+  } else if (giGrade === '결핍') {
+    giMessage += `혈당 지수가 <span class="font-bold text-blue-500">${giGrade} 수준</span>입니다. 추가 섭취가 권장됩니다.`;
+    giMessageColor = "text-blue-600";
   } else {
     giMessage += "GI 지수 등급 정보가 충분하지 않습니다.";
   }
@@ -228,10 +281,10 @@ export default function SafetyPage() {
   return (
     <div className="min-h-screen bg-gray-50 p-4 pb-20">
       <header className="flex items-center mb-2">
-        <button onClick={() => router.back()} className="mr-2 text-2xl"><CaretLeft/></button>
+        <button onClick={() => router.push(`/report/${productId}`)} className="mr-2 text-2xl"><CaretLeft/></button>
         <h1 className="text-2xl font-bold mx-auto">리포트 ({reportData.productName || "제품"})</h1>
       </header>
-      <ReportTabNav />
+      <ReportTabNav productId={productId} />
 
       <section className="mb-6">
         <h2 className="font-bold text-lg mb-1">종합 혈당 지수 측정</h2>
@@ -242,12 +295,12 @@ export default function SafetyPage() {
           <div className={`bg-gray-100 rounded-xl py-3 px-4 items-center mb-3 flex flex-col sm:flex-row justify-around gap-3 ${giMessageColor}`}>
             <div className={`flex flex-col items-center rounded-xl p-2 min-w-[100px]`}>
               <div className={`text-sm font-medium ${giMessageColor} opacity-80`}>예상 GI 지수</div>
-              <div className={`text-3xl font-bold ${getTextColor(apiGradeToStatusType[giGradeText] || 'unknown')}`}>{estimatedGi}</div>
+              <div className="text-3xl font-bold" style={{ color: getStatusTextColor(apiGradeToStatusType[giGrade] || 'unknown') }}>{giIndex}</div>
             </div>
             <div className="text-sm font-light flex-1 text-center sm:text-left" dangerouslySetInnerHTML={{ __html: giMessage }} />
           </div>
           <div className="flex flex-col items-center">
-            <SafetyChart value={estimatedGi} />
+            <SafetyChart value={giIndex} />
             <div className="flex justify-between w-full px-4 mt-2 text-xs">
               <span className="text-green-500 font-bold">안전 (0-55)</span>
               <span className="text-yellow-500 font-bold">주의 (56-69)</span>
@@ -261,11 +314,16 @@ export default function SafetyPage() {
         <h2 className="font-bold text-lg mb-2">영양소 등급 기준</h2>
         <div className="bg-white rounded-xl shadow p-4">
           <div className="grid grid-cols-2 gap-3 sm:gap-4">
-            {(['deficiency', 'recommend', 'caution', 'danger'] as StatusType[]).map((statusKey) => (
+            {(['deficiency', 'recommend', 'caution', 'danger', 'unknown'] as StatusType[]).map((statusKey) => (
               <div key={statusKey} className="flex items-center justify-center">
                 <button 
                   onClick={() => handleStatusClick(statusKey)}
-                  className={`w-full h-10 rounded-xl border font-bold text-sm sm:text-base flex items-center justify-center transition-all ${getBorderColor(statusKey)} ${getTextColor(statusKey)} ${selectedStatus === statusKey ? getActiveBgColor(statusKey) : 'hover:opacity-75'}`}
+                  className="w-full h-10 rounded-xl border font-bold text-sm sm:text-base flex items-center justify-center transition-all hover:opacity-75"
+                  style={{ 
+                    borderColor: getStatusBorderColor(statusKey),
+                    color: getStatusTextColor(statusKey),
+                    backgroundColor: selectedStatus === statusKey ? getStatusActiveBgColor(statusKey) : 'transparent'
+                  }}
                 >
                   {statusInfo[statusKey].text}
                 </button>
@@ -275,8 +333,8 @@ export default function SafetyPage() {
           
           {selectedStatus && statusInfo[selectedStatus] && (
             <div className="mt-4 pt-4 border-t">
-              <div className={`p-4 rounded-lg ${getActiveBgColor(selectedStatus)}`}>
-                <h3 className={`font-bold text-lg mb-2 ${getTextColor(selectedStatus)}`}>
+              <div className="p-4 rounded-lg" style={{ backgroundColor: getStatusActiveBgColor(selectedStatus) }}>
+                <h3 className="font-bold text-lg mb-2" style={{ color: getStatusTextColor(selectedStatus) }}>
                   {statusInfo[selectedStatus].text}
                 </h3>
                 <p className="text-gray-700 text-sm">{statusInfo[selectedStatus].description}</p>
@@ -296,21 +354,36 @@ export default function SafetyPage() {
             {dynamicNutritionData.map((item) => (
               <div 
                 key={item.id}
-                className={`bg-white rounded-xl shadow p-3 ${getBorderColor(item.status)} border relative overflow-hidden transition-all duration-300 ${activeInfo === item.id ? 'col-span-1 sm:col-span-2' : ''}`}
+                className={`bg-white rounded-xl shadow p-3 border relative overflow-hidden transition-all duration-300 ${activeInfo === item.id ? 'col-span-1 sm:col-span-2' : ''}`}
+                style={{ borderColor: getStatusBorderColor(item.status) }}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xl ${getTextColor(item.status)} ${getLightBgColor(item.status)} mr-2`}>{item.icon}</div>
+                    <div 
+                      className="w-10 h-10 rounded-full flex items-center justify-center text-xl mr-2"
+                      style={{ 
+                        color: getStatusTextColor(item.status), 
+                        backgroundColor: getStatusLightBgColor(item.status) 
+                      }}
+                    >
+                      {item.icon}
+                    </div>
                     <div>
-                      <div className="font-semibold text-gray-800 text-sm">{item.name}</div>
-                      <div className={`${getTextColor(item.status)} text-xs font-medium`}>
+                      <div className="font-semibold text-gray-800 text-sm">
+                        {item.name}
+                      </div>
+                      <div 
+                        className="text-xs font-medium"
+                        style={{ color: getStatusTextColor(item.status) }}
+                      >
                         {statusInfo[item.status]?.text || '정보없음'}
                       </div>
                     </div>
                   </div>
                   <button 
                     onClick={() => toggleInfo(item.id)}
-                    className={`${getTextColor(item.status)} hover:opacity-70 transition-opacity p-1`}
+                    className="hover:opacity-70 transition-opacity p-1"
+                    style={{ color: getStatusTextColor(item.status) }}
                   >
                     <Info size={18} weight="bold" />
                   </button>
@@ -322,13 +395,21 @@ export default function SafetyPage() {
                     <div className="mt-2">
                       <div className="bg-gray-100 h-2.5 rounded-full mt-2 mb-1 overflow-hidden">
                         <div 
-                          className={`h-full ${getBgColor(item.status)} rounded-full transition-all duration-500`}
-                          style={{ width: `${item.value}%` }} // item.value는 nutrient.percent임 (0-100)
+                          className="h-full rounded-full transition-all duration-500"
+                          style={{ 
+                            width: `${item.value}%`,
+                            backgroundColor: getStatusBgColor(item.status)
+                          }} 
                         ></div>
                       </div>
                       <div className="flex justify-between text-xs text-gray-500">
                         <span>0%</span>
-                        <span className={`font-medium ${getTextColor(item.status)}`}>권장량 대비 {item.value}%</span>
+                        <span 
+                          className="font-medium"
+                          style={{ color: getStatusTextColor(item.status) }}
+                        >
+                          권장량 대비 {item.value}%
+                        </span>
                         <span>100%</span>
                       </div>
                       <p className="text-xs text-gray-500 mt-1">섭취량: {item.apiValue}{/*단위 API에 있는지 확인*/}{(item.name === '나트륨' || item.name === '콜레스테롤' || item.name === '칼륨' || item.name === '인') ? 'mg' : 'g' } (1일 기준치 대비 {item.value}%)</p>

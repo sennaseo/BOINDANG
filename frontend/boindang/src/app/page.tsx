@@ -23,9 +23,6 @@ export default function Home() {
         <div className="relative">
           <Image src="/보인당black.png" alt="보인당 로고" width={126} height={40}/>
         </div>
-        <button className="bg-white/80 backdrop-blur-sm rounded-full p-2 shadow-md hover:shadow-lg transition-shadow">
-          <SealPercent size={24} weight="bold" className="text-maincolor" />
-        </button>
       </header>
 
       <main className="absolute inset-0 flex flex-col">
