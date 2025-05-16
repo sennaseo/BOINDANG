@@ -17,10 +17,8 @@ import lombok.extern.slf4j.Slf4j;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 	@ExceptionHandler(JwtAuthenticationException.class)
-	public ResponseEntity<Map<String, String>> handleInvalidateTokenException(Exception e) {
-		Map<String, String> response = new HashMap<>();
-		response.put("message", "토큰 검증 오류: " + e.getMessage());
-		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+	public ApiResponses<?> handleInvalidateTokenException(Exception e) {
+		return ApiResponses.error(new ErrorResponse(HttpStatus.UNAUTHORIZED, e.getMessage()));
 	}
 
 	// 기타 예외 처리
