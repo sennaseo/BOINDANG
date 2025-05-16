@@ -1,52 +1,32 @@
+import apiClient from '@/lib/apiClient';
 import { ExperienceListResponse } from '../types/api/experience';
 
 export async function fetchExperiences(
-  accessToken: string,
   status?: string,
   size: number = 5,
   page: number = 0
 ): Promise<ExperienceListResponse> {
-  const params = new URLSearchParams();
-  if (status) params.append('status', status);
-  params.append('size', size.toString());
-  params.append('page', page.toString());
-
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/campaign?${params.toString()}`, {
-    headers: {
-      'Authorization': `Bearer ${accessToken}`,
-      'Content-Type': 'application/json',
-    },
-    cache: 'no-store',
+  const params: { size: number; page: number; status?: string } = { size, page };
+  if (status) params.status = status;
+  const response = await apiClient.get('/campaign', {
+    params,
   });
-  if (!res.ok) throw new Error('체험단 목록을 불러오지 못했습니다.');
-  return res.json();
+  return response.data;
 }
 
 // 체험단 상세 조회
 export async function fetchExperienceDetail(
-  accessToken: string,
   campaignId: number
 ) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/campaign/${campaignId}`, {
-    headers: {
-      'Authorization': `Bearer ${accessToken}`,
-      'Content-Type': 'application/json',
-    },
-    cache: 'no-store',
-  });
-  if (!res.ok) throw new Error('체험단 상세 정보를 불러오지 못했습니다.');
-  return res.json();
+  const response = await apiClient.get(`/campaign/${campaignId}`);
+  return response.data;
 }
 
 // 체험단 신청하기
-export async function applyExperience(accessToken: string, campaignId: number) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/campaign/${campaignId}/apply`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${accessToken}`,
-      'Content-Type': 'application/json',
-    },
-  });
-  if (!res.ok) throw new Error('체험단 신청에 실패했습니다.');
-  return res.json();
+export async function applyExperience(campaignId: number) {
+  const response = await apiClient.post(
+    `/campaign/${campaignId}/apply`,
+    {}
+  );
+  return response.data;
 }

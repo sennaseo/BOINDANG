@@ -1,6 +1,6 @@
 'use client';
 
-import { Camera, NewspaperClipping, Trophy, BookmarkSimple, X, ChatCircleDots } from "@phosphor-icons/react";
+import { Camera, NewspaperClipping, Trophy, BookmarkSimple, X } from "@phosphor-icons/react";
 import Link from "next/link"; // Link 컴포넌트 사용을 위해 import
 
 interface ActionMenuProps {

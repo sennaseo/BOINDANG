@@ -15,7 +15,10 @@ export interface Experience {
     isSuccess: boolean;
     code: number;
     message: string;
-    data: Experience[];
+    data: {
+      totalPages: number;
+      campaigns: Experience[];
+    };
   }
 
 export interface ExperienceDetail {
