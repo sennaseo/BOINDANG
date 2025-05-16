@@ -138,10 +138,6 @@ export default function UserTypePage() {
                     {risk.detail.split('<br />').map((line, i) => <React.Fragment key={i}>{line}{i !== risk.detail.split('<br />').length -1 && <br />}</React.Fragment>)}
                   </p>
                 </div>
-                <div className="ml-3 flex-shrink-0">
-                  {/* API에 risk.imageUrl이 있다면 사용, 없다면 기본 이미지 */}
-                  <Image src={/*risk.imageUrl ||*/ "/assets/report/skeleton.png"} width={56} height={56} alt={`${risk.name} 관련 이미지`} className="opacity-80" />
-                </div>
               </div>
             ))}
           </div>

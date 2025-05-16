@@ -398,14 +398,16 @@ export default function OcrCameraPage() {
       };
 
       console.log("OCR API 요청 (CloudFront URLs):", requestBody);
-      const ocrResponse: { data?: { productId?: string } } = await postOcrAnalysis(requestBody);
+      const ocrResponse: { productId?: string } = await postOcrAnalysis(requestBody);
       console.log("OCR API 호출 성공:", ocrResponse);
 
       // ocrResponse에서 productId 추출
-      const productId = ocrResponse.data?.productId;
+      const productId = ocrResponse.productId;
+      console.log("productId:", productId);
 
-      //product_id가 있으면 report 페이지로 이동, 없으면 홈으로 이동
+      //productId가 있으면 report 페이지로 이동, 없으면 홈으로 이동
       if (productId) {
+        console.log("productId가 있으므로 report 페이지로 이동합니다.");
         router.push(`/report/${productId}`);
       } else {
         console.warn("productId를 찾을 수 없습니다. 홈으로 이동합니다.");
@@ -556,7 +558,7 @@ export default function OcrCameraPage() {
       }
 
       console.log("OCR 분석 결과 유효함, /report로 이동");
-      router.push('/report');
+      router.push(`/report/${productId}`);
 
     } catch (err: unknown) {
       console.error("OCR 처리 중 오류 발생:", err);
