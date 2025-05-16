@@ -40,3 +40,13 @@ body {
     offset-path: path('M0,160 C360,80 1080,240 1440,160');
   }
 }
+
+/* 스크롤바 숨기기 위한 클래스 */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
