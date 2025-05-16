@@ -30,9 +30,13 @@ export const metadata: Metadata = {
   title: "보인당",
   description: "보인당 앱",
   manifest: "/manifest.json",
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#ffffff' },
+  ],
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "default",
     title: "보인당",
   },
   applicationName: "보인당",
