@@ -169,6 +169,24 @@ export default function OcrCameraPage() {
   const [showAnalysisHands, setShowAnalysisHands] = useState(false);
   const [showAnalysisFace, setShowAnalysisFace] = useState(false);
 
+  // 상태 표시줄 스타일 변경 로직 추가
+  useEffect(() => {
+    // 페이지 진입 시 상태 표시줄 스타일 변경
+    const meta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+    let originalStyle = '';
+    if (meta) {
+      originalStyle = meta.getAttribute('content') || '';
+      meta.setAttribute('content', 'black'); // OCR 페이지에서는 검은색 배경에 흰색 아이콘
+    }
+
+    // 페이지 벗어날 때 원래 스타일로 복구
+    return () => {
+      if (meta) {
+        meta.setAttribute('content', originalStyle);
+      }
+    };
+  }, []);
+
   const showGuideTemporarily = () => {
     if (guideTimeoutRef.current) {
       clearTimeout(guideTimeoutRef.current);
@@ -369,7 +387,7 @@ export default function OcrCameraPage() {
         router.push(`/report/${productId}`);
       } else {
         console.warn("productId를 찾을 수 없습니다. 홈으로 이동합니다.");
-        router.push('/'); 
+        router.push('/');
       }
 
       let actualData: OcrData | undefined | null = null;

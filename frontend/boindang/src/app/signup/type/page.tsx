@@ -94,7 +94,7 @@ export default function SignUpType() {
     signUpMutation.mutate(payload, {
       onSuccess: (data) => {
         console.log('회원가입 성공:', data);
-        alert('회원가입에 성공했습니다!'); // 사용자에게 성공 알림
+        // alert('회원가입에 성공했습니다!'); // 사용자에게 성공 알림
         resetSignUpForm(); // Zustand 스토어 초기화
         router.push('/signup/complete'); // 완료 페이지로 이동
       },

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, use } from 'react';
+import React, { useState, use, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import BottomNavBar from '@/components/navigation/BottomNavBar';
 import { ArrowLeft, WarningCircle, ChartBar, Fire, Cookie, CheckCircle, XCircle, Spinner } from '@phosphor-icons/react';
@@ -19,16 +19,34 @@ import type {
 // Import custom hook
 import useIngredientDetail from '@/hooks/useIngredientDetail';
 
-export default function IngredientDetailPage({ params: paramsPromise }: { params: Promise<{ ingredientName: string }> }) {
-  const [activeTab, setActiveTab] = useState('개요');
-  const router = useRouter();
+const TAB_NAMES = ['개요', '건강 영향', '사용자별', '더보기']; // Define tab names as a constant
 
+export default function IngredientDetailPage({ params: paramsPromise }: { params: Promise<{ ingredientName: string }> }) {
+  const [activeTab, setActiveTab] = useState(TAB_NAMES[0]); // Initialize with the first tab name
+  const router = useRouter();
   const params = use(paramsPromise);
   const { ingredientName } = params;
-
   const { ingredientDetail, isLoading, error, refetch } = useIngredientDetail(ingredientName);
 
-  // 로딩 중 UI
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const [indicatorStyle, setIndicatorStyle] = useState({});
+
+  useEffect(() => {
+    // ingredientDetail이 로드되고, tabRefs가 설정된 후에만 실행
+    if (ingredientDetail && tabRefs.current.length === TAB_NAMES.length) {
+      const activeTabIndex = TAB_NAMES.indexOf(activeTab);
+      const activeTabButton = tabRefs.current[activeTabIndex];
+
+      if (activeTabButton) {
+        setIndicatorStyle({
+          left: `${activeTabButton.offsetLeft}px`,
+          width: `${activeTabButton.offsetWidth}px`,
+        });
+      }
+    }
+  }, [activeTab, ingredientDetail]); // TAB_NAMES is constant, so not strictly needed in deps, but ESLint might prefer it. For now, keep it minimal and correct.
+  // If ESLint complains, add TAB_NAMES or memoize it if it were dynamic.
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center">
@@ -38,7 +56,6 @@ export default function IngredientDetailPage({ params: paramsPromise }: { params
     );
   }
 
-  // 오류 발생 UI
   if (error) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
@@ -63,7 +80,6 @@ export default function IngredientDetailPage({ params: paramsPromise }: { params
     );
   }
 
-  // 데이터 로드 실패 또는 데이터가 없는 경우 (ingredientDetail이 null인 경우)
   if (!ingredientDetail) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center">
@@ -73,8 +89,6 @@ export default function IngredientDetailPage({ params: paramsPromise }: { params
     );
   }
 
-  // 이하 코드는 ingredientDetail이 존재함을 보장받고 진행
-  // safetyLevel에 따른 아이콘 및 스타일 반환 함수 (Props 타입을 ProcessedIngredientDetail로 변경)
   const getSafetyLevelAppearance = (level: ProcessedIngredientDetail['riskLevel']) => {
     switch (level) {
       case '안심':
@@ -92,13 +106,11 @@ export default function IngredientDetailPage({ params: paramsPromise }: { params
           icon: <XCircle size={20} className="mr-1.5 flex-shrink-0" weight="bold" />,
           className: 'bg-red-100 text-red-700 border-red-200',
         };
-      // default는 ProcessedIngredientDetail의 riskLevel 타입에 의해 발생하지 않아야 함
     }
   };
 
   const safetyAppearance = getSafetyLevelAppearance(ingredientDetail.riskLevel);
-
-  // 최종적으로 UI에 사용될 데이터 (ProcessedIngredientDetail 기반)
+  // displayData can still exist for other properties, or tabs property can point to TAB_NAMES
   const displayData = {
     name: ingredientDetail.name,
     type: `${ingredientDetail.category} - ${ingredientDetail.type}`,
@@ -108,7 +120,7 @@ export default function IngredientDetailPage({ params: paramsPromise }: { params
       { icon: <Fire size={32} className="text-orange-500 mb-1" />, value: ingredientDetail.calories.toString(), label: '칼로리 (kcal/g)' },
       { icon: <Cookie size={32} className="text-yellow-600 mb-1" />, value: `설탕 대비 ${ingredientDetail.sweetness}배`, label: '상대 감미도' },
     ],
-    tabs: ['개요', '건강 영향', '사용자별', '더보기'],
+    // tabs: TAB_NAMES, // No longer strictly needed here if tab rendering uses TAB_NAMES directly
     disclaimer: '본 정보는 참고용이며 전문가의 진단 및 상담을 대체할 수 없습니다. 개인의 건강 상태에 따라 영향이 다를 수 있으므로, 특정 건강 상태나 질환이 있는 경우 의료 전문가와 상담하시기 바랍니다.',
   };
 
@@ -139,20 +151,32 @@ export default function IngredientDetailPage({ params: paramsPromise }: { params
             {displayData.stats.map((stat) => (
               <div key={stat.label} className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col items-center text-center border border-slate-100">
                 <div className="mb-2">{stat.icon}</div>
-                <p className="text-xl font-bold text-slate-800">{stat.value}</p>
+                {stat.label === '상대 감미도' ? (
+                  <p className="text-xl font-bold text-slate-800">
+                    설탕 대비<br />
+                    {ingredientDetail.sweetness}배
+                  </p>
+                ) : (
+                  <p className="text-xl font-bold text-slate-800">{stat.value}</p>
+                )}
                 <p className="text-sm text-slate-600 mt-1 whitespace-nowrap">{stat.label}</p>
               </div>
             ))}
           </section>
 
-          <nav className="flex justify-evenly mb-6 bg-slate-100 p-1 rounded-lg">
-            {displayData.tabs.map((tab) => (
+          <nav className="relative flex justify-evenly mb-6 bg-slate-100 p-1 rounded-lg">
+            <div
+              className="absolute top-1 bottom-1 bg-white shadow rounded-md transition-all duration-300 ease-in-out"
+              style={indicatorStyle}
+            />
+            {TAB_NAMES.map((tab, index) => ( // Use TAB_NAMES for mapping buttons
               <button
                 key={tab}
+                ref={(el) => { tabRefs.current[index] = el; }}
                 onClick={() => setActiveTab(tab)}
-                className={`flex-1 py-2.5 px-4 text-sm font-medium rounded-md focus:outline-none transition-colors duration-200 ${activeTab === tab
-                  ? 'bg-white shadow text-purple-600'
-                  : 'text-slate-600 hover:bg-slate-200 hover:text-slate-800'
+                className={`relative z-10 flex-1 py-2.5 px-4 text-sm font-medium rounded-md focus:outline-none transition-colors duration-200 ${activeTab === tab
+                  ? 'text-purple-600'
+                  : 'text-slate-600 hover:text-slate-700'
                   }`}
               >
                 {tab}
@@ -160,21 +184,33 @@ export default function IngredientDetailPage({ params: paramsPromise }: { params
             ))}
           </nav>
 
-          <div className="mt-6">
-            {activeTab === '개요' &&
-              <OverviewTab
-                description={ingredientDetail.description}
-                examples={ingredientDetail.examples}
-                references={ingredientDetail.references}
-              />}
-            {activeTab === '건강 영향' && <HealthImpactTab effects={ingredientDetail.healthEffects} />}
-            {activeTab === '사용자별' && <UserSpecificTab considerations={ingredientDetail.userConsiderations} />}
-            {activeTab === '더보기' && <MoreInfoTab info={ingredientDetail.moreInfo} />}
+          <div className="mt-6 overflow-hidden">
+            <div
+              className="flex transition-transform duration-300 ease-in-out"
+              style={{ transform: `translateX(-${TAB_NAMES.indexOf(activeTab) * 100}%)` }} // Use TAB_NAMES for translateX
+            >
+              <div className="w-full flex-shrink-0 px-1">
+                <OverviewTab
+                  description={ingredientDetail.description}
+                  examples={ingredientDetail.examples}
+                  references={ingredientDetail.references}
+                />
+              </div>
+              <div className="w-full flex-shrink-0 px-1">
+                <HealthImpactTab effects={ingredientDetail.healthEffects} />
+              </div>
+              <div className="w-full flex-shrink-0 px-1">
+                <UserSpecificTab considerations={ingredientDetail.userConsiderations} />
+              </div>
+              <div className="w-full flex-shrink-0 px-1">
+                <MoreInfoTab info={ingredientDetail.moreInfo} />
+              </div>
+            </div>
           </div>
 
           <footer className="mt-10 pt-6 border-t border-slate-200">
             <p className="text-xs text-slate-500 text-center leading-relaxed">
-              {displayData.disclaimer}
+              {displayData.disclaimer} {/* displayData is still used for other things */}
             </p>
           </footer>
         </main>
