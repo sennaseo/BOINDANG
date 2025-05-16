@@ -215,7 +215,7 @@ export default function CommunityPage() {
           </div>
           {/* Category Chips (only if Feed tab is active) */}
           {activeTab === '피드' && (
-            <div className="flex overflow-x-auto py-3 gap-x-2 scrollbar-hide px-4">
+            <div className="flex overflow-x-auto pt-3 pb-1 gap-x-2 scrollbar-hide px-4">
               {categories.map((category) => (
                 <button
                   key={category}
