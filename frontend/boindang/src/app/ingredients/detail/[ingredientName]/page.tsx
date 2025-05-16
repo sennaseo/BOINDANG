@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, use } from 'react';
+import { useRouter } from 'next/navigation';
 import BottomNavBar from '@/components/navigation/BottomNavBar';
 import { ArrowLeft, WarningCircle, ChartBar, Fire, Cookie, CheckCircle, XCircle, Spinner } from '@phosphor-icons/react';
 
@@ -13,10 +14,6 @@ import MoreInfoTab from './MoreInfoTab';
 // Import API Types and Processed Types from the centralized file
 import type {
   ProcessedIngredientDetail,
-  // OverviewTabProps, // 사용 안 함
-  // HealthImpactTabProps, // 사용 안 함
-  // UserSpecificTabProps, // 사용 안 함
-  // MoreInfoTabProps // 사용 안 함
 } from '@/types/api/ingredients';
 
 // Import custom hook
@@ -24,6 +21,7 @@ import useIngredientDetail from '@/hooks/useIngredientDetail';
 
 export default function IngredientDetailPage({ params: paramsPromise }: { params: Promise<{ ingredientName: string }> }) {
   const [activeTab, setActiveTab] = useState('개요');
+  const router = useRouter();
 
   const params = use(paramsPromise);
   const { ingredientName } = params;
@@ -45,7 +43,7 @@ export default function IngredientDetailPage({ params: paramsPromise }: { params
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
         <header className="sticky top-0 z-40 bg-white p-4 flex items-center border-b border-slate-200 gap-x-3 w-full max-w-md mb-4">
-          <button onClick={() => window.history.back()} className="p-1">
+          <button onClick={() => router.push('/ingredients')} className="p-1">
             <ArrowLeft size={24} className="text-slate-700" />
           </button>
           <h1 className="text-lg font-semibold text-slate-800">오류</h1>
@@ -118,7 +116,7 @@ export default function IngredientDetailPage({ params: paramsPromise }: { params
     <div className="min-h-screen bg-slate-50">
       <div className="max-w-md mx-auto bg-white shadow-lg pb-[80px]">
         <header className="sticky top-0 z-40 bg-white p-4 flex items-center border-b border-slate-200 gap-x-3">
-          <button onClick={() => window.history.back()} className="p-1">
+          <button onClick={() => router.back()} className="p-1">
             <ArrowLeft size={24} className="text-slate-700" />
           </button>
           <h1 className="text-lg font-semibold text-slate-800">{displayData.name} {ingredientDetail.engName ? `(${ingredientDetail.engName})` : ''}</h1>
@@ -141,7 +139,7 @@ export default function IngredientDetailPage({ params: paramsPromise }: { params
             {displayData.stats.map((stat) => (
               <div key={stat.label} className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col items-center text-center border border-slate-100">
                 <div className="mb-2">{stat.icon}</div>
-                <p className="text-2xl font-bold text-slate-800">{stat.value}</p>
+                <p className="text-xl font-bold text-slate-800">{stat.value}</p>
                 <p className="text-sm text-slate-600 mt-1 whitespace-nowrap">{stat.label}</p>
               </div>
             ))}
@@ -187,16 +185,4 @@ export default function IngredientDetailPage({ params: paramsPromise }: { params
       </div>
     </div>
   );
-}
-
-// Helper interfaces for Tab props -> 삭제 (위에서 import)
-// export interface HealthImpactTabProps { ... } -> 삭제
-// export interface UserSpecificTabProps { ... } -> 삭제
-// export interface MoreInfoTabProps { ... } -> 삭제
-// OverviewTabProps가 page.tsx 내에 있었다면 그것도 삭제 대상
-
-// activeTab === '개요' 부분에서 OverviewTab에 전달하는 props가 OverviewTabProps 타입과 일치하는지 확인 필요
-// 예: <OverviewTab description={ingredientDetail.description} examples={ingredientDetail.examples} references={ingredientDetail.references} />
-// ProcessedIngredientDetail의 정의와 OverviewTabProps의 정의가 일치해야 함.
-
-// ... (나머지 코드) ... 
+} 

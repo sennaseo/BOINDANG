@@ -10,7 +10,9 @@ const withPWA = withPWAInit({
 const nextConfig: NextConfig = {
   images: {
     domains: [
+      'd1d5plumlg2gxc.cloudfront.net',
       'boindang.s3.ap-northeast-2.amazonaws.com',
+      'd1d5plumlg2gxc.cloudfront.net',
     ],
   },
   /* config options here */

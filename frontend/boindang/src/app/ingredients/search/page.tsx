@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, XCircle, Leaf, Warning, CaretRight, CheckCircle } from '@phosphor-icons/react';
+import { ArrowLeft, XCircle, Warning, CaretRight, CheckCircle } from '@phosphor-icons/react';
 import BottomNavBar from '@/components/navigation/BottomNavBar';
 import type { IngredientResult } from '@/types/api/ingredients';
 import { useSearchIngredientsQuery } from '@/hooks/queries/useSearchIngredientsQuery';
@@ -43,7 +43,7 @@ export default function IngredientSearchPage() {
   };
 
   const handleGoBack = () => {
-    router.back();
+    router.push('/ingredients');
   };
 
   const errorMessage = error instanceof Error ? error.message : typeof error === 'string' ? error : null;
@@ -134,13 +134,9 @@ export default function IngredientSearchPage() {
                       <li
                         key={result.id}
                         className="flex items-center justify-between p-4 border-b border-gray-200 last:border-b-0 hover:bg-gray-50 cursor-pointer"
-                        onClick={() => router.push(`/ingredients/${result.id}`)}
+                        onClick={() => router.push(`/ingredients/detail/${result.id}`)}
                       >
                         <div className="flex items-center flex-1 min-w-0">
-                          {/* 아이콘 */}
-                          <div className="bg-green-100 p-3 rounded-full mr-4 flex-shrink-0">
-                            <Leaf size={24} className="text-green-700" />
-                          </div>
                           {/* 텍스트 정보 */}
                           <div className="min-w-0">
                             <h3 className="font-semibold text-gray-900 text-base">

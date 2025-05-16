@@ -2,72 +2,83 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { ArrowLeft, DotsThree, Heart, ChatCircle } from '@phosphor-icons/react';
+import Image from 'next/image'; // Next.js Image 컴포넌트 임포트
+import { ArrowLeft, DotsThree, Heart, ChatCircle, User } from '@phosphor-icons/react';
+import { getPostDetailById, getImageListByIds, deletePost } from '../../../api/community'; // API 함수 임포트
+import { ApiPostDetailData, ApiCommentItem, ApiResponseDeletePost } from '../../../types/api/community'; // API 타입 임포트
+import ConfirmModal from '../../../components/common/ConfirmModal'; // ConfirmModal 임포트
+import { toast } from 'react-hot-toast';
 
-// 임시 Post 타입 (community/page.tsx 와 동일하게 유지하거나 공유 타입으로 분리 필요)
-interface Post {
-  id: number;
-  authorName: string;
-  authorImage: string; // 임시로 Tailwind 배경색 클래스 사용
-  timeAgo: string; // 상세 페이지에서는 실제 날짜/시간 표시 고려
-  content: string;
-  imageUrl?: string | null;
-  likes: number;
-  isLiked: boolean;
-  comments?: Comment[]; // 댓글 데이터 추가 (임시)
-}
-
-// 임시 Comment 타입
-interface Comment {
-  id: number;
-  authorName: string;
-  authorImage: string;
-  timeAgo: string;
-  content: string;
-}
-
-// 임시 상세 게시글 데이터 (community/page.tsx의 initialPosts와 일부 공유)
-// 실제로는 API 호출을 통해 postId에 맞는 데이터를 가져와야 함
-const getPostById = (id: number): Post | undefined => {
-  const posts: Post[] = [
-    { id: 1, authorName: '털털한자두7323', authorImage: 'bg-purple-200', timeAgo: '2025.04.30 오후 3:12', content: '생선구이 맛집 추천좀 해주세요! 🐟', imageUrl: 'placeholder', likes: 12, isLiked: false, comments: [{ id: 101, authorName: '맛잘알', authorImage: 'bg-orange-200', timeAgo: '10분 전', content: '저 여기 가봤는데 진짜 맛있어요!' }] },
-    { id: 2, authorName: '운동하는쿼카', authorImage: 'bg-blue-200', timeAgo: '2025.04.30 오후 2:42', content: '오늘 오운완! 다들 득근하세요 💪 #운동인증', imageUrl: null, likes: 25, isLiked: true, comments: [] },
-    // ... 다른 게시글 데이터
-    { id: 1344, authorName: '파릇파릇한치커리1344', authorImage: 'bg-cyan-200', timeAgo: '25.04.30 오후 3:12', content: 'ㅎㅎㅎ', imageUrl: null, likes: 0, isLiked: false, comments: [] }, // 레퍼런스 이미지와 유사한 데이터 추가
-  ];
-  return posts.find(post => post.id === id);
-};
-
+// 임시 Post 타입 및 Comment 타입, getPostById 함수는 API 연동으로 인해 제거됩니다.
 
 export default function PostDetailPage() {
   const router = useRouter();
   const params = useParams();
   const postId = params?.postId ? parseInt(params.postId as string, 10) : null;
 
-  const [post, setPost] = useState<Post | null>(null);
+  const [post, setPost] = useState<ApiPostDetailData | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null); // 게시글 이미지 URL 상태
   const [commentText, setCommentText] = useState('');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // 추가된 상태 변수들
+  const [showInfoModal, setShowInfoModal] = useState(false);
+  const [infoModalTitle, setInfoModalTitle] = useState('');
+  const [infoModalMessage, setInfoModalMessage] = useState('');
+  const [infoModalOnConfirm, setInfoModalOnConfirm] = useState<(() => void) | null>(null);
+  const [infoModalOnClose, setInfoModalOnClose] = useState<(() => void) | null>(null);
 
   useEffect(() => {
-    if (postId !== null) {
-      const fetchedPost = getPostById(postId);
-      // 실제 API 호출 시 로딩 상태 처리 필요
-      setPost(fetchedPost || null); // 데이터 없으면 null 처리
-    }
+    const fetchPostDetails = async () => {
+      if (postId === null) {
+        setError("잘못된 게시글 ID입니다.");
+        setIsLoading(false);
+        return;
+      }
+
+      setIsLoading(true);
+      setError(null);
+      setPost(null);
+      setImageUrl(null);
+
+      try {
+        const postData = await getPostDetailById(postId);
+        if (postData) {
+          setPost(postData);
+          if (postData.imageId) {
+            const imageList = await getImageListByIds([postData.imageId]);
+            if (imageList && imageList.length > 0) {
+              setImageUrl(imageList[0].imageUrl);
+            }
+          }
+        } else {
+          setError("게시글을 불러오는데 실패했습니다.");
+        }
+      } catch (err) {
+        console.error(err);
+        setError("게시글을 불러오는 중 오류가 발생했습니다.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPostDetails();
   }, [postId]);
 
   const handleLikeToggle = () => {
     if (!post) return;
     setPost(currentPost => {
       if (!currentPost) return null;
+      // TODO: API 호출하여 좋아요 상태 업데이트 ( optimistic update )
       return {
         ...currentPost,
-        isLiked: !currentPost.isLiked,
-        likes: currentPost.isLiked ? currentPost.likes - 1 : currentPost.likes + 1,
+        likedByMe: !currentPost.likedByMe,
+        likeCount: currentPost.likedByMe ? currentPost.likeCount - 1 : currentPost.likeCount + 1,
       };
     });
-    // TODO: API 호출하여 좋아요 상태 업데이트
   };
 
   const handleCommentSubmit = (e: React.FormEvent) => {
@@ -76,70 +87,158 @@ export default function PostDetailPage() {
     // TODO: API 호출하여 댓글 등록
     console.log('댓글 등록:', commentText);
     // 임시로 댓글 추가 (실제로는 API 응답 후 상태 업데이트)
-    const newComment: Comment = {
-      id: Date.now(), // 임시 ID
-      authorName: '현재사용자', // 실제 사용자 정보 필요
-      authorImage: 'bg-gray-300', // 실제 사용자 이미지 필요
-      timeAgo: '방금 전',
+    // 이 부분은 API 연동 후 실제 댓글 객체 구조에 맞춰야 합니다.
+    const newComment: ApiCommentItem = {
+      commentId: Date.now(), // 임시 ID
+      authorNickname: '현재사용자', // 실제 사용자 정보 필요
+      authorId: 0, // 실제 사용자 ID 필요
+      createdAt: new Date().toISOString(),
       content: commentText,
+      isMine: true, // 본인이 작성한 댓글로 가정
     };
-    setPost(currentPost => currentPost ? { ...currentPost, comments: [...(currentPost.comments || []), newComment] } : null);
+    setPost(currentPost => currentPost ? { ...currentPost, comments: [...(currentPost.comments || []), newComment], commentCount: (currentPost.commentCount || 0) + 1 } : null);
     setCommentText('');
   };
 
-  // 메뉴 토글 함수
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
-  // 수정하기 핸들러 (임시)
   const handleEdit = () => {
     console.log('수정하기 클릭');
-    setIsMenuOpen(false); // 메뉴 닫기
-    // TODO: 수정 페이지 이동 또는 수정 모달 표시 로직
+    setIsMenuOpen(false);
+    // TODO: 수정 페이지 이동 또는 수정 모달 표시 로직 (예: router.push(`/community/edit/${postId}`))
   };
 
-  // 삭제하기 핸들러 (임시)
   const handleDelete = () => {
-    // console.log('삭제하기 클릭');
-    setIsMenuOpen(false); // 메뉴 닫기
-    setShowDeleteModal(true); // 삭제 확인 모달 표시
-    // TODO: 삭제 확인 및 API 호출 로직
+    setIsMenuOpen(false);
+    setShowDeleteModal(true);
   };
 
-  // 실제 삭제 처리 함수 (임시)
-  const confirmDelete = () => {
-    console.log(`게시글 ${postId} 삭제 실행`);
-    // TODO: API 호출하여 게시글 삭제
-    setShowDeleteModal(false);
-    // TODO: 삭제 후 목록 페이지로 이동 등 후처리
-    router.push('/community'); // 예시: 커뮤니티 목록으로 이동
+  const confirmDelete = async () => {
+    if (postId === null) {
+      setInfoModalTitle('오류');
+      setInfoModalMessage('잘못된 게시글 ID로 삭제를 시도할 수 없습니다.');
+      setInfoModalOnConfirm(() => () => setShowInfoModal(false));
+      setInfoModalOnClose(() => () => setShowInfoModal(false));
+      setShowInfoModal(true);
+      setShowDeleteModal(false);
+      return;
+    }
+    console.log(`게시글 ${postId} 삭제 실행 시도...`);
+    setIsLoading(true);
+    setShowDeleteModal(false); // 먼저 삭제 확인 모달을 닫음
+
+    try {
+      const response: ApiResponseDeletePost = await deletePost(postId);
+
+      if (response.isSuccess) {
+        console.log(`게시글 ${postId} 삭제 성공`);
+        toast.success('게시글이 성공적으로 삭제되었습니다.');
+        router.push('/community');
+      } else {
+        console.error(`게시글 ${postId} 삭제 실패:`, response.message);
+        setInfoModalTitle('삭제 실패');
+        setInfoModalMessage(response.message || '게시글 삭제에 실패했습니다. 다시 시도해주세요.');
+        setInfoModalOnConfirm(() => () => setShowInfoModal(false));
+        setInfoModalOnClose(() => () => setShowInfoModal(false));
+        setShowInfoModal(true);
+      }
+    } catch (err) {
+      console.error(`게시글 ${postId} 삭제 중 API 오류:`, err);
+      setInfoModalTitle('오류');
+      setInfoModalMessage('게시글 삭제 중 오류가 발생했습니다. 네트워크 연결을 확인하거나 잠시 후 다시 시도해주세요.');
+      setInfoModalOnConfirm(() => () => setShowInfoModal(false));
+      setInfoModalOnClose(() => () => setShowInfoModal(false));
+      setShowInfoModal(true);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  if (postId === null) {
-    // postId가 없는 경우 (잘못된 접근 등)
-    // TODO: 적절한 에러 처리 또는 리다이렉트
-    return <div className="p-4 text-center text-red-500">잘못된 접근입니다.</div>;
+  const retryFetchPostDetails = () => {
+    if (postId !== null) {
+      // useEffect의 fetchPostDetails를 직접 호출하거나,
+      // postId를 변경하여 useEffect를 다시 트리거하는 방식을 고려할 수 있습니다.
+      // 여기서는 상태를 초기화하고 postId를 다시 설정하여 useEffect를 재실행합니다.
+      const currentPostId = postId;
+      // 상태 초기화
+      setPost(null);
+      setImageUrl(null);
+      setError(null);
+      setIsLoading(true);
+      // fetchPostDetails 함수를 직접 호출하기 위해 useEffect 내부 로직을 활용
+      // 또는, 상태 변경으로 useEffect 재실행 유도
+      // (아래는 예시이며, 실제 구현 시에는 fetchPostDetails를 useEffect 밖으로 빼는 것이 더 명확할 수 있습니다.)
+      const fetchAgain = async () => {
+        try {
+          const postData = await getPostDetailById(currentPostId);
+          if (postData) {
+            setPost(postData);
+            if (postData.imageId) {
+              const imageList = await getImageListByIds([postData.imageId]);
+              if (imageList && imageList.length > 0) {
+                setImageUrl(imageList[0].imageUrl);
+              }
+            }
+          } else {
+            setError("게시글을 불러오는데 실패했습니다.");
+          }
+        } catch (err) {
+          console.error(err);
+          setError("게시글을 불러오는 중 오류가 발생했습니다.");
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchAgain();
+    }
+  };
+
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <p>로딩 중...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col justify-center items-center min-h-screen p-4">
+        <p className="text-red-500 mb-4">{error}</p>
+        <button
+          onClick={retryFetchPostDetails}
+          className="px-4 py-2 bg-[#6C2FF2] text-white rounded hover:bg-[#5a27cc]"
+        >
+          재시도
+        </button>
+      </div>
+    );
   }
 
   if (!post) {
-    // TODO: 로딩 상태 UI 표시
-    return <div className="p-4 text-center text-gray-500">게시글을 불러오는 중...</div>;
-  }
-
-  // 레퍼런스 이미지의 시간 형식과 유사하게 포맷팅 (라이브러리 사용 추천)
-  const formatTime = (timeString: string) => {
-    // 간단한 변환 예시, 실제로는 날짜 라이브러리(예: date-fns) 사용 권장
-    return timeString.replace('오후', '').replace('오전', '').trim();
+    // isLoading = false 이고 post가 여전히 null 이면 (에러 없이 데이터를 못 받은 경우)
+    return (
+      <div className="flex flex-col justify-center items-center min-h-screen p-4">
+        <p className="text-gray-500 mb-4">게시글 정보를 찾을 수 없습니다.</p>
+        <button
+          onClick={() => router.push('/community')}
+          className="px-4 py-2 bg-[#6C2FF2] text-white rounded hover:bg-[#5a27cc]"
+        >
+          목록으로 돌아가기
+        </button>
+      </div>
+    );
   }
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      {/* 상단 헤더 */}
-      <header className="sticky top-0 z-10 flex items-center justify-between p-4 bg-background">
+      <header className="sticky top-0 z-10 flex items-center justify-between p-4 bg-background border-b border-gray-200">
         <button onClick={() => router.back()} aria-label="뒤로 가기">
           <ArrowLeft size={24} className="text-text-primary" />
         </button>
+        {/* TODO: 현재 사용자와 게시글 작성자가 동일할 경우에만 메뉴 버튼 표시 */}
+        {/* 예를 들어, post.isMine 또는 post.username === currentUser.username 등으로 확인 */}
         <div className="relative flex items-center gap-x-4">
           <button
             onClick={toggleMenu}
@@ -150,7 +249,7 @@ export default function PostDetailPage() {
             <DotsThree size={24} weight="bold" className="text-text-primary" />
           </button>
           {isMenuOpen && (
-            <div className="absolute right-0 mt-2 top-full w-32 bg-white rounded-xl border border-[#6C2FF2] z-20">
+            <div className="absolute right-0 mt-2 top-full w-32 bg-white rounded-xl border border-[#6C2FF2] shadow-lg z-20">
               <ul className="py-1">
                 <li>
                   <button
@@ -163,7 +262,7 @@ export default function PostDetailPage() {
                 <li>
                   <button
                     onClick={handleDelete}
-                    className="block w-full text-left px-4 py-2 text-sm text-text-primary hover:bg-gray-100"
+                    className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                   >
                     삭제하기
                   </button>
@@ -174,78 +273,83 @@ export default function PostDetailPage() {
         </div>
       </header>
 
-      {/* 게시글 내용 영역 (스크롤 가능) */}
-      <main className="flex-grow pb-20"> {/* 하단 댓글 입력창 높이만큼 패딩 추가 */}
-        {/* 작성자 정보 - 내용 영역의 패딩이 없어졌으므로, 개별 요소에 패딩 추가 */}
-        <div className="flex items-center mb-4 px-4 pt-4"> {/* px-4 pt-4 추가 */}
-          <div className={`w-10 h-10 rounded-full ${post.authorImage} mr-3`}></div>
+      <main className="flex-grow pb-20">
+        <div className="flex items-center mb-3 px-4 pt-4">
+          {/* 사용자 프로필 이미지 (임시: 첫 글자로 대체) */}
+          <div className="w-10 h-10 rounded-full bg-purple-200 mr-3 flex items-center justify-center text-white font-semibold">
+            {post.username?.charAt(0) || <User size={20} />}
+          </div>
           <div>
-            <p className="text-sm font-semibold text-text-primary">{post.authorName}</p>
-            {/* 레퍼런스 시간 형식 적용 */}
-            <p className="text-xs text-text-secondary">{formatTime(post.timeAgo)}</p>
+            <p className="text-sm font-semibold text-text-primary">{post.username}</p>
+            <p className="text-xs text-text-secondary">{new Date(post.createdAt).toLocaleString()}</p>
           </div>
         </div>
 
-        {/* 게시글 본문 - 내용 영역의 패딩이 없어졌으므로, 개별 요소에 패딩 추가 */}
-        <div className="mb-6 px-4"> {/* px-4 추가 */}
+        <div className="mb-4 px-4">
+          {post.title && <h2 className="text-xl font-semibold text-text-primary mb-2">{post.title}</h2>}
           <p className="text-text-primary whitespace-pre-wrap">{post.content}</p>
-          {/* TODO: 이미지/동영상 등 미디어 렌더링 */}
-          {post.imageUrl && (
-            <div className="mt-4 h-[200px] bg-gray-100 rounded-lg flex items-center justify-center text-gray-400">
-              (이미지 영역: {post.imageUrl})
+          {imageUrl && (
+            <div className="relative mt-4 h-[220px] bg-gray-50 rounded-lg overflow-hidden">
+              <Image
+                src={imageUrl}
+                alt={post.title || "게시글 이미지"}
+                layout="fill"
+                objectFit="contain"
+                className="rounded-lg"
+              />
+            </div>
+          )}
+          {!imageUrl && post.imageId && (
+            <div className="mt-4 h-[220px] bg-gray-100 rounded-lg flex items-center justify-center text-gray-400">
+              이미지 로딩 중...
             </div>
           )}
         </div>
 
-        {/* 좋아요 / 댓글 버튼 */}
-        <div className="flex items-center text-gray-600 border-b border-gray-200 py-3">
-          {/* 좋아요 버튼 영역 */}
+        <div className="flex items-center text-gray-600 border-y border-gray-200 py-3">
           <button
             onClick={handleLikeToggle}
             className="w-1/2 flex justify-center items-center gap-x-1 text-sm"
           >
-            <Heart size={20} weight="fill" color={post.isLiked ? '#6C2FF2' : '#A0AEC0'} />
-            <span>좋아요 {post.likes > 0 ? post.likes : ''}</span>
+            <Heart size={20} weight="fill" color={post.likedByMe ? '#6C2FF2' : '#A0AEC0'} />
+            <span>좋아요 {post.likeCount > 0 ? post.likeCount : ''}</span>
           </button>
-          {/* 댓글 달기 버튼 영역 */}
           <button
+            onClick={() => document.getElementById('comment-input')?.focus()} // 댓글 입력창으로 포커스 이동
             className="w-1/2 flex justify-center items-center gap-x-1 text-sm"
           >
             <ChatCircle size={20} weight="fill" color="#A0AEC0" />
-            {/* TODO: 실제 댓글 수 표시 */}
-            <span>댓글 달기</span>
+            <span>댓글 {post.commentCount > 0 ? post.commentCount : '달기'}</span>
           </button>
         </div>
 
-        {/* 댓글 목록 - 내용 영역의 패딩이 없어졌으므로, 개별 요소에 패딩 추가 */}
-        <div className="mt-6 space-y-4 px-4"> {/* px-4 추가 */}
-          {(post.comments || []).map(comment => (
-            <div key={comment.id} className="flex">
-              <div className={`w-8 h-8 rounded-full ${comment.authorImage} mr-3 flex-shrink-0`}></div>
+        <div className="mt-4 space-y-4 px-4">
+          {post.comments.length > 0 ? post.comments.map(comment => (
+            <div key={comment.commentId} className="flex">
+              {/* 댓글 작성자 프로필 이미지 (임시: 첫 글자로 대체) */}
+              <div className="w-8 h-8 rounded-full bg-blue-200 mr-3 flex-shrink-0 flex items-center justify-center text-white text-xs font-semibold">
+                {comment.authorNickname?.charAt(0) || <User size={16} />}
+              </div>
               <div>
                 <div className='flex items-center gap-x-2'>
-                  <p className="text-xs font-semibold text-text-primary">{comment.authorName}</p>
-                  <p className="text-xs text-text-secondary">{comment.timeAgo}</p>
+                  <p className="text-xs font-semibold text-text-primary">{comment.authorNickname}</p>
+                  <p className="text-xs text-text-secondary">{new Date(comment.createdAt).toLocaleString()}</p>
                 </div>
-                <p className="text-sm text-text-primary mt-1">{comment.content}</p>
+                <p className="text-sm text-text-primary mt-1 whitespace-pre-wrap">{comment.content}</p>
+                {/* TODO: 본인 댓글일 경우 수정/삭제 메뉴 추가 (comment.isMine 활용) */}
               </div>
             </div>
-          ))}
-          {/* 댓글이 없을 경우 메시지 (선택 사항) */}
-          {(!post.comments || post.comments.length === 0) && (
+          )) : (
             <p className="text-sm text-text-secondary text-center py-4">첫 댓글을 남겨보세요!</p>
           )}
         </div>
       </main>
 
-      {/* 하단 댓글 입력창 */}
       <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3">
         <form onSubmit={handleCommentSubmit} className="flex items-center gap-x-2">
-          {/* 현재 사용자 프로필 이미지 (임시) 제거 */}
-          {/* <div className="w-8 h-8 rounded-full bg-gray-300 flex-shrink-0"></div> */}
-          {/* ChatCircle 아이콘 추가 */}
           <ChatCircle size={24} weight="fill" color="#A0AEC0" className="flex-shrink-0" />
           <input
+            id="comment-input" // 포커스 이동을 위한 ID
             type="text"
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
@@ -255,29 +359,48 @@ export default function PostDetailPage() {
           <button
             type="submit"
             disabled={!commentText.trim()}
-            className={`text-sm font-semibold px-3 py-2 rounded-full ${commentText.trim() ? 'text-[#6C2FF2]' : 'text-gray-400 cursor-not-allowed'}`}
+            className={`text-sm font-semibold px-3 py-2 rounded-full transition-colors ${commentText.trim() ? 'text-[#6C2FF2] hover:bg-purple-100' : 'text-gray-400 cursor-not-allowed'}`}
           >
             등록
           </button>
         </form>
       </footer>
 
-      {/* 삭제 확인 모달 */}
+      {/* 정보 알림 모달 (삭제 성공/실패 등) */}
+      {showInfoModal && (
+        <ConfirmModal
+          isOpen={showInfoModal}
+          onClose={() => {
+            if (infoModalOnClose) infoModalOnClose();
+            setShowInfoModal(false);
+          }}
+          onConfirm={() => {
+            if (infoModalOnConfirm) infoModalOnConfirm();
+            setShowInfoModal(false);
+          }}
+          title={infoModalTitle}
+          message={infoModalMessage}
+          confirmText="확인"
+        // cancelText="취소" // 옵션 A: 취소 버튼도 기본값으로 표시됨
+        />
+      )}
+
+      {/* 기존 삭제 확인 모달 */}
       {showDeleteModal && (
-        <div className="fixed inset-0 z-30 flex items-center justify-center bg-[rgba(0,0,0,0.25)]">
-          <div className="bg-white rounded-xl p-6 w-full max-w-xs mx-4">
+        <div className="fixed inset-0 z-30 flex items-center justify-center bg-[rgba(0,0,0,0.25)] backdrop-blur-sm">
+          <div className="bg-white rounded-xl p-6 w-full max-w-xs mx-4 shadow-xl">
             <h2 className="text-lg font-semibold text-text-primary mb-2 text-center">게시글을 삭제하시겠습니까?</h2>
             <p className="text-sm text-text-secondary mb-6 text-center">삭제한 글은 되돌릴 수 없습니다.</p>
-            <div className="flex rounded-lg overflow-hidden border border-gray-200">
+            <div className="flex gap-x-2">
               <button
                 onClick={() => setShowDeleteModal(false)}
-                className="w-1/2 px-4 py-3 bg-gray-100 text-text-primary font-medium hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                className="flex-1 px-4 py-2.5 bg-gray-100 text-text-primary font-medium rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300"
               >
                 취소
               </button>
               <button
                 onClick={confirmDelete}
-                className="w-1/2 px-4 py-3 bg-red-500 text-white font-medium hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300"
+                className="flex-1 px-4 py-2.5 bg-red-500 text-white font-medium rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400"
               >
                 삭제
               </button>
