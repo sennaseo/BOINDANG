@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import ReportTabNav from "@/components/navigation/ReportTabNav";
 import { CaretLeft, X, Info } from "@phosphor-icons/react";
 import CompositionChart from "@/components/chart/CompositionChart";
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { getReport } from "@/api/report";
 
 // --- 타입 정의 시작 ---
@@ -95,8 +95,8 @@ const slugify = (text: string) => text.toLowerCase().replace(/\s+/g, '-');
 
 export default function CompositionPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const productId = searchParams.get('productId');
+  const params = useParams();
+  const productId = params.productId as string;
 
   const [reportData, setReportData] = useState<ReportResultData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -151,30 +151,42 @@ export default function CompositionPage() {
       let subData: CompositionSubDataItem[] | undefined = [];
       let accountedSubValue = 0;
 
-      mainNutrient.sub.forEach(subNutrientInfo => {
-        const subDetail = findNutrient(subNutrientInfo.name);
-        if (subDetail && subDetail.value > 0) {
-          subData!.push({
-            id: slugify(subDetail.name),
-            label: subDetail.name,
-            value: subDetail.value,
-            color: subNutrientInfo.color,
-          });
-          accountedSubValue += subDetail.value;
-        }
-      });
-      
-      // "기타" 항목 추가 (주요 영양소 값에서 하위 항목 값들을 뺀 나머지)
-      const otherValue = mainDetail.value - accountedSubValue;
-      if (otherValue > 0.1 && mainNutrient.sub.length > 0) { // 유의미한 값일 때만 "기타" 추가
-        subData!.push({
-          id: slugify(`기타 ${mainNutrient.name}`),
-          label: "기타",
-          value: parseFloat(otherValue.toFixed(1)), // 소수점 한자리
-          color: "#bfdbfe", // 기타 색상
+      // 하위 성분이 없는 경우(sub 배열이 비어있는 경우), 주요 성분 자체를 내측 그래프에 100%로 표시
+      if (mainNutrient.sub.length === 0) {
+        subData.push({
+          id: slugify(mainDetail.name),
+          label: mainDetail.name,
+          value: mainDetail.value,
+          color: mainNutrient.color,
         });
+      } else {
+        // 하위 성분이 있는 경우 기존 로직대로 처리
+        mainNutrient.sub.forEach(subNutrientInfo => {
+          const subDetail = findNutrient(subNutrientInfo.name);
+          if (subDetail && subDetail.value > 0) {
+            subData!.push({
+              id: slugify(subDetail.name),
+              label: subDetail.name,
+              value: subDetail.value,
+              color: subNutrientInfo.color,
+            });
+            accountedSubValue += subDetail.value;
+          }
+        });
+        
+        // "기타" 항목 추가 (주요 영양소 값에서 하위 항목 값들을 뺀 나머지)
+        const otherValue = mainDetail.value - accountedSubValue;
+        if (otherValue > 0.1 && mainNutrient.sub.length > 0) { // 유의미한 값일 때만 "기타" 추가
+          subData!.push({
+            id: slugify(`기타 ${mainNutrient.name}`),
+            label: "기타",
+            value: parseFloat(otherValue.toFixed(1)), // 소수점 한자리
+            color: "#bfdbfe", // 기타 색상
+          });
+        }
       }
-       // subData가 비어있다면 undefined로 설정하여 차트에서 올바르게 처리되도록 함
+
+      // subData가 비어있다면 undefined로 설정하여 차트에서 올바르게 처리되도록 함
       if (subData?.length === 0) subData = undefined;
 
       return {
@@ -187,26 +199,26 @@ export default function CompositionPage() {
     }).filter(item => item !== null) as CompositionChartDataItem[];
   }, [reportData]);
 
-  const additiveCategoriesData = useMemo((): AdditiveCategory[] => {
-    if (!reportData?.categorizedIngredients) return [];
-    
-    const categorized = reportData.categorizedIngredients;
-    return Object.keys(categorized).map(categoryName => {
-      const style = additiveCategoryStyles[categoryName] || additiveCategoryStyles.default;
-      const items: AdditiveItem[] = categorized[categoryName].map(item => ({
-        id: slugify(`${categoryName}-${item.name}`),
-        name: item.name,
-        description: item.description?.join(' ') || '설명 없음',
-      }));
+    const additiveCategoriesData = useMemo((): AdditiveCategory[] => {
+      if (!reportData?.categorizedIngredients) return [];
+      
+      const categorized = reportData.categorizedIngredients;
+      return Object.keys(categorized).map(categoryName => {
+        const style = additiveCategoryStyles[categoryName] || additiveCategoryStyles.default;
+        const items: AdditiveItem[] = categorized[categoryName].map((item, index) => ({
+          id: slugify(`${categoryName}-${item.name}-${index}`),
+          name: item.name,
+          description: item.description?.join(' ') || '설명 없음',
+        }));
 
-      return {
-        id: slugify(categoryName),
-        name: categoryName,
-        ...style,
-        items,
-      };
-    });
-  }, [reportData]);
+        return {
+          id: slugify(categoryName),
+          name: categoryName,
+          ...style,
+          items,
+        };
+      });
+    }, [reportData]);
 
   // 선택된 카테고리 데이터 가져오기
   const selectedCategoryModalData = selectedCategory 
@@ -273,10 +285,10 @@ export default function CompositionPage() {
     <div className="min-h-screen bg-gray-50 p-4 pb-20">
       {/* 헤더 */}
       <header className="flex items-center mb-2">
-        <button onClick={() => router.back()} className="mr-2 text-2xl"><CaretLeft/></button>
+        <button onClick={() => router.push(`/report/${productId}`)} className="mr-2 text-2xl"><CaretLeft/></button>
         <h1 className="text-2xl font-bold mx-auto">리포트 ({reportData.productName || "제품"})</h1>
       </header>
-      <ReportTabNav />
+      <ReportTabNav productId={productId} />
 
       {/* 성분 비율 분석표 */}
       <section className="mb-6">
@@ -296,16 +308,32 @@ export default function CompositionPage() {
             {additiveCategoriesData.map((category) => (
                 <button
                 key={category.id}
-                onClick={() => handleCategoryClick(category.id)}
-                className="bg-white rounded-xl shadow p-4 transition-all hover:shadow-md hover:scale-105 flex flex-col items-center justify-center aspect-square"
+                onClick={() => category.items.length > 0 ? handleCategoryClick(category.id) : null}
+                className={`bg-white rounded-xl shadow p-4 transition-all flex flex-col items-center justify-center aspect-square ${
+                  category.items.length > 0 
+                    ? "hover:shadow-md hover:scale-105 cursor-pointer" 
+                    : "opacity-50 cursor-not-allowed"
+                }`}
+                disabled={category.items.length === 0}
                 >
                 <div 
-                    className="w-12 h-12 rounded-full mb-2 flex items-center justify-center text-2xl"
-                    style={{ backgroundColor: `${category.color}20` }}
+                    className={`w-12 h-12 rounded-full mb-2 flex items-center justify-center text-2xl ${
+                      category.items.length === 0 ? "bg-gray-200" : ""
+                    }`}
+                    style={{ 
+                      backgroundColor: category.items.length > 0 
+                        ? `${category.color}20` 
+                        : "#e5e7eb" 
+                    }}
                 >
                     {category.icon}
                 </div>
-                <p className="font-semibold text-sm text-center text-gray-600">{category.name}</p>
+                <p className={`font-semibold text-sm text-center ${
+                  category.items.length > 0 ? "text-gray-600" : "text-gray-400"
+                }`}>
+                  {category.name}
+                  {category.items.length === 0 && <span className="block text-xs mt-1">(없음)</span>}
+                </p>
                 </button>
             ))}
             </div>
