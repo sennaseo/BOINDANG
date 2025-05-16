@@ -17,14 +17,29 @@ public class AuthService {
 		System.out.println("Request: " + userId);
 		return JwtTokenDto.builder()
 			.accessToken(jwtTokenProvider.createAccessToken(userId))
-			.refreshToken(jwtTokenProvider.createRefreshToken())
+			.refreshToken(jwtTokenProvider.createRefreshToken(userId))
 			.build();
 	}
 
+	//TODO
+	public JwtTokenDto refreshToken(String refreshToken) {
+		if(!jwtTokenProvider.validateToken(refreshToken)){
+
+		}
+		return null;
+	}
+
 	public Long validateToken(String accessToken) {
-		if (!jwtTokenProvider.validateAccessToken(accessToken)) {
+		if (!jwtTokenProvider.validateToken(accessToken)) {
 			throw new JwtAuthenticationException("유효하지 않은 액세스 토큰입니다.");
 		}
 		return jwtTokenProvider.getUserIdFromToken(accessToken);
 	}
+
+	//TODO
+    public Long invalidateToken(String accessToken) {
+		return null;
+    }
+
+
 }
