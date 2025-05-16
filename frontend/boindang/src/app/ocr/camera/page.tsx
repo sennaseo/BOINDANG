@@ -169,20 +169,42 @@ export default function OcrCameraPage() {
   const [showAnalysisHands, setShowAnalysisHands] = useState(false);
   const [showAnalysisFace, setShowAnalysisFace] = useState(false);
 
-  // 상태 표시줄 스타일 변경 로직 추가
   useEffect(() => {
-    // 페이지 진입 시 상태 표시줄 스타일 변경
-    const meta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
-    let originalStyle = '';
-    if (meta) {
-      originalStyle = meta.getAttribute('content') || '';
-      meta.setAttribute('content', 'black'); // OCR 페이지에서는 검은색 배경에 흰색 아이콘
-    }
+    const setMetaTag = (name: string, content: string): string | null => {
+      let metaTag = document.querySelector<HTMLMetaElement>(`meta[name="${name}"]`);
+      let originalContent: string | null = null;
+
+      if (metaTag) {
+        originalContent = metaTag.getAttribute('content');
+        metaTag.setAttribute('content', content);
+      } else {
+        // 메타 태그가 없으면 생성 (주로 theme-color를 위해)
+        metaTag = document.createElement('meta');
+        metaTag.name = name;
+        metaTag.content = content;
+        document.head.appendChild(metaTag);
+        // 새로 생성된 경우 originalContent는 null (또는 기본값으로 처리 가능)
+      }
+      return originalContent;
+    };
+
+    // 페이지 진입 시 OCR 페이지 스타일 적용
+    const originalStatusBarStyle = setMetaTag('apple-mobile-web-app-status-bar-style', 'black');
+    const originalThemeColor = setMetaTag('theme-color', '#000000');
 
     // 페이지 벗어날 때 원래 스타일로 복구
     return () => {
-      if (meta) {
-        meta.setAttribute('content', originalStyle);
+      if (originalStatusBarStyle !== null) {
+        setMetaTag('apple-mobile-web-app-status-bar-style', originalStatusBarStyle);
+      }
+      if (originalThemeColor !== null) {
+        setMetaTag('theme-color', originalThemeColor);
+      } else {
+        // theme-color 태그가 원래 없었다면 제거
+        const themeColorMeta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+        if (themeColorMeta && !originalThemeColor) { // originalThemeColor가 null이었다는 것은 우리가 동적으로 추가했다는 의미
+          document.head.removeChild(themeColorMeta);
+        }
       }
     };
   }, []);
