@@ -71,20 +71,6 @@ public class UserService {
 		}
 	}
 
-	public Object logout(Long userId) {
-		try {
-			String url = eurekaService.getUrl("AUTH") + "auth/logout/" + userId;
-			System.out.println("url: " + url);
-			ApiResponse<JwtTokenDto> apiResponse = restClient.get()
-					.uri(url)
-					.retrieve()
-					.body(new ParameterizedTypeReference<ApiResponse<JwtTokenDto>>() {});
-			return apiResponse.getResult();
-		} catch (Exception e) {
-			throw new RuntimeException("Access Token 생성 중 오류 발생: " + e.getMessage(), e);
-		}
-	}
-
 	public void deleteUserById(Long userId) {
 		User user = userRepository.findById(userId)
 			.orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
