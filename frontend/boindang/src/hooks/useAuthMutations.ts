@@ -2,22 +2,23 @@ import { useMutation } from '@tanstack/react-query';
 import { postSignUp, getCheckUsername, postLogin } from '@/api/auth';
 import type {
   SignUpRequestPayload,
-  SignUpResponse,
   ApiErrorResponse,
-  CheckUsernameResponse,
   LoginRequestPayload,
-  LoginResponse,
+  SignUpResult,
+  CheckUsernameData,
+  LoginResult as AuthLoginResult
 } from '@/types/api/authTypes';
+import type { ApiResponse } from '@/types/api';
 import type { AxiosError } from 'axios';
 
 // 회원가입 뮤테이션을 위한 커스텀 훅
 export const useSignUp = () => {
   return useMutation<
-    SignUpResponse,      // 뮤테이션 성공 시 반환될 데이터 타입
-    AxiosError<ApiErrorResponse>, // 뮤테이션 실패 시 반환될 에러 타입
-    SignUpRequestPayload // 뮤테이션 함수(mutate)에 전달될 변수의 타입
+    ApiResponse<SignUpResult>,
+    AxiosError<ApiErrorResponse>,
+    SignUpRequestPayload
   >({
-    mutationFn: postSignUp, // 실제로 API를 호출할 함수 (우리 항해사)
+    mutationFn: postSignUp,
 
     // onSuccess, onError, onSettled 등의 콜백은 여기서 직접 정의하거나,
     // 이 훅을 사용하는 컴포넌트에서 mutate 함수의 두 번째 인자로 옵션을 전달하여 정의할 수 있습니다.
@@ -38,11 +39,11 @@ export const useSignUp = () => {
 // 아이디 중복 확인 뮤테이션을 위한 커스텀 훅
 export const useCheckUsername = () => {
   return useMutation<
-    CheckUsernameResponse,        // 성공 시 반환 타입
-    AxiosError<ApiErrorResponse>, // 에러 타입 (일관성을 위해 AxiosError 사용)
-    string                        // 뮤테이션 함수(mutate)에 전달될 변수 타입 (username)
+    ApiResponse<CheckUsernameData>,
+    AxiosError<ApiErrorResponse>,
+    string
   >({
-    mutationFn: getCheckUsername, // 2단계에서 만든 API 호출 함수 연결
+    mutationFn: getCheckUsername,
 
     // 에러 처리 예시 (useSignUp 훅과 유사하게)
     onError: (error) => {
@@ -60,11 +61,11 @@ export const useCheckUsername = () => {
 // 로그인 뮤테이션을 위한 커스텀 훅
 export const useLogin = () => {
   return useMutation<
-    LoginResponse,                // 성공 시 반환 타입
-    AxiosError<ApiErrorResponse>, // 에러 타입 (일관성 유지)
-    LoginRequestPayload           // 뮤테이션 함수(mutate)에 전달될 변수 타입
+    ApiResponse<AuthLoginResult>,
+    AxiosError<ApiErrorResponse>,
+    LoginRequestPayload
   >({
-    mutationFn: postLogin, // 2단계에서 만든 API 호출 함수 연결
+    mutationFn: postLogin,
 
     // 에러 처리 예시 (다른 훅들과 유사하게)
     onError: (error) => {

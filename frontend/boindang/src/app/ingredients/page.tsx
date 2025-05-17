@@ -79,8 +79,14 @@ export default function IngredientsPage() {
       setIsLoadingPopular(true);
       setErrorPopular(null);
       try {
-        const popularData = await fetchPopularIngredients(3);
-        setPopularIngredients(popularData);
+        const response = await fetchPopularIngredients(3);
+
+        if (response.success && response.data) {
+          setPopularIngredients(response.data);
+        } else {
+          setErrorPopular(response.error?.message || '인기 검색어 정보를 가져오는데 실패했습니다.');
+          setPopularIngredients([]);
+        }
       } catch (err) {
         if (err instanceof Error) {
           setErrorPopular(err.message);

@@ -31,7 +31,7 @@ export default function SignUp() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [usernameError, setUsernameError] = useState('');
+  const [usernameError, setUsernameError] = useState<string | null>(null);
   const [nicknameError, setNicknameError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
@@ -195,7 +195,7 @@ export default function SignUp() {
     // validateForm이 설정한 에러 상태를 직접 참조해야 함.
     // 여기서는 모든 에러 상태가 비어있는지 + 비밀번호 일치 여부만 확인.
     // (handleSubmit에서 validateForm이 먼저 실행되므로 이 정도도 괜찮을 수 있음)
-    return usernameError === '' &&
+    return usernameError === null &&
       nicknameError === '' &&
       passwordError === '' &&
       confirmPasswordError === '' &&
@@ -229,14 +229,16 @@ export default function SignUp() {
     // 뮤테이션 실행
     checkUsernameMutation.mutate(trimmedUsername, {
       onSuccess: (data) => {
-        setIsUsernameChecked(true); // 확인 완료 표시
-        // API 응답 반대로 해석: true가 중복(사용 불가), false가 사용 가능
-        if (data.result) { // true 이면 중복
+        setIsUsernameChecked(true);
+        if (data.success && data.data === true) {
           setIsUsernameAvailable(false);
           setUsernameError('이미 사용 중인 아이디입니다.');
-        } else { // false 이면 사용 가능
+        } else if (data.success && data.data === false) {
           setIsUsernameAvailable(true);
-          setUsernameError(''); // 사용 가능하면 에러 메시지 없음
+          setUsernameError(null); // 에러 없음 (null 유지)
+        } else {
+          setIsUsernameAvailable(false);
+          setUsernameError(data.error?.message || '아이디 사용 가능 여부를 확인할 수 없습니다.');
         }
       },
       onError: (error) => {
@@ -363,7 +365,7 @@ export default function SignUp() {
                   value={password}
                   onChange={handlePasswordChange}
                   className="w-full p-3 border border-gray-300 rounded-md focus:outline-none pr-10"
-                  aria-describedby={passwordError ? "password-error" : undefined}
+                  aria-describedby={passwordError ? "password-error" : "password-hint"}
                 />
                 <button
                   type="button"
@@ -378,6 +380,9 @@ export default function SignUp() {
                   )}
                 </button>
               </div>
+              <p id="password-hint" className="text-xs text-gray-500 mt-1">
+                8~20자, 영문, 숫자, 특수문자 중 2가지 이상 조합
+              </p>
               {passwordError && (
                 <p id="password-error" className="text-red-500 text-xs mt-1">{passwordError}</p>
               )}
