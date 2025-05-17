@@ -5,7 +5,6 @@ import java.time.ZoneId;
 
 import com.boindang.campaign.common.annotation.DomainService;
 import com.boindang.campaign.common.exception.CampaignException;
-import com.boindang.campaign.common.exception.ErrorCode;
 import com.boindang.campaign.domain.model.Campaign;
 import com.boindang.campaign.domain.model.CampaignStatus;
 import com.boindang.campaign.infrastructure.repository.CampaignApplicationRepository;
@@ -30,17 +29,17 @@ public class CampaignApplicationPolicy {
         // 1. 모집 기간 상태 확인 (startDate/endDate 기준)
         CampaignStatus currentStatus = campaign.calculateStatus(now);
         if (currentStatus != CampaignStatus.OPEN) {
-            throw new CampaignException(ErrorCode.CAMPAIGN_NOT_AVAILABLE); // "진행 중이 아닙니다"
+            throw new CampaignException("현재 신청할 수 없는 체험단입니다.");
         }
 
         // 2. 정원 초과 여부 체크
         if (campaign.getCurrentApplicants() >= campaign.getCapacity()) {
-            throw new CampaignException(ErrorCode.CAMPAIGN_CAPACITY_EXCEEDED); // "모집 인원이 모두 찼습니다"
+            throw new CampaignException("모집 정원이 마감되었습니다.");
         }
 
         // 3. 중복 신청 여부 확인
         if (userId != null && applicationRepository.existsByCampaignIdAndUserId(campaign.getId(), userId)) {
-            throw new CampaignException(ErrorCode.ALREADY_APPLIED); // "이미 신청한 캠페인입니다"
+            throw new CampaignException("이미 신청하신 체험단입니다.");
         }
     }
 }

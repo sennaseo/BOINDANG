@@ -4,7 +4,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.boindang.campaign.common.exception.CampaignException;
-import com.boindang.campaign.common.exception.ErrorCode;
 import com.boindang.campaign.domain.model.Campaign;
 import com.boindang.campaign.domain.model.CampaignApplication;
 import com.boindang.campaign.infrastructure.repository.CampaignApplicationRepository;
@@ -24,7 +23,7 @@ public class CampaignSaveService {
 	public void save(ApplyEvent event) {
 		// 1. Campaign 조회
 		Campaign campaign = campaignRepository.findById(event.getCampaignId())
-			.orElseThrow(() -> new CampaignException(ErrorCode.CAMPAIGN_NOT_FOUND));
+			.orElseThrow(() -> new CampaignException("해당 체험단이 존재하지 않습니다."));
 
 		// 2. CampaignApplication 생성 (연관 객체 전달)
 		CampaignApplication application = CampaignApplication.of(event, campaign);

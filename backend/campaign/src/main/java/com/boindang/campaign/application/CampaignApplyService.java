@@ -6,7 +6,6 @@ import java.time.LocalDateTime;
 import org.springframework.stereotype.Service;
 
 import com.boindang.campaign.common.exception.CampaignException;
-import com.boindang.campaign.common.exception.ErrorCode;
 import com.boindang.campaign.domain.model.Campaign;
 import com.boindang.campaign.domain.model.CampaignStatus;
 import com.boindang.campaign.infrastructure.kafka.producer.KafkaCampaignProducer;
@@ -31,24 +30,22 @@ public class CampaignApplyService {
 		log.info("🔥 체험단 신청 시작: campaignId={}, userId={}", campaignId, userId);
 
 		Campaign campaign = campaignRepository.findById(campaignId)
-			.orElseThrow(() -> new CampaignException(ErrorCode.CAMPAIGN_NOT_FOUND));
+			.orElseThrow(() -> new CampaignException("해당 체험단이 존재하지 않습니다."));
 
 		// 모집 상태 확인
 		if (campaign.getStatus() != CampaignStatus.OPEN) {
-			throw new CampaignException(ErrorCode.CAMPAIGN_NOT_OPEN);
+			throw new CampaignException("진행중인 체험단만 신청할 수 있습니다.");
 		}
 
 		// TTL 계산
 		Duration ttl = Duration.between(LocalDateTime.now(), campaign.getEndDate());
 
 		boolean isSelected = redisStore.tryApply(campaignId, userId, campaign.getCapacity(), ttl);
-
 		log.info("✅ Redis 선처리 완료. 선정 여부: {}", isSelected);
 
 		// Kafka 이벤트 발행
 		ApplyEvent event = new ApplyEvent(campaignId, userId, isSelected);
 		kafkaProducer.send("apply-campaign", event);
-
 		log.info("✅ Kafka 메시지 발행 완료");
 
 		return new ApplyResultResponse(campaignId, isSelected);
