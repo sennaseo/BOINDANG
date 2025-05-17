@@ -1,6 +1,7 @@
 package com.boindang.encyclopedia.presentation;
 
 import com.boindang.encyclopedia.application.EncyclopediaService;
+import com.boindang.encyclopedia.application.IngredientSearchService;
 import com.boindang.encyclopedia.common.response.ApiResponses;
 import com.boindang.encyclopedia.common.response.ErrorResponse;
 import com.boindang.encyclopedia.presentation.api.EncyclopediaApi;
@@ -22,6 +23,7 @@ import java.util.Map;
 public class EncyclopediaController implements EncyclopediaApi {
 
     private final EncyclopediaService encyclopediaService;
+    private final IngredientSearchService ingredientSearchService;
 
     @Override
     @GetMapping("/search")
@@ -29,12 +31,11 @@ public class EncyclopediaController implements EncyclopediaApi {
             @RequestParam String query,
             @RequestParam(required = false, defaultValue = "true") Boolean suggested
     ) {
-        log.info("🩵 성분 검색 with query={}, suggested={}", query, suggested);
         if (query == null || query.trim().isEmpty()) {
             return ApiResponses.error(new ErrorResponse(HttpStatus.BAD_REQUEST, "검색어를 입력해주세요."));
         }
 
-        return ApiResponses.success(encyclopediaService.searchWithSuggestion(query, suggested));
+        return ApiResponses.success(ingredientSearchService.search(query, suggested));
     }
 
     @Override
