@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 
+import com.d206.auth.exception.ExpiredTokenException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -88,7 +89,7 @@ public class JwtTokenProvider {
             throw new JwtAuthenticationException("유효하지 않은 토큰입니다.");
         } catch (ExpiredJwtException e) {
             log.warn("Expired JWT Token", e);
-            throw new JwtAuthenticationException("토큰이 만료되었습니다. 다시 로그인해주세요.");
+            throw new ExpiredTokenException("토큰이 만료되었습니다. 다시 로그인해주세요.");
         } catch (UnsupportedJwtException e) {
             log.warn("Unsupported JWT Token", e);
             throw new JwtAuthenticationException("지원되지 않는 토큰 형식입니다.");

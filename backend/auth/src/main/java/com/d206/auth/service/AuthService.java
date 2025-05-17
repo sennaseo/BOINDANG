@@ -1,5 +1,6 @@
 package com.d206.auth.service;
 
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.d206.auth.dto.JwtTokenDto;
@@ -8,37 +9,36 @@ import com.d206.auth.security.JwtTokenProvider;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.logging.Logger;
+
 @Service
 @RequiredArgsConstructor
 public class AuthService {
-	private final JwtTokenProvider jwtTokenProvider;
+    private final JwtTokenProvider jwtTokenProvider;
 
-	public JwtTokenDto createToken(Long userId) {
-		System.out.println("Request: " + userId);
-		return JwtTokenDto.builder()
-			.accessToken(jwtTokenProvider.createAccessToken(userId))
-			.refreshToken(jwtTokenProvider.createRefreshToken(userId))
-			.build();
-	}
+    public JwtTokenDto createToken(Long userId) {
+        System.out.println("Request: " + userId);
+        return JwtTokenDto.builder()
+                .accessToken(jwtTokenProvider.createAccessToken(userId))
+                .refreshToken(jwtTokenProvider.createRefreshToken(userId))
+                .build();
+    }
 
-	//TODO
-	public JwtTokenDto refreshToken(String refreshToken) {
-		if(!jwtTokenProvider.validateToken(refreshToken)){
+    public JwtTokenDto refreshToken(String refreshToken) {
+        return createToken(validateToken(refreshToken));
+    }
 
-		}
-		return null;
-	}
+    public Long validateToken(String token) {
+        if (!jwtTokenProvider.validateToken(token)) {
+            throw new JwtAuthenticationException("유효하지 않은 액세스 토큰입니다.");
+        }
+        return jwtTokenProvider.getUserIdFromToken(token);
+    }
 
-	public Long validateToken(String accessToken) {
-		if (!jwtTokenProvider.validateToken(accessToken)) {
-			throw new JwtAuthenticationException("유효하지 않은 액세스 토큰입니다.");
-		}
-		return jwtTokenProvider.getUserIdFromToken(accessToken);
-	}
-
-	//TODO
+    //TODO
     public Long invalidateToken(String accessToken) {
-		return null;
+
+        return null;
     }
 
 
