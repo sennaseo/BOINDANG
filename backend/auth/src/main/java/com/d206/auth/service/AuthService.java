@@ -1,5 +1,6 @@
 package com.d206.auth.service;
 
+import com.d206.auth.exception.BlackListedTokenException;
 import io.jsonwebtoken.Claims;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -37,7 +38,7 @@ public class AuthService {
 
     public Long validateToken(String token) {
         if (redisTemplate.hasKey(token)) {
-            throw new JwtAuthenticationException("블랙리스트된 토큰입니다");
+            throw new BlackListedTokenException("로그아웃된 토큰입니다");
         }
 
         if (!jwtTokenProvider.validateToken(token)) {
