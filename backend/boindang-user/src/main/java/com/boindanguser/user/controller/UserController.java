@@ -36,7 +36,7 @@ public class UserController {
     }
 
     @GetMapping("/logout")
-    public ApiResponses<Boolean> refresh(@RequestHeader("token") String token) {
+    public ApiResponses<Boolean> logout(@RequestHeader("token") String token) {
         System.out.println(token);
         return ApiResponses.success(userService.logout(token));
     }
