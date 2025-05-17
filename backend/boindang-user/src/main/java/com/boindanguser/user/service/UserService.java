@@ -61,12 +61,16 @@ public class UserService {
         try {
             String url = eurekaService.getUrl("AUTH") + "auth/createToken/" + user.getId();
             System.out.println("url: " + url);
-            JwtTokenDto jwtTokenDto = restClient.get()
+            ApiResponses<JwtTokenDto> response = restClient.get()
                     .uri(url)
                     .retrieve()
-                    .body(new ParameterizedTypeReference<JwtTokenDto>() {
+                    .body(new ParameterizedTypeReference<ApiResponses<JwtTokenDto>>() {
                     });
-            return jwtTokenDto;
+            if(!response.isSuccess()){
+                System.out.println("TODO: 로그인 중 문제 발생");
+                //TODO
+            }
+            return response.getData();
         } catch (Exception e) {
             throw new RuntimeException("Access Token 생성 중 오류 발생: " + e.getMessage(), e);
         }
@@ -75,12 +79,16 @@ public class UserService {
     public String refresh(Long userId) {
         try {
             String url = eurekaService.getUrl("AUTH") + "auth/refresh/" + userId;
-            String accessToken = restClient.get()
+            ApiResponses<String> response = restClient.get()
                     .uri(url)
                     .retrieve()
-                    .body(new ParameterizedTypeReference<String>() {
+                    .body(new ParameterizedTypeReference<ApiResponses<String>>() {
                     });
-            return accessToken;
+            if (!response.isSuccess()) {
+                System.out.println("TODO: refresh 중 문제 발생");
+                //TODO
+            }
+            return response.getData();
         } catch (Exception e) {
             throw new RuntimeException("Access Token 생성 중 오류 발생: " + e.getMessage(), e);
         }
@@ -89,13 +97,17 @@ public class UserService {
     public Boolean logout(String token) {
         try {
             String url = eurekaService.getUrl("AUTH") + "auth/invalidate";
-            Boolean isSuccess = restClient.post()
+            ApiResponses<Boolean> response = restClient.post()
                     .uri(url)
                     .body(Map.of("token", token))
                     .retrieve()
-                    .body(new ParameterizedTypeReference<Boolean>() {
+                    .body(new ParameterizedTypeReference<ApiResponses<Boolean>>() {
                     });
-            return isSuccess;
+            if (!response.isSuccess()) {
+                System.out.println("TODO: 로그아웃 중 문제 발생");
+                //TODO
+            }
+            return response.getData();
         } catch (Exception e) {
             throw new RuntimeException("토큰 파기 중 오류 발생: " + e.getMessage(), e);
         }
