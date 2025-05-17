@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.boindang.campaign.common.exception.CampaignException;
-import com.boindang.campaign.common.exception.ErrorCode;
 
 @Entity
 @Getter
@@ -89,7 +88,7 @@ public class Campaign {
 
     public void increaseApplicant() {
         if (currentApplicants >= capacity) {
-            throw new CampaignException(ErrorCode.CAMPAIGN_CAPACITY_EXCEEDED);
+            throw new CampaignException("모집 정원이 마감되었습니다.");
         }
         this.currentApplicants++;
     }

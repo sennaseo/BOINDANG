@@ -1,7 +1,6 @@
 package com.boindang.campaign.application;
 
 import com.boindang.campaign.common.exception.CampaignException;
-import com.boindang.campaign.common.exception.ErrorCode;
 import com.boindang.campaign.domain.model.Campaign;
 import com.boindang.campaign.domain.model.CampaignStatus;
 import com.boindang.campaign.infrastructure.repository.CampaignApplicationRepository;
@@ -10,7 +9,6 @@ import com.boindang.campaign.presentation.dto.response.CampaignDetailResponse;
 import com.boindang.campaign.presentation.dto.response.CampaignListResponse;
 import com.boindang.campaign.presentation.dto.response.CampaignSummaryResponse;
 import com.boindang.campaign.presentation.dto.response.MyApplicationResponse;
-import com.boindang.campaign.domain.service.CampaignApplicationPolicy;
 
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -93,7 +91,7 @@ public class CampaignService {
 	@Transactional(readOnly = true)
 	public CampaignDetailResponse getCampaignDetail(Long campaignId, Long userId) {
 		Campaign campaign = campaignRepository.findById(campaignId)
-			.orElseThrow(() -> new CampaignException(ErrorCode.CAMPAIGN_NOT_FOUND));
+			.orElseThrow(() -> new CampaignException("해당 체험단이 존재하지 않습니다."));
 
 		campaign.getNotices().size(); // Lazy 초기화
 

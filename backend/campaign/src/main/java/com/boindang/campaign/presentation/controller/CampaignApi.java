@@ -7,7 +7,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,18 +15,17 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.boindang.campaign.common.response.BaseResponse;
+import com.boindang.campaign.common.response.ApiResponses;
 import com.boindang.campaign.presentation.dto.response.ApplyResultResponse;
 import com.boindang.campaign.presentation.dto.response.CampaignDetailResponse;
 import com.boindang.campaign.presentation.dto.response.CampaignListResponse;
-import com.boindang.campaign.presentation.dto.response.CampaignSummaryResponse;
 import com.boindang.campaign.presentation.dto.response.MyApplicationResponse;
 
 @Tag(name = "체험단", description = "체험단 관련 API입니다.")
 public interface CampaignApi {
 
 	@Operation(summary = "체험단 목록 조회", description = "전체 체험단 목록을 상태 기준으로 조회합니다. 상태(status)는 '모집 예정', '진행중', '종료' 중 선택 가능합니다.")
-	@ApiResponses(value = {
+	@io.swagger.v3.oas.annotations.responses.ApiResponses(value = {
 		@ApiResponse(responseCode = "200", description = "체험단 목록 조회 성공",
 			content = @Content(mediaType = "application/json",
 				examples = @ExampleObject(value = """
@@ -65,7 +63,7 @@ public interface CampaignApi {
                 """)))
 	})
 	@GetMapping
-	BaseResponse<CampaignListResponse> getCampaigns(
+	com.boindang.campaign.common.response.ApiResponses<CampaignListResponse> getCampaigns(
 		@Parameter(description = "사용자 ID", required = true)
 		@RequestHeader("X-User-Id") String userId,
 
@@ -80,7 +78,7 @@ public interface CampaignApi {
 	);
 
 	@Operation(summary = "체험단 상세 조회", description = "체험단 공고의 상세 내용을 모두 조회합니다. 로그인 없이 접근 가능하지만, 내가 신청했는지 여부는 로그인 상태에서만 확인이 가능합니다.")
-	@ApiResponses(value = {
+	@io.swagger.v3.oas.annotations.responses.ApiResponses(value = {
 		@ApiResponse(responseCode = "200", description = "체험단 상세 조회가 완료되었습니다.",
 			content = @Content(mediaType = "application/json",
 				examples = @ExampleObject(value = """
@@ -125,7 +123,7 @@ public interface CampaignApi {
                 """)))
 	})
 	@GetMapping("/{campaignId}")
-	BaseResponse<CampaignDetailResponse> getCampaignDetail(
+	ApiResponses<CampaignDetailResponse> getCampaignDetail(
 		@Parameter(description = "사용자 ID", required = true)
 		@RequestHeader("X-User-Id") String userId,
 
@@ -134,7 +132,7 @@ public interface CampaignApi {
 	);
 
 	@Operation(summary = "체험단 신청 API", description = "선착순 체험단에 신청합니다. 이 서비스는 로그인이 되어야만 사용할 수 있는 서비스입니다.")
-	@ApiResponses(value = {
+	@io.swagger.v3.oas.annotations.responses.ApiResponses(value = {
 		@ApiResponse(responseCode = "201", description = "체험단 신청이 완료되었습니다.",
 			content = @Content(mediaType = "application/json",
 				examples = @ExampleObject(value = """
@@ -193,7 +191,7 @@ public interface CampaignApi {
                 """)))
 	})
 	@PostMapping("/{campaignId}/apply")
-	BaseResponse<ApplyResultResponse> apply(
+	ApiResponses<ApplyResultResponse> apply(
 		@Parameter(description = "캠페인 ID", required = true)
 		@PathVariable("campaignId") Long campaignId,
 
@@ -205,7 +203,7 @@ public interface CampaignApi {
 		summary = "내 체험단 신청 내역 조회 API",
 		description = "로그인한 사용자의 체험단 신청 내역을 조회합니다. (마이페이지에서 사용됨)"
 	)
-	@ApiResponses(value = {
+	@io.swagger.v3.oas.annotations.responses.ApiResponses(value = {
 		@ApiResponse(responseCode = "200", description = "내 신청 내역 조회 성공",
 			content = @Content(mediaType = "application/json",
 				examples = @ExampleObject(value = """
@@ -235,7 +233,7 @@ public interface CampaignApi {
             """)))
 	})
 	@GetMapping("/my-applications")
-	BaseResponse<List<MyApplicationResponse>> getMyApplications(
+	ApiResponses<List<MyApplicationResponse>> getMyApplications(
 		@Parameter(description = "사용자 ID", required = true)
 		@RequestHeader("X-User-Id") String userId
 	);
