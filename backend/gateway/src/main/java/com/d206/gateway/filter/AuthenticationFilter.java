@@ -60,11 +60,13 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
             return chain.filter(exchange);
         }
 
+        Map<String, String> requestBody = Map.of("authHeader", request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION));
+
         return webClientBuilder.build()
                 .post()
                 .uri(getUrl("AUTH") + "auth/validate")
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION))
+                .bodyValue(requestBody)
                 .retrieve()
                 .bodyToMono(ApiResponses.class)
                 .flatMap(apiResponses -> {
