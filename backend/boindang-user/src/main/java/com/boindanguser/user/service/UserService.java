@@ -71,6 +71,23 @@ public class UserService {
 		}
 	}
 
+	public Object logout() {
+		return null;
+	}
+
+	public String refresh(Long userId){
+		try {
+			String url = eurekaService.getUrl("AUTH") + "auth/refresh/" + userId;
+			ApiResponses<String> apiResponse = restClient.get()
+					.uri(url)
+					.retrieve()
+					.body(new ParameterizedTypeReference<ApiResponses<String>>() {});
+			return apiResponse.getData();
+		} catch (Exception e) {
+			throw new RuntimeException("Access Token 생성 중 오류 발생: " + e.getMessage(), e);
+		}
+	}
+
 	public void deleteUserById(Long userId) {
 		User user = userRepository.findById(userId)
 			.orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
@@ -124,5 +141,4 @@ public class UserService {
 		return users.stream()
 			.collect(Collectors.toMap(User::getId, User::getNickname));
 	}
-
 }
