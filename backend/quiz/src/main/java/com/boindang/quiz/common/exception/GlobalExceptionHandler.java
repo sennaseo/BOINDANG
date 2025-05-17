@@ -14,7 +14,17 @@ import lombok.extern.slf4j.Slf4j;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 	@ExceptionHandler(QuizException.class)
-	public ApiResponses<?> handleInvalidateTokenException(Exception e) {
+	public ApiResponses<?> handleQuizException(Exception e) {
+		return ApiResponses.error(new ErrorResponse(HttpStatus.BAD_REQUEST, e.getMessage()));
+	}
+
+	@ExceptionHandler(QuizNotFoundException.class)
+	public ApiResponses<?> handleNotFound(Exception e) {
+		return ApiResponses.error(new ErrorResponse(HttpStatus.NOT_FOUND, e.getMessage()));
+	}
+
+	@ExceptionHandler(UserException.class)
+	public ApiResponses<?> handleUserException(Exception e) {
 		return ApiResponses.error(new ErrorResponse(HttpStatus.UNAUTHORIZED, e.getMessage()));
 	}
 
