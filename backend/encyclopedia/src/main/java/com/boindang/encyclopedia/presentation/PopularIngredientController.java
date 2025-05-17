@@ -22,9 +22,7 @@ public class PopularIngredientController implements PopularIngredientApi {
 
     @Override
     @GetMapping("/popular")
-    public ApiResponses<List<PopularIngredientResponse>> getPopularIngredients(
-        @RequestParam(defaultValue = "3") int limit
-    ) {
+    public ApiResponses<List<PopularIngredientResponse>> getPopularIngredients(@RequestParam(defaultValue = "3") int limit) {
         return ApiResponses.success(popularIngredientService.getTopIngredients(limit));
     }
 }
