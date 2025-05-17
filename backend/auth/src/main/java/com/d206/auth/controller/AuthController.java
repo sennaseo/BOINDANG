@@ -34,14 +34,12 @@ public class AuthController {
 
 	@PostMapping("/validate")
 	public ApiResponses<Long> validateToken(@RequestBody Map<String, String> body) {
-		String authHeader = body.get("authHeader");
-		return ApiResponses.success(authService.validateToken(authHeader.substring(7)));
+		return ApiResponses.success(authService.validateToken(body.get("authHeader").substring(7)));
 	}
 
 	@PostMapping("/invalidate")
-	public ApiResponses<Long> invalidateToken(@RequestBody String authHeader) {
-		System.out.println("authHeader: " + authHeader);
-		return ApiResponses.success(authService.invalidateToken(authHeader.substring(7)));
+	public ApiResponses<Boolean> invalidateToken(@RequestBody Map<String, String> body) {
+		return ApiResponses.success(authService.invalidateToken(body.get("authHeader").substring(7)));
 	}
 
 }
