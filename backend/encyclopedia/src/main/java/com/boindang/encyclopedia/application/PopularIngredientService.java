@@ -1,7 +1,6 @@
 package com.boindang.encyclopedia.application;
 
 import com.boindang.encyclopedia.domain.PopularIngredientBackup;
-import com.boindang.encyclopedia.infrastructure.EncyclopediaRepository;
 import com.boindang.encyclopedia.infrastructure.PopularIngredientBackupRepository;
 import com.boindang.encyclopedia.presentation.dto.response.PopularIngredientResponse;
 import lombok.RequiredArgsConstructor;

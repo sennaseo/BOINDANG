@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.boindang.encyclopedia.application.ReportService;
-import com.boindang.encyclopedia.common.response.BaseResponse;
+import com.boindang.encyclopedia.common.response.ApiResponses;
 import com.boindang.encyclopedia.presentation.dto.request.ReportRequest;
 import com.boindang.encyclopedia.presentation.dto.response.UserReportResponse;
 
@@ -22,13 +22,9 @@ public class ReportController {
 
 	private final ReportService reportService;
 
-	@Operation(summary = "성분 이름 목록으로 성분 정보 목록 조회 (for Yujin)", description = "성분리스트 보내면 정보 쭈루룩 + 위험 성분 top3까G")
+	@Operation(summary = "성분 이름 목록으로 성분 정보 목록 조회 (for 유진)", description = "성분리스트 보내면 정보 쭈루룩 + 위험 성분 top3까G")
 	@PostMapping("/user-type")
-	public BaseResponse<UserReportResponse> getReport(
-		@RequestBody ReportRequest request
-	) {
-		return BaseResponse.success(
-			reportService.getUserReport(request.getIngredients(), request.getUserType())
-		);
+	public ApiResponses<UserReportResponse> getReport(@RequestBody ReportRequest request) {
+		return ApiResponses.success(reportService.getUserReport(request.getIngredients(), request.getUserType()));
 	}
 }
