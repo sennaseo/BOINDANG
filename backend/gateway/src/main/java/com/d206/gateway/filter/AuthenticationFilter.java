@@ -3,6 +3,7 @@ package com.d206.gateway.filter;
 import java.util.List;
 import java.util.Map;
 
+import com.d206.gateway.dto.ApiResponses;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -75,7 +76,8 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
                 .retrieve()
                 .bodyToMono(ApiResponses.class)
                 .flatMap(apiResponses -> {
-                    if (!apiResponses.isSuccess) {
+                    log.info("apiResponses 받음(flatMap)");
+                    if (!apiResponses.isSuccess()) {
                         ServerHttpResponse response = exchange.getResponse();
                         response.setStatusCode(HttpStatus.OK);
                         response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
@@ -111,18 +113,5 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
     @Override
     public int getOrder() {
         return -1;
-    }
-
-    @Data
-    public class ApiResponses<T> {
-        private boolean isSuccess;
-        private T data;
-        private ErrorResponse error;
-
-        @Data
-        public static class ErrorResponse {
-            private int code;
-            private String message;
-        }
     }
 }
