@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
-@Tag(name = "백과사전_인기검색어", description = "실시간 인기 검색어 관련 API입니다.")
+@Tag(name = "백과사전_인기검색어", description = "실시간 인기 검색어 조회 API입니다.")
 public interface PopularIngredientApi {
 
     @Operation(

@@ -2,10 +2,8 @@ package com.boindang.encyclopedia.application;
 
 import com.boindang.encyclopedia.application.mapper.EncyclopediaMapper;
 import com.boindang.encyclopedia.common.exception.ElasticSearchException;
-import com.boindang.encyclopedia.common.exception.IngredientException;
 import com.boindang.encyclopedia.common.exception.IngredientNotFoundException;
 import com.boindang.encyclopedia.common.exception.InvalidIngredientQueryException;
-import com.boindang.encyclopedia.common.response.ErrorResponse;
 import com.boindang.encyclopedia.domain.IngredientDictionary;
 import com.boindang.encyclopedia.infrastructure.EncyclopediaRepository;
 import com.boindang.encyclopedia.presentation.dto.response.EncyclopediaDetailResponse;
@@ -16,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.elasticsearch.common.unit.Fuzziness;
-import org.springframework.http.HttpStatus;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import org.elasticsearch.action.search.SearchRequest;
@@ -31,6 +29,7 @@ import org.elasticsearch.search.sort.SortOrder;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -41,98 +40,9 @@ public class EncyclopediaService {
     private final RestHighLevelClient client;
     private final EncyclopediaRepository encyclopediaRepository;
     private final PopularIngredientService popularIngredientService;
+    private RedisTemplate<String, String> redisTemplate;
 
     private static final Set<String> VALID_TYPES = Set.of("감미료", "식품첨가물", "단백질", "당류", "탄수화물", "식이섬유", "지방", "비타민", "미네랄");
-
-    public Map<String, Object> searchWithSuggestion(String query, boolean flag) {
-        log.info("🩵 Elasticsearch 검색 실행: query={}, suggested={}", query, flag);
-        Map<String, Object> result = new LinkedHashMap<>();
-        result.put("originalQuery", query);
-
-        if (!flag) {
-            List<EncyclopediaSearchResponse> exactResults = encyclopediaRepository.findByNameContaining(query)
-                .stream()
-                .map(EncyclopediaSearchResponse::from)
-                .toList();
-
-            // ✅ 정확 검색도 카운트 집계
-            popularIngredientService.incrementSearchCount(query);
-
-            result.put("suggestedName", null);
-            result.put("results", exactResults);
-            return result;
-        }
-
-        try {
-            // ✅ 1단계: prefixQuery (자동완성)
-            SearchSourceBuilder prefixBuilder = new SearchSourceBuilder()
-                .query(QueryBuilders.prefixQuery("name.keyword", query))
-                .size(20);
-
-            SearchResponse prefixResponse = client.search(
-                new SearchRequest("ingredients").source(prefixBuilder),
-                RequestOptions.DEFAULT
-            );
-
-            List<EncyclopediaSearchResponse> prefixResults = Arrays.stream(prefixResponse.getHits().getHits())
-                .map(hit -> EncyclopediaSearchResponse.from2(hit.getSourceAsMap()))
-                .collect(Collectors.toList());
-
-            if (!prefixResults.isEmpty()) {
-                // ✅ prefix 검색어도 그대로 카운트
-                popularIngredientService.incrementSearchCount(query);
-
-                result.put("suggestedName", null);
-                result.put("results", prefixResults);
-                return result;
-            }
-
-            // ✅ 2단계: 오타 대응 fuzzy match
-            SearchSourceBuilder fuzzyBuilder = new SearchSourceBuilder()
-                .query(QueryBuilders.matchQuery("name", query)
-                    .fuzziness(Fuzziness.TWO)
-                    .prefixLength(0)
-                    .maxExpansions(50)
-                    .fuzzyTranspositions(true))
-                .size(1);
-
-            SearchResponse fuzzyResponse = client.search(
-                new SearchRequest("ingredients").source(fuzzyBuilder),
-                RequestOptions.DEFAULT
-            );
-
-            List<EncyclopediaSearchResponse> fuzzyResults = Arrays.stream(fuzzyResponse.getHits().getHits())
-                .map(hit -> EncyclopediaSearchResponse.from2(hit.getSourceAsMap()))
-                .collect(Collectors.toList());
-
-            if (!fuzzyResults.isEmpty()) {
-                String accurateName = fuzzyResults.get(0).getName();
-
-                // ✅ 추천어로 카운트
-                popularIngredientService.incrementSearchCount(accurateName);
-
-                result.put("suggestedName", !accurateName.equalsIgnoreCase(query) ? accurateName : null);
-                result.put("results", fuzzyResults);
-                return result;
-            }
-
-            // ✅ fallback도 검색어 그대로 카운트
-            popularIngredientService.incrementSearchCount(query);
-
-            List<EncyclopediaSearchResponse> fallbackResults = encyclopediaRepository.findByNameContaining(query)
-                .stream()
-                .map(EncyclopediaSearchResponse::from)
-                .toList();
-
-            result.put("suggestedName", null);
-            result.put("results", fallbackResults);
-            return result;
-
-        } catch (Exception e) {
-            log.error("❌ Elasticsearch 검색 중 오류 - query={}, message={}", query, e.getMessage(), e);
-            throw new ElasticSearchException("검색 중 오류가 발생했습니다.");
-        }
-    }
 
     public EncyclopediaDetailResponse getIngredientDetail(String id) {
         return encyclopediaRepository.findById(id)

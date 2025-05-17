@@ -1,6 +1,5 @@
 package com.boindang.encyclopedia.presentation.dto.response;
 
-import com.boindang.encyclopedia.domain.Encyclopedia;
 import com.boindang.encyclopedia.domain.IngredientDictionary;
 import lombok.Builder;
 import lombok.Getter;
