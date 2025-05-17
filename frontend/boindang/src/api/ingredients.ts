@@ -1,10 +1,12 @@
 import apiClient from '@/lib/apiClient'; 
 import type { 
-  SearchPageApiResponse, 
   IngredientSearchResponseData,
-  CategoryIngredientsApiResponse,
-  CategoryIngredientsData
+  CategoryIngredientsData,
+  IngredientDetailData,
+  CategoryIngredientsApiResponse
 } from '@/types/api/ingredients';
+import type { ApiResponse, ApiError } from '@/types/api';
+import axios from 'axios';
 
 interface SearchIngredientsParams {
   query: string;
@@ -15,37 +17,100 @@ interface SearchIngredientsParams {
  * 성분 키워드 검색 API 호출 함수
  * @param query 검색할 키워드
  * @param suggested 오타 교정 여부 (기본: true)
- * @returns 성분 검색 결과
+ * @returns Promise<ApiResponse<IngredientSearchResponseData>> 성분 검색 API의 전체 응답
  */
 export const searchIngredients = async ({
   query,
   suggested = true,
-}: SearchIngredientsParams): Promise<IngredientSearchResponseData> => {
+}: SearchIngredientsParams): Promise<ApiResponse<IngredientSearchResponseData>> => {
   try {
-    const response = await apiClient.get<SearchPageApiResponse>('/encyclopedia/search', {
+    const response = await apiClient.get<ApiResponse<IngredientSearchResponseData>>('/encyclopedia/search', {
       params: {
         query,
         suggested,
       },
     });
-
-    // API 응답 구조에 따라 실제 데이터를 반환하도록 처리
-    // isSuccess가 true이고 data가 존재할 경우 data를 반환, 그 외의 경우 에러 처리
-    if (response.data.isSuccess && response.data.data) {
-      return response.data.data;
-    }
-    // isSuccess가 false이거나 data가 없는 경우, API 메시지를 사용하여 에러 발생
-    throw new Error(response.data.message || '성분 검색에 실패했습니다.');
+    return response.data;
   } catch (error) {
-    // 네트워크 오류 또는 위에서 발생시킨 에러 처리
     console.error('Error searching ingredients:', error);
-    // 실제 애플리케이션에서는 사용자에게 보여줄 에러 메시지를 여기서 결정하거나,
-    // 에러 객체를 그대로 반환하여 호출부에서 처리하도록 할 수 있습니다.
-    // 여기서는 간단히 Error 객체를 다시 throw 합니다.
-    if (error instanceof Error) {
-      throw error;
+    if (axios.isAxiosError(error)) {
+      if (error.response && error.response.data && typeof error.response.data.success === 'boolean') {
+        return error.response.data as ApiResponse<IngredientSearchResponseData>;
+      }
+      return {
+        success: false,
+        data: null,
+        error: {
+          status: error.response?.status?.toString() || 'AXIOS_ERROR',
+          message: error.message || '성분 검색 중 Axios 오류 발생',
+        },
+      };
+    } else if (error instanceof Error) {
+      return {
+        success: false,
+        data: null,
+        error: {
+          status: 'CLIENT_ERROR',
+          message: error.message || '알 수 없는 오류로 성분 검색에 실패했습니다.',
+        },
+      };
     }
-    throw new Error('알 수 없는 오류로 성분 검색에 실패했습니다.');
+    return {
+      success: false,
+      data: null,
+      error: {
+        status: 'UNKNOWN_ERROR',
+        message: '알 수 없는 오류로 성분 검색에 실패했습니다.',
+      },
+    };
+  }
+};
+
+/**
+ * 성분 상세 정보 조회 API 호출 함수
+ * @param ingredientId 조회할 성분의 ID
+ * @returns Promise<ApiResponse<IngredientDetailData>> 성분 상세 정보 API의 전체 응답
+ */
+export const getIngredientDetail = async (
+  ingredientId: string
+): Promise<ApiResponse<IngredientDetailData>> => {
+  try {
+    const response = await apiClient.get<ApiResponse<IngredientDetailData>>(
+      `/encyclopedia/detail/${ingredientId}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching ingredient detail for ID ${ingredientId}:`, error);
+    if (axios.isAxiosError(error)) {
+      if (error.response && error.response.data && typeof error.response.data.success === 'boolean') {
+        return error.response.data as ApiResponse<IngredientDetailData>;
+      }
+      return {
+        success: false,
+        data: null,
+        error: {
+          status: error.response?.status?.toString() || 'AXIOS_ERROR',
+          message: error.message || '성분 상세 정보 조회 중 Axios 오류 발생',
+        },
+      };
+    } else if (error instanceof Error) {
+      return {
+        success: false,
+        data: null,
+        error: {
+          status: 'CLIENT_ERROR',
+          message: error.message || '성분 상세 정보 조회에 실패했습니다.',
+        },
+      };
+    }
+    return {
+      success: false,
+      data: null,
+      error: {
+        status: 'UNKNOWN_ERROR',
+        message: '성분 상세 정보 조회에 실패했습니다.',
+      },
+    };
   }
 };
 
@@ -58,12 +123,12 @@ interface FetchCategoryIngredientsParams {
  * 특정 카테고리의 성분 목록을 가져오는 API 호출 함수
  * @param categoryName 조회할 성분 카테고리명
  * @param page 페이지 번호
- * @returns 해당 카테고리의 성분 목록과 총 페이지 수 ({ ingredients: IngredientResult[], totalPages: number })
+ * @returns Promise<ApiResponse<CategoryIngredientsData>> 해당 카테고리의 성분 목록과 총 페이지 수
  */
 export const fetchCategoryIngredients = async ({
   categoryName,
   page,
-}: FetchCategoryIngredientsParams): Promise<CategoryIngredientsData> => {
+}: FetchCategoryIngredientsParams): Promise<ApiResponse<CategoryIngredientsData>> => {
   try {
     const response = await apiClient.get<CategoryIngredientsApiResponse>('/encyclopedia/category', {
       params: {
@@ -72,15 +137,56 @@ export const fetchCategoryIngredients = async ({
       },
     });
 
-    if (response.data.isSuccess && response.data.data) {
-      return response.data.data;
+    const apiResult = response.data;
+
+    if (apiResult.isSuccess && apiResult.data) {
+      return { data: apiResult.data, error: null, success: true };
+    } else {
+      return {
+        data: null,
+        error: {
+          status: String(apiResult.code || 'API_LOGIC_ERROR'),
+          message: apiResult.message || '카테고리별 성분 목록을 가져오는데 실패했습니다.',
+        },
+        success: false,
+      };
     }
-    throw new Error(response.data.message || '카테고리별 성분 목록을 가져오는데 실패했습니다.');
   } catch (error) {
     console.error(`Error fetching ingredients for category ${categoryName}:`, error);
-    if (error instanceof Error) {
-      throw error;
+    let apiError: ApiError;
+    if (axios.isAxiosError(error)) {
+      if (error.response && error.response.data && typeof error.response.data.message === 'string' && typeof error.response.data.status === 'string') {
+        apiError = { 
+          status: error.response.data.status,
+          message: error.response.data.message
+        };
+      } else if (error.response) {
+        apiError = {
+          status: String(error.response.status),
+          message: error.response.statusText || '서버에서 오류가 발생했습니다.'
+        };
+      } else if (error.request) {
+        apiError = { 
+          status: 'NETWORK_ERROR', 
+          message: '서버에서 응답이 없습니다. 네트워크 연결을 확인해주세요.' 
+        };
+      } else {
+        apiError = { 
+          status: 'REQUEST_SETUP_ERROR', 
+          message: `요청 설정 중 오류 발생: ${error.message}` 
+        };
+      }
+    } else if (error instanceof Error) {
+      apiError = { 
+        status: 'UNKNOWN_CLIENT_ERROR', 
+        message: error.message 
+      };
+    } else {
+      apiError = { 
+        status: 'UNKNOWN_ERROR', 
+        message: '알 수 없는 오류로 카테고리별 성분 목록을 가져오는데 실패했습니다.' 
+      };
     }
-    throw new Error('알 수 없는 오류로 카테고리별 성분 목록을 가져오는데 실패했습니다.');
+    return { data: null, error: apiError, success: false };
   }
 };

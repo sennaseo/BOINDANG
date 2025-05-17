@@ -3,37 +3,38 @@
 import { useState, useEffect, useRef, ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image'; // Next Image import 추가
-import { X, Image as ImageIcon, CheckCircle, ListBullets, Lightbulb, ChartBar, ArrowCounterClockwise, Check, ArrowRight } from '@phosphor-icons/react';
+import { X, Image as ImageIcon, ListBullets, Lightbulb, ChartBar, ArrowCounterClockwise, Check, ArrowRight } from '@phosphor-icons/react';
 import { postOcrAnalysis } from '@/api/ocr'; // 경로 확인 필요, @/api/ocr.ts 가정
 import { getPresignedUrl } from '@/api/image';
+import OcrProcessingScreen from '../components/OcrProcessingScreen'; // 새로 만든 컴포넌트 import
 
-// 애니메이션을 위한 상수 및 스타일 함수 정의 (컴포넌트 외부)
-const handImg = '/assets/sugarcube/sugar_hand.png';
-const faceImgPath = '/assets/sugarcube/sugar_face.png';
+// 애니메이션을 위한 상수 및 스타일 함수 정의 (컴포넌트 외부) - 사용되지 않는 변수 삭제
+// const handImg = '/assets/sugarcube/sugar_hand.png';
+// const faceImgPath = '/assets/sugarcube/sugar_face.png';
 
-const HAND_RADIUS = 28; // 손이 CheckCircle에 얼마나 가까이/멀리 있을지
-const HAND_Y_OFFSET = -8; // 손을 위로 얼마나 올릴지 (CheckCircle 중심 기준)
-const HAND_X_OFFSET_MULTIPLIER = 1.1; // 손을 옆으로 얼마나 더 벌릴지
+// const HAND_RADIUS = 28; // 손이 CheckCircle에 얼마나 가까이/멀리 있을지
+// const HAND_Y_OFFSET = -8; // 손을 위로 얼마나 올릴지 (CheckCircle 중심 기준)
+// const HAND_X_OFFSET_MULTIPLIER = 1.1; // 손을 옆으로 얼마나 더 벌릴지
 
-const HAND_LEFT_ANGLE = (-145 * Math.PI) / 180; // 왼손 각도
-const HAND_RIGHT_ANGLE = (-35 * Math.PI) / 180; // 오른손 각도
+// const HAND_LEFT_ANGLE = (-145 * Math.PI) / 180; // 왼손 각도
+// const HAND_RIGHT_ANGLE = (-35 * Math.PI) / 180; // 오른손 각도
 
-function ocrHandStyle(show: boolean, angle: number, isRight?: boolean): React.CSSProperties {
-  const xPos = HAND_RADIUS * Math.cos(angle) * HAND_X_OFFSET_MULTIPLIER;
-  const yPos = HAND_RADIUS * Math.sin(angle) + HAND_Y_OFFSET;
-  return {
-    position: 'absolute',
-    left: '50%',
-    top: 'calc(50% + 10px)', // 얼굴과 CheckCircle 사이의 CheckCircle 중심에 가깝도록 조정 (얼굴 높이 고려)
-    width: '24px',
-    height: '24px',
-    transform: `translate(-50%, -50%) translate(${xPos}px, ${yPos}px)${isRight ? ' scaleX(-1)' : ''}`,
-    opacity: show ? 1 : 0,
-    transition: 'opacity 0.3s 0.1s ease-in-out',
-    zIndex: 15, // 얼굴(z-10)보다는 위, CheckCircle(기본)보다 위
-    pointerEvents: 'none',
-  };
-}
+// function ocrHandStyle(show: boolean, angle: number, isRight?: boolean): React.CSSProperties {
+//   const xPos = HAND_RADIUS * Math.cos(angle) * HAND_X_OFFSET_MULTIPLIER;
+//   const yPos = HAND_RADIUS * Math.sin(angle) + HAND_Y_OFFSET;
+//   return {
+//     position: 'absolute',
+//     left: '50%',
+//     top: 'calc(50% + 10px)',
+//     width: '24px',
+//     height: '24px',
+//     transform: `translate(-50%, -50%) translate(${xPos}px, ${yPos}px)${isRight ? ' scaleX(-1)' : ''}`,
+//     opacity: show ? 1 : 0,
+//     transition: 'opacity 0.3s 0.1s ease-in-out',
+//     zIndex: 15,
+//     pointerEvents: 'none',
+//   };
+// }
 
 // 촬영 단계를 위한 타입 정의
 type PhotoStep = 'ingredient' | 'nutritionInfo';
@@ -165,10 +166,6 @@ export default function OcrCameraPage() {
   const [previewImageSrc, setPreviewImageSrc] = useState<string | null>(null);
   const [showPreviewScreen, setShowPreviewScreen] = useState(false);
 
-  // 캐릭터 애니메이션 상태
-  const [showAnalysisHands, setShowAnalysisHands] = useState(false);
-  const [showAnalysisFace, setShowAnalysisFace] = useState(false);
-
   useEffect(() => {
     const setMetaTag = (name: string, content: string): string | null => {
       let metaTag = document.querySelector<HTMLMetaElement>(`meta[name="${name}"]`);
@@ -286,13 +283,10 @@ export default function OcrCameraPage() {
     let faceInterval: NodeJS.Timeout | null = null;
 
     if (isProcessing) {
-      // Reset states immediately
-      setShowAnalysisHands(false);
-      setShowAnalysisFace(false);
 
       // Show hands once after a delay
       handTimer = setTimeout(() => {
-        setShowAnalysisHands(true);
+        // setShowAnalysisHands(true);
       }, 150);
 
       // Start repeating face animation after an initial delay
@@ -302,9 +296,9 @@ export default function OcrCameraPage() {
       // Use a timeout to delay the start of the interval
       faceAnimationTimeout = setTimeout(() => {
         // Start the interval immediately showing the face (first peek up)
-        setShowAnalysisFace(true);
+        // setShowAnalysisFace(true);
         faceInterval = setInterval(() => {
-          setShowAnalysisFace(prev => !prev); // 얼굴 보였다/숨겼다 토글 (위/아래 반복)
+          // setShowAnalysisFace(prev => !prev); // 얼굴 보였다/숨겼다 토글 (위/아래 반복)
         }, animationCycleTime / 2); // 주기의 절반마다 상태 변경 (1초 올라가고, 1초 내려오고)
       }, initialFaceDelay);
 
@@ -313,8 +307,6 @@ export default function OcrCameraPage() {
       if (handTimer) clearTimeout(handTimer); // 조건부 실행
       if (faceAnimationTimeout) clearTimeout(faceAnimationTimeout);
       if (faceInterval) clearInterval(faceInterval);
-      setShowAnalysisHands(false);
-      setShowAnalysisFace(false);
     }
 
     // Cleanup function
@@ -373,20 +365,18 @@ export default function OcrCameraPage() {
     setIsProcessing(true);
     setError(null);
 
+    // if (true) { 
+    //   return; 
+    // }
+
     try {
-      // TODO: fileType을 동적으로 결정하거나, JPEG로 통일할지 결정 필요
-      // canvas.toDataURL('image/jpeg', 0.9) 에서 'image/jpeg'를 사용했으므로, 여기서도 동일하게 사용
       const ingredientFileType = 'image/jpeg';
       const nutritionFileType = 'image/jpeg';
-
-      // 각 이미지에 대한 고유한 파일 이름 생성 (파일 확장자는 .jpg로 가정)
-      // Date.now()는 동시에 두 요청이 매우 근접하게 발생하면 중복될 수 있으나,
-      // 사용자 인터랙션에 의해 순차적으로 발생하므로 이 사용 사례에서는 충분할 것으로 보입니다.
-      // 더 강력한 고유성을 원하면 uuid와 같은 라이브러리를 사용하는 것이 좋습니다.
       const ingredientFileName = `ingredient-${Date.now()}.jpg`;
-      const nutritionFileName = `nutrition-${Date.now() + 1}.jpg`; // 약간의 시간차를 두어 중복 방지
+      const nutritionFileName = `nutrition-${Date.now() + 1}.jpg`;
 
       console.log("원재료 이미지 업로드 시작...");
+      // currentIngredientPhotoBase64와 finalNutritionPhotoBase64는 위의 null 체크로 인해 string임이 보장됨
       const ingredientCloudFrontUrl = await uploadImageAndGetCloudFrontUrl(currentIngredientPhotoBase64, ingredientFileType, ingredientFileName);
 
       console.log("영양정보 이미지 업로드 시작...");
@@ -466,10 +456,10 @@ export default function OcrCameraPage() {
       }
       console.log("최종 분석 데이터(actualData) 성공적으로 추출됨:", actualData);
 
+      // actualData가 null이 아님을 확인했으므로, 이제 ingAnalysis와 nutAnalysis에 접근
       const ingAnalysis = actualData.ingredientAnalysis;
       const nutAnalysis = actualData.nutritionAnalysis;
 
-      // OCR 결과 유효성 검사 (actualData 사용)
       if (ingAnalysis === null && nutAnalysis === null) {
         console.warn("OCR 분석 결과, ingredientAnalysis와 nutritionAnalysis 모두 명시적으로 null입니다:", actualData);
         setError("이미지 분석에 실패했습니다.\n두 정보 모두 인식되지 않았습니다.");
@@ -497,7 +487,6 @@ export default function OcrCameraPage() {
       } else {
         console.log("[Debug] Ingredient Analysis: No specific invalid condition met or ingAnalysis is null/undefined.", ingAnalysis);
       }
-
 
       let isNutritionInvalid: boolean = false;
       if (nutAnalysis) {
@@ -564,17 +553,21 @@ export default function OcrCameraPage() {
       console.error("OCR 처리 중 오류 발생:", err);
       let errorMessage = "이미지 처리 중 알 수 없는 오류가 발생했습니다.";
 
-      // Axios 에러인지 확인 (타입 가드)
-      if (typeof err === 'object' && err !== null && 'response' in err) {
-        const axiosError = err as { response?: { data?: { message?: string }, status?: number } }; // 간단한 타입 단언
-        console.error('OCR API 서버 오류 응답:', axiosError.response?.data);
-        errorMessage = axiosError.response?.data?.message || `서버 응답 오류: ${axiosError.response?.status}`;
-      } else if (typeof err === 'object' && err !== null && 'request' in err) { // Axios 요청 관련 에러
-        console.error('OCR API 응답 없음:', (err as { request?: unknown }).request); // any를 unknown으로 변경
-        errorMessage = "서버에서 응답이 없습니다. 네트워크 연결을 확인해주세요.";
-      } else if (err instanceof Error) { // 일반 JavaScript 오류
-        errorMessage = err.message || "이미지 처리 중 오류가 발생했습니다.";
+      if (typeof err === 'object' && err !== null) {
+        if ('response' in err) {
+          const axiosError = err as { response?: { data?: { message?: string }, status?: number } };
+          console.error('OCR API 서버 오류 응답:', axiosError.response?.data);
+          errorMessage = axiosError.response?.data?.message || `서버 응답 오류: ${axiosError.response?.status ?? '알 수 없음'}`;
+        } else if ('request' in err) {
+          console.error('OCR API 응답 없음:', (err as { request?: unknown }).request);
+          errorMessage = "서버에서 응답이 없습니다. 네트워크 연결을 확인해주세요.";
+        } else if ('message' in err && typeof (err as { message: unknown }).message === 'string') {
+          errorMessage = (err as Error).message;
+        }
+      } else if (typeof err === 'string') {
+        errorMessage = err;
       }
+
       setError(errorMessage);
     } finally {
       setIsProcessing(false);
@@ -641,13 +634,15 @@ export default function OcrCameraPage() {
       )}
 
       <div className="flex-grow relative overflow-hidden">
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          muted
-          className="absolute inset-0 w-full h-full object-cover"
-        />
+        {!isProcessing && (
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        )}
 
         {isGuideVisible && !isProcessing && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/75 z-20 p-8 text-center">
@@ -739,51 +734,7 @@ export default function OcrCameraPage() {
           </div>
         )}
 
-        {isProcessing && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/85 z-30 p-8">
-            {/* 캐릭터 애니메이션 컨테이너 */}
-            <div className="relative flex flex-col items-center justify-center mb-3"> {/* 여백 mb-3 추가 */}
-              {/* 얼굴 이미지 */}
-              {/* <img
-                src={faceImgPath}
-                alt="캐릭터 얼굴"
-                className={`w-20 h-20 transition-all duration-500 ease-out z-10 ${showAnalysisFace ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
-              /> */}
-              <div className={`relative w-20 h-20 transition-all duration-500 ease-out z-10 ${showAnalysisFace ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                <Image src={faceImgPath} alt="캐릭터 얼굴" layout="fill" objectFit="contain" />
-              </div>
-              {/* CheckCircle 아이콘 - 얼굴 뒤로 가도록 top 조정 및 relative */}
-              <div className="relative w-16 h-16 mt-[-28px]"> {/* CheckCircle을 감싸서 손 위치의 기준점으로 삼기 용이하게 */}
-                {/* 왼손 */}
-                {/* <img
-                  src={handImg}
-                  alt="왼손"
-                  style={ocrHandStyle(showAnalysisHands, HAND_LEFT_ANGLE)}
-                /> */}
-                <div style={ocrHandStyle(showAnalysisHands, HAND_LEFT_ANGLE)} className="relative w-6 h-6">
-                  <Image src={handImg} alt="왼손" layout="fill" objectFit="contain" />
-                </div>
-                {/* 오른손 */}
-                {/* <img
-                  src={handImg}
-                  alt="오른손"
-                  style={ocrHandStyle(showAnalysisHands, HAND_RIGHT_ANGLE, true)}
-                /> */}
-                <div style={ocrHandStyle(showAnalysisHands, HAND_RIGHT_ANGLE, true)} className="relative w-6 h-6">
-                  <Image src={handImg} alt="오른손" layout="fill" objectFit="contain" />
-                </div>
-                <CheckCircle size={64} weight="fill" className="text-[var(--color-maincolor)]" />
-              </div>
-            </div>
-
-            <p className="text-center text-xl font-semibold text-white">
-              이미지 분석 중...
-            </p>
-            <p className="text-center text-sm text-gray-300 mt-2">
-              잠시만 기다려주세요.
-            </p>
-          </div>
-        )}
+        {isProcessing && <OcrProcessingScreen />}
 
         {error && (
           <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-75 z-50 p-4">

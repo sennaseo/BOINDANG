@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, XCircle, Warning, CaretRight, CheckCircle } from '@phosphor-icons/react';
+import { ArrowLeft, XCircle, Warning, CaretRight, CheckCircle, Info } from '@phosphor-icons/react';
 import BottomNavBar from '@/components/navigation/BottomNavBar';
 import type { IngredientResult } from '@/types/api/ingredients';
 import { useSearchIngredientsQuery } from '@/hooks/queries/useSearchIngredientsQuery';
@@ -16,16 +16,16 @@ export default function IngredientSearchPage() {
   const shouldAttemptSearch = trimmedSearchTerm.length >= 1;
 
   const {
-    data: apiResponseData,
+    data: searchData,
     isLoading,
-    error,
+    error: queryError,
   } = useSearchIngredientsQuery({
     query: trimmedSearchTerm,
     suggested: searchMode === 'suggest',
     enabled: shouldAttemptSearch,
   });
 
-  const searchResults: IngredientResult[] = apiResponseData?.results || [];
+  const searchResults: IngredientResult[] = searchData?.results || [];
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
@@ -46,12 +46,12 @@ export default function IngredientSearchPage() {
     router.push('/ingredients');
   };
 
-  const errorMessage = error instanceof Error ? error.message : typeof error === 'string' ? error : null;
+  const displayErrorMessage = queryError instanceof Error ? queryError.message : null;
 
   const showLoading = isLoading && shouldAttemptSearch;
-  const showError = !isLoading && errorMessage && shouldAttemptSearch;
+  const showError = !isLoading && displayErrorMessage && shouldAttemptSearch;
   const showInitialMessage = !shouldAttemptSearch && !isLoading;
-  const showResults = !isLoading && !errorMessage && shouldAttemptSearch && apiResponseData;
+  const showResults = !isLoading && !displayErrorMessage && shouldAttemptSearch && searchData;
 
   return (
     <div className="min-h-screen bg-white">
@@ -91,9 +91,10 @@ export default function IngredientSearchPage() {
           )}
 
           {showError && (
-            <p className="text-red-500 text-center mt-10">
-              에러: {errorMessage}
-            </p>
+            <div className="text-red-600 text-center mt-10 p-4 bg-red-50 rounded-md">
+              <Info size={24} className="inline-block mr-2 mb-1" />
+              {displayErrorMessage}
+            </div>
           )}
 
           {showInitialMessage && (
@@ -102,20 +103,20 @@ export default function IngredientSearchPage() {
             </p>
           )}
 
-          {showResults && (
+          {showResults && searchData && (
             <>
               {searchMode === 'suggest' &&
-                apiResponseData.suggestedName &&
-                apiResponseData.suggestedName !== apiResponseData.originalQuery && (
+                searchData.suggestedName &&
+                searchData.suggestedName !== searchData.originalQuery && (
                   <div className="mb-3 p-3 bg-purple-50 border border-purple-200 rounded-md text-sm flex flex-wrap items-center gap-x-1">
-                    <span className="font-semibold">{apiResponseData.suggestedName}</span>
+                    <span className="font-semibold">{searchData.suggestedName}</span>
                     <span>(으)로 검색한 결과입니다.</span>
-                    {apiResponseData.originalQuery && (
+                    {searchData.originalQuery && (
                       <button
-                        onClick={() => handleSearchOriginal(apiResponseData.originalQuery!)}
+                        onClick={() => handleSearchOriginal(searchData.originalQuery!)}
                         className="text-purple-600 hover:text-purple-800 font-semibold underline ml-1"
                       >
-                        `{apiResponseData.originalQuery}` 검색결과 보기
+                        `{searchData.originalQuery}` 검색결과 보기
                       </button>
                     )}
                   </div>
@@ -123,10 +124,10 @@ export default function IngredientSearchPage() {
 
               {searchResults.length > 0 ? (
                 <div>
-                  {(searchMode === 'original' || !apiResponseData.suggestedName || apiResponseData.suggestedName === apiResponseData.originalQuery) &&
-                    apiResponseData.originalQuery && (
+                  {(searchMode === 'original' || !searchData.suggestedName || searchData.suggestedName === searchData.originalQuery) &&
+                    searchData.originalQuery && (
                       <p className="text-gray-700 mb-4">
-                        <span className="font-semibold">{apiResponseData.originalQuery}</span> 검색 결과입니다.
+                        <span className="font-semibold">{searchData.originalQuery}</span> 검색 결과입니다.
                       </p>
                     )}
                   <ul className="">
@@ -137,7 +138,6 @@ export default function IngredientSearchPage() {
                         onClick={() => router.push(`/ingredients/detail/${result.id}`)}
                       >
                         <div className="flex items-center flex-1 min-w-0">
-                          {/* 텍스트 정보 */}
                           <div className="min-w-0">
                             <h3 className="font-semibold text-gray-900 text-base">
                               {result.name} ({result.engName})
@@ -145,23 +145,19 @@ export default function IngredientSearchPage() {
                             <p className="text-sm text-gray-500">{result.type}</p>
                           </div>
                         </div>
-
                         <div className="flex items-center space-x-2 flex-shrink-0 ml-4">
-                          {/* 안심 태그 */}
                           {result.riskLevel === '안심' && (
                             <span className="flex items-center bg-green-100 text-green-800 text-xs font-bold px-3 py-1 rounded-full">
                               <CheckCircle size={14} weight="fill" className="mr-1 text-green-600" />
                               안심
                             </span>
                           )}
-                          {/* 주의 태그 */}
                           {result.riskLevel === '주의' && (
                             <span className="flex items-center bg-yellow-100 text-yellow-800 text-xs font-bold px-3 py-1 rounded-full">
                               <Warning size={14} weight="fill" className="mr-1 text-yellow-600" />
                               주의
                             </span>
                           )}
-                          {/* 위험 태그 */}
                           {result.riskLevel === '위험' && (
                             <span className="flex items-center bg-red-100 text-red-800 text-xs font-bold px-3 py-1 rounded-full">
                               <XCircle size={14} weight="fill" className="mr-1 text-red-600" />
@@ -176,7 +172,7 @@ export default function IngredientSearchPage() {
                 </div>
               ) : (
                 <p className="text-gray-500 text-center mt-10">
-                  <span className="font-semibold">{apiResponseData.originalQuery || trimmedSearchTerm}</span>에 대한 검색 결과가 없습니다.
+                  <span className="font-semibold">{searchData.originalQuery || trimmedSearchTerm}</span>에 대한 검색 결과가 없습니다.
                 </p>
               )}
             </>

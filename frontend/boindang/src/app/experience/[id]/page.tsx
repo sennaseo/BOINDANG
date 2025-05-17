@@ -36,7 +36,7 @@ export default function ExperienceDetailPage() {
     if (!accessToken || !campaignId) return;
     setApplying(true);
     try {
-      const res = await applyExperience(accessToken, campaignId);
+      const res = await applyExperience(campaignId);
       alert(res.message);
     } catch {
       alert('신청에 실패했습니다.');
@@ -48,7 +48,7 @@ export default function ExperienceDetailPage() {
   useEffect(() => {
     if (!accessToken || !campaignId) return;
     setLoading(true);
-    fetchExperienceDetail(accessToken, campaignId)
+    fetchExperienceDetail(campaignId)
       .then((res) => {
         setExperience(res.data);
         setLoading(false);

@@ -1,14 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import ExperienceHeader from '../../components/experience/ExperienceHeader';
 import ExperienceList from '../../components/experience/ExperienceList';
 import BottomNavBar from '../../components/navigation/BottomNavBar';
-import { useAuthStore } from '../../stores/authStore';
 import { fetchExperiences } from '../../api/experience';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { ExperienceCardProps } from '../../components/experience/ExperienceCard';
-import type { Experience } from '../../types/api/experience';
 
 function getRemainingDays(deadline: string, status?: string) {
   if (status === '종료') return '종료';
@@ -32,76 +30,129 @@ const ITEMS_PER_PAGE = 5;
 export default function ExperiencePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const initialPage = Number(searchParams.get('page')) || 0;
   const initialStatus = searchParams.get('status') || '';
   const [experiences, setExperiences] = useState<ExperienceCardProps[]>([]);
   const [status, setStatus] = useState(initialStatus);
-  const accessToken = useAuthStore((state) => state.accessToken);
-  const [currentPage, setCurrentPage] = useState(initialPage);
+  const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showFixedDropdown, setShowFixedDropdown] = useState(false);
+  const observerRef = useRef<HTMLDivElement | null>(null);
+  const isFetchingRef = useRef(false);
+
+  // 무한스크롤 데이터 로딩
+  useEffect(() => {
+    setExperiences([]);
+    setCurrentPage(0);
+    setTotalPages(1);
+  }, [status]);
 
   useEffect(() => {
-    if (!accessToken) return;
-    fetchExperiences(accessToken, status || undefined, ITEMS_PER_PAGE, currentPage).then((response) => {
-      const data = (response.data as unknown) as { totalPages: number; campaigns: Experience[] };
-      setExperiences(
-        data.campaigns.map((item) => ({
-          id: String(item.id),
-          title: item.name,
-          description: item.content,
-          imageUrl: item.imageUrl,
-          tags: item.hashtags,
-          remainingDays: getRemainingDays(item.deadline, item.status),
-          maxParticipants: item.capacity,
-          openDateTime: item.startDate
-            ? item.startDate.slice(5, 10).replace('-', '/') + ' ' + item.startDate.slice(11, 16)
-            : '',
-          applied: item.applied,
-          status: item.status,
-        }))
-      );
-      setTotalPages(data.totalPages);
-    });
-  }, [accessToken, status, currentPage]);
+    const fetchData = async () => {
+      setIsLoading(true);
+      isFetchingRef.current = true;
+      const data = await fetchExperiences(status || undefined, ITEMS_PER_PAGE, currentPage);
+      if (data && data.data && Array.isArray(data.data.campaigns)) {
+        setExperiences(prev => [
+          ...prev,
+          ...data.data.campaigns.map((item) => ({
+            id: String(item.id),
+            title: item.name,
+            description: item.content,
+            imageUrl: item.imageUrl,
+            tags: item.hashtags,
+            remainingDays: getRemainingDays(item.deadline, item.status),
+            maxParticipants: item.capacity,
+            openDateTime: item.startDate
+              ? item.startDate.slice(5, 10).replace('-', '/') + ' ' + item.startDate.slice(11, 16)
+              : '',
+            applied: item.applied,
+            status: item.status,
+          }))
+        ]);
+        setTotalPages(data.data.totalPages);
+      }
+      setIsLoading(false);
+      isFetchingRef.current = false;
+    };
+    fetchData();
+  }, [status, currentPage]);
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    router.push(`/experience?page=${page}&status=${status}`);
-  };
+  // IntersectionObserver로 무한스크롤 구현
+  useEffect(() => {
+    if (isLoading) return;
+    if (currentPage + 1 >= totalPages) return;
+    const observer = new window.IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !isFetchingRef.current) {
+          setCurrentPage((prev) => prev + 1);
+        }
+      },
+      { threshold: 1 }
+    );
+    const target = observerRef.current;
+    if (target) observer.observe(target);
+    return () => {
+      if (target) observer.unobserve(target);
+    };
+  }, [isLoading, totalPages, currentPage]);
+
+  // 스크롤 위치에 따라 헤더/설명 숨김, 드롭다운 고정
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      setShowFixedDropdown(scrollY > 80);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleStatusChange = (newStatus: string) => {
     setStatus(newStatus);
     setCurrentPage(0);
-    router.push(`/experience?page=0&status=${newStatus}`);
+    router.push(`/experience?status=${newStatus}`);
   };
 
   return (
     <div>
-      <main className="container mx-auto px-4 py-8">
-        <ExperienceHeader />
-        <div className="mb-6">
-          <select
-            className="border rounded px-3 py-2 text-sm"
-            value={status}
-            onChange={e => handleStatusChange(e.target.value)}
-          >
-            {STATUS_OPTIONS.map(option => (
-              <option key={option.value} value={option.value}>{option.label}</option>
-            ))}
-          </select>
-        </div>
-        <ExperienceList experiences={experiences} />
-        <div className="flex justify-center gap-2 mt-4 mb-20">
-          {Array.from({ length: totalPages }).map((_, idx) => (
-            <button
-              key={idx}
-              onClick={() => handlePageChange(idx)}
-              className={`px-3 py-1 border rounded ${currentPage === idx ? 'bg-[#6C2FF2] text-white' : ''}`}
+      <main className="container mx-auto px-4 py-8 pb-36">
+        {/* 헤더/설명/드롭다운 묶음: 스크롤 내리면 사라짐 */}
+        <div className={showFixedDropdown ? 'hidden' : ''}>
+          <ExperienceHeader />
+          <div className="mt-2 mb-6">
+            <select
+              className="border rounded px-3 py-2 text-sm"
+              value={status}
+              onChange={e => handleStatusChange(e.target.value)}
+              style={{ minWidth: 120 }}
             >
-              {idx + 1}
-            </button>
-          ))}
+              {STATUS_OPTIONS.map(option => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
+          </div>
         </div>
+        {/* 드롭다운만 상단 고정 (밑줄X) */}
+        {showFixedDropdown && (
+          <div className="fixed top-0 left-0 w-full z-30 bg-white py-3 shadow px-4">
+            <select
+              className="border rounded px-3 py-2 text-sm"
+              value={status}
+              onChange={e => handleStatusChange(e.target.value)}
+              style={{ minWidth: 120 }}
+            >
+              {STATUS_OPTIONS.map(option => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
+          </div>
+        )}
+        {/* 드롭다운 고정 영역만큼 여백 */}
+        {showFixedDropdown && <div className="h-16" />}
+        <ExperienceList experiences={experiences} />
+        {/* 무한스크롤 트리거 */}
+        <div ref={observerRef} style={{ height: 1 }} />
+        {isLoading && <div className="text-center py-6 text-gray-500">로딩 중...</div>}
       </main>
       <BottomNavBar />
     </div>

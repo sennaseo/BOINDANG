@@ -7,6 +7,9 @@ import { Eye, EyeSlash, X, CaretLeft } from "@phosphor-icons/react";
 import { useRouter } from 'next/navigation';
 import { useLogin } from '@/hooks/useAuthMutations';
 import { useAuthStore } from '@/stores/authStore';
+import { ApiResponse } from '@/types/api';
+import { LoginResult } from '@/types/api/authTypes';
+import axios from 'axios';
 
 // 타입 정의
 interface LoginFormData {
@@ -101,7 +104,7 @@ const InputField = ({
 export default function LoginPage() {
   const router = useRouter();
   const loginMutation = useLogin();
-  const { login } = useAuthStore();
+  const { login, accessToken } = useAuthStore();
 
   // 상태 관리
   const [formData, setFormData] = useState<LoginFormData>({
@@ -111,6 +114,13 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // 로그인 상태 확인 및 리디렉션 로직 (주석 해제)  
+  useEffect(() => {
+    if (accessToken) {
+      router.push('/'); // 로그인된 상태면 메인 페이지로 리디렉션
+    }
+  }, [accessToken, router]);
 
   // 입력 필드 변경 핸들러
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -164,26 +174,36 @@ export default function LoginPage() {
 
     // 로그인 뮤테이션 실행
     loginMutation.mutate(formData, {
-      onSuccess: (data) => {
-        // 로그인 성공 시
-        console.log('로그인 성공:', data);
-        const { accessToken, refreshToken } = data.result;
-
-        // --- Zustand 스토어에 토큰 저장 ---
-        login(accessToken, refreshToken);
-        console.log('토큰이 Zustand 스토어에 저장되었습니다.');
-
-        // 로그인 성공 후 메인 페이지 또는 대시보드로 이동
-        // router.push('/main'); // '/main' 경로가 실제 메인 페이지 경로라고 가정
-        router.push('/'); // 예시로 홈('/')으로 이동
-        // --- 저장 로직 끝 ---
-
+      onSuccess: (response: ApiResponse<LoginResult | null>) => {
+        if (response.success && response.data) {
+          console.log('로그인 성공 (ApiResponse):', response);
+          const { accessToken, refreshToken } = response.data;
+          login(accessToken, refreshToken);
+          console.log('토큰이 Zustand 스토어에 저장되었습니다.');
+          router.push('/');
+        } else {
+          console.error('로그인 API 성공 응답이지만, 토큰 데이터가 없거나 실패했습니다:', response);
+          setError(response.error?.message || "로그인에 성공했으나 토큰 정보를 받아오지 못했습니다.");
+        }
       },
-      onError: (error) => {
-        // 로그인 실패 시
-        // useLogin 훅의 onError에서 이미 콘솔 로그를 찍고 있습니다.
-        // 여기서는 사용자에게 보여줄 에러 메시지를 설정합니다.
-        const errorMessage = error.response?.data?.message || "로그인에 실패했습니다. 아이디 또는 비밀번호를 확인해주세요.";
+      onError: (error: unknown) => {
+        let errorMessage = "로그인에 실패했습니다. 아이디 또는 비밀번호를 확인해주세요.";
+        if (axios.isAxiosError(error)) {
+          const apiError = error.response?.data as ApiResponse<null> | { message?: string };
+          if (typeof apiError === 'object' && apiError !== null) {
+            if ('error' in apiError && typeof apiError.error === 'object' && apiError.error && 'message' in apiError.error && typeof apiError.error.message === 'string') {
+              errorMessage = apiError.error.message;
+            } else if ('message' in apiError && typeof apiError.message === 'string') {
+              errorMessage = apiError.message;
+            }
+          } else if (error.message) {
+            errorMessage = error.message;
+          }
+        } else if (error instanceof Error) {
+          errorMessage = error.message;
+        } else if (typeof error === 'string') {
+          errorMessage = error;
+        }
         setError(errorMessage);
       }
     });
@@ -202,11 +222,16 @@ export default function LoginPage() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [focusedField]);
 
+  // 이미 로그인된 상태라면 아무것도 렌더링하지 않거나 로딩 스피너를 보여줄 수 있습니다. (주석 해제)
+  if (accessToken) {
+    return null; // 또는 <LoadingSpinner /> 같은 컴포넌트
+  }
+
   return (
     <div className="flex flex-col items-center px-6 py-8">
       {/* 뒤로가기 버튼 */}
       <div className="self-start mb-10">
-        <Link href="/" className="text-2xl" aria-label="홈으로 돌아가기">
+        <Link href="/onboarding" className="text-2xl" aria-label="온보딩으로 돌아가기">
           <CaretLeft size={24} weight="bold" />
         </Link>
       </div>

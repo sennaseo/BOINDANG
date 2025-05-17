@@ -89,8 +89,16 @@ export default function PhysicalInfo() {
                 <div className="relative">
                   <input
                     type="number"
+                    min="1"
                     value={height}
-                    onChange={(e) => setHeight(e.target.value)}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === '' || parseInt(value, 10) >= 1) {
+                        setHeight(value);
+                      } else if (parseInt(value, 10) < 1) {
+                        setHeight('1');
+                      }
+                    }}
                     className="w-full p-3 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#6C2FF2] focus:border-[#6C2FF2]"
                     placeholder=""
                   />
@@ -104,8 +112,16 @@ export default function PhysicalInfo() {
                 <div className="relative">
                   <input
                     type="number"
+                    min="1"
                     value={weight}
-                    onChange={(e) => setWeight(e.target.value)}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === '' || parseInt(value, 10) >= 1) {
+                        setWeight(value);
+                      } else if (parseInt(value, 10) < 1) {
+                        setWeight('1');
+                      }
+                    }}
                     className="w-full p-3 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#6C2FF2] focus:border-[#6C2FF2]"
                     placeholder=""
                   />

@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
-import type { IngredientResult } from '@/types/api/ingredients';
+import type { IngredientResult, CategoryIngredientsData } from '@/types/api/ingredients';
 import { fetchCategoryIngredients } from '@/api/ingredients';
 import { ArrowLeft, CheckCircle, Warning, XCircle as RiskXCircle, CaretRight, Spinner, Info, Package, FadersHorizontal, Check, X as ModalCloseX } from '@phosphor-icons/react';
 import BottomNavBar from '@/components/navigation/BottomNavBar';
@@ -63,23 +63,29 @@ const CategoryIngredientsPage = () => {
     if (isLoadingMore || !hasMore || !decodedCategoryName) return;
 
     setIsLoadingMore(true);
-    const nextPage = page + 1;
+    const nextPageToLoad = page + 1;
 
     try {
-      const fetchedData = await fetchCategoryIngredients({
+      const response = await fetchCategoryIngredients({
         categoryName: decodedCategoryName,
-        page: nextPage,
+        page: nextPageToLoad,
       });
 
-      if (fetchedData.ingredients.length > 0) {
-        setIngredients(prevIngredients => [...prevIngredients, ...fetchedData.ingredients]);
-        setPage(nextPage);
-        setHasMore(nextPage < fetchedData.totalPages - 1);
+      if (response.success && response.data) {
+        const categoryData = response.data as CategoryIngredientsData;
+        if (categoryData.ingredients.length > 0) {
+          setIngredients(prevIngredients => [...prevIngredients, ...categoryData.ingredients]);
+          setPage(nextPageToLoad);
+          setHasMore(nextPageToLoad < categoryData.totalPages - 1);
+        } else {
+          setHasMore(false);
+        }
       } else {
         setHasMore(false);
+        console.warn('Failed to load more ingredients (API error or no data):', response.error);
       }
     } catch (err) {
-      console.error("Failed to load more ingredients:", err);
+      console.error("Failed to load more ingredients (exception):", err);
     }
     setIsLoadingMore(false);
   }, [isLoadingMore, hasMore, decodedCategoryName, page]);
@@ -122,19 +128,25 @@ const CategoryIngredientsPage = () => {
       }
       setIsLoading(true);
       setError(null);
-      setPage(0);
+      const initialPage = 0;
+      setPage(initialPage);
       setIngredients([]);
       setHasMore(true);
 
       try {
-        const fetchedData = await fetchCategoryIngredients({
+        const response = await fetchCategoryIngredients({
           categoryName: decodedCategoryName,
-          page: 0,
+          page: initialPage,
         });
 
-        setIngredients(fetchedData.ingredients);
-        setHasMore(0 < fetchedData.totalPages - 1);
-
+        if (response.success && response.data) {
+          const categoryData = response.data as CategoryIngredientsData;
+          setIngredients(categoryData.ingredients);
+          setHasMore(initialPage < categoryData.totalPages - 1);
+        } else {
+          setError(response.error?.message || '성분 목록을 가져오는데 실패했습니다.');
+          setHasMore(false);
+        }
       } catch (err) {
         if (err instanceof Error) {
           setError(err.message);
@@ -342,7 +354,7 @@ const CategoryIngredientsPage = () => {
             height: scrollableAreaHeight,
             paddingTop: isScrolled ? `${HEADER_SCROLLED_TOTAL_HEIGHT}px` : '0px'
           }}
-          className="flex-grow overflow-y-auto bg-white"
+          className="flex-grow overflow-y-auto bg-white pb-24"
         >
           {isLoading && ingredients.length === 0 ? (
             <div className="p-4 text-center text-gray-500">목록을 불러오는 중...</div>
