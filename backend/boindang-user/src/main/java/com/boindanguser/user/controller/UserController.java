@@ -35,12 +35,6 @@ public class UserController {
         return ApiResponses.success(userService.login(request));
     }
 
-    @PostMapping("/logout")
-    public ApiResponses<?> logout(@RequestHeader("X-User-Id") Long userId) {
-        return ApiResponses.success(userService.logout(userId));
-    }
-
-
     @DeleteMapping("/delete")
     public ApiResponses<String> delete(@RequestHeader("X-User-Id") Long userId) {
         userService.deleteUserById(userId);
