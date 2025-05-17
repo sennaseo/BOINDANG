@@ -13,3 +13,9 @@ services:
       - "8080:8080"
       - "1111:1111"
     restart: always
+    networks:
+      - redis-network
+
+networks:
+  redis-network:
+    external: true
