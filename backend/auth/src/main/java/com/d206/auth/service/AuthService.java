@@ -8,6 +8,7 @@ import com.d206.auth.exception.JwtAuthenticationException;
 import com.d206.auth.security.JwtTokenProvider;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.logging.Logger;
 
@@ -24,8 +25,8 @@ public class AuthService {
                 .build();
     }
 
-    public JwtTokenDto refreshToken(String refreshToken) {
-        return createToken(validateToken(refreshToken));
+    public String refreshToken(Long userId) {
+        return createToken(userId).getAccessToken();
     }
 
     public Long validateToken(String token) {

@@ -25,9 +25,9 @@ public class AuthController {
 		return ApiResponses.success(authService.createToken(userId));
 	}
 
-	@PostMapping("/refresh")
-	public ApiResponses<JwtTokenDto> refreshToken(@RequestBody JwtTokenDto jwtTokenDto) {
-		return ApiResponses.success(authService.refreshToken(jwtTokenDto.getRefreshToken()));
+	@PostMapping("/refresh/{userId}")
+	public ApiResponses<String> refreshToken(@PathVariable Long userId) {
+		return ApiResponses.success(authService.refreshToken(userId));
 	}
 
 	@PostMapping("/validate")
