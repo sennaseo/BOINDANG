@@ -49,7 +49,6 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
         AntPathMatcher pathMatcher = new AntPathMatcher();
         List<String> excludedPatterns = List.of(
                 "/user/login",
-                "/user/logout",
                 "/user/signup",
                 "/user/check-username",
                 "/**/swagger-ui/**",
@@ -60,8 +59,9 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
             return chain.filter(exchange);
         }
 
-        Map<String, String> requestBody = Map.of("authHeader", request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION));
-
+        String token = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION).substring(7);
+        Map<String, String> requestBody = Map.of("token", token);
+        
         return webClientBuilder.build()
                 .post()
                 .uri(getUrl("AUTH") + "auth/validate")
@@ -86,6 +86,7 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
                     } else {
                         ServerHttpRequest modifiedRequest = exchange.getRequest().mutate()
                                 .header("X-User-Id", String.valueOf(apiResponses.getData()))
+                                .header("token", token)
                                 .build();
                         return chain.filter(exchange.mutate().request(modifiedRequest).build());
                     }
