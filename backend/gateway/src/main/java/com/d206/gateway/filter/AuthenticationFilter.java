@@ -60,24 +60,14 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
             return chain.filter(exchange);
         }
 
-        // jwt 검증
-        String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return onError(exchange, "Missing or invalid Authorization header", HttpStatus.UNAUTHORIZED);
-        }
-
-        String token = authHeader.substring(7);
-        Map<String, String> requestBody = Map.of("accessToken", token);
-
         return webClientBuilder.build()
                 .post()
                 .uri(getUrl("AUTH") + "auth/validate")
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(requestBody)
+                .bodyValue(request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION))
                 .retrieve()
                 .bodyToMono(ApiResponses.class)
                 .flatMap(apiResponses -> {
-                    log.info("apiResponses 받음(flatMap)");
                     if (!apiResponses.isSuccess()) {
                         ServerHttpResponse response = exchange.getResponse();
                         response.setStatusCode(HttpStatus.OK);
