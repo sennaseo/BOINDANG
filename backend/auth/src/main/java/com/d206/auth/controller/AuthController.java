@@ -1,6 +1,5 @@
 package com.d206.auth.controller;
 
-import com.d206.auth.common.ApiResponses;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,26 +19,26 @@ import java.util.Map;
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
-	private final AuthService authService;
+    private final AuthService authService;
 
-	@GetMapping("/createToken/{userId}")
-	public ApiResponses<JwtTokenDto> createToken(@PathVariable Long userId) {
-		return ApiResponses.success(authService.createToken(userId));
-	}
+    @GetMapping("/createToken/{userId}")
+    public JwtTokenDto createToken(@PathVariable Long userId) {
+        return authService.createToken(userId);
+    }
 
-	@GetMapping("/refresh/{userId}")
-	public ApiResponses<String> refreshToken(@PathVariable Long userId) {
-		return ApiResponses.success(authService.refreshToken(userId));
-	}
+    @GetMapping("/refresh/{userId}")
+    public String refreshToken(@PathVariable Long userId) {
+        return authService.refreshToken(userId);
+    }
 
-	@PostMapping("/validate")
-	public ApiResponses<Long> validateToken(@RequestBody Map<String, String> body) {
-		return ApiResponses.success(authService.validateToken(body.get("token")));
-	}
+    @PostMapping("/validate")
+    public Long validateToken(@RequestBody Map<String, String> body) {
+        return authService.validateToken(body.get("token"));
+    }
 
-	@PostMapping("/invalidate")
-	public ApiResponses<Boolean> invalidateToken(@RequestBody Map<String, String> body) {
-		return ApiResponses.success(authService.invalidateToken(body.get("token")));
-	}
+    @PostMapping("/invalidate")
+    public Boolean invalidateToken(@RequestBody Map<String, String> body) {
+        return authService.invalidateToken(body.get("token"));
+    }
 
 }
