@@ -365,8 +365,9 @@ export default function OcrCameraPage() {
     setIsProcessing(true);
     setError(null);
 
-    // if (true) { 
-    //   return; 
+    // if (true) { // 항상 true가 되도록 하여 아래 로직을 건너뛰고 대기 화면에 머무르게 함
+    //   console.log('[Debug] OCR 대기 화면 테스트를 위해 API 호출 및 페이지 이동을 건너뜁니다.');
+    //   return;
     // }
 
     try {
