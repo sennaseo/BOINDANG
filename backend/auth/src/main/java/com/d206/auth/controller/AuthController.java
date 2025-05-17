@@ -14,6 +14,8 @@ import com.d206.auth.service.AuthService;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
@@ -31,8 +33,8 @@ public class AuthController {
 	}
 
 	@PostMapping("/validate")
-	public ApiResponses<Long> validateToken(@RequestBody String authHeader) {
-		System.out.println("authHeader: " + authHeader);
+	public ApiResponses<Long> validateToken(@RequestBody Map<String, String> body) {
+		String authHeader = body.get("authHeader");
 		return ApiResponses.success(authService.validateToken(authHeader.substring(7)));
 	}
 
