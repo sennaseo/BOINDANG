@@ -17,55 +17,30 @@ const DangDangi = dynamic(() => import('@/components/3D/DangDangi'), {
 });
 
 export default function Home() {
-  const touchStartX = useRef(0);
-  const touchStartY = useRef(0);
-  const aLiveSwipe = useRef(false);
+  const mainContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const container = mainContainerRef.current;
+    if (!container) return;
+
     const handleTouchStart = (event: TouchEvent) => {
-      const firstTouch = event.targetTouches[0];
-      if (firstTouch.clientX < 30) {
-        touchStartX.current = firstTouch.clientX;
-        touchStartY.current = firstTouch.clientY;
-        aLiveSwipe.current = true;
-      } else {
-        aLiveSwipe.current = false;
-      }
-    };
-
-    const handleTouchMove = (event: TouchEvent) => {
-      if (!aLiveSwipe.current) return;
-
-      const currentX = event.targetTouches[0].clientX;
-      const currentY = event.targetTouches[0].clientY;
-
-      const deltaX = currentX - touchStartX.current;
-      const deltaY = currentY - touchStartY.current;
-
-      if (deltaX > 10 && Math.abs(deltaX) > Math.abs(deltaY)) {
+      // 단일 터치이고, 화면 왼쪽 가장자리에서 시작하는 경우
+      if (event.touches.length === 1 && event.touches[0].clientX < 30) {
+        // 스와이프 방향에 관계없이 가장자리에서 시작된 터치면 일단 막음
         event.preventDefault();
       }
     };
 
-    const handleTouchEndOrCancel = () => {
-      aLiveSwipe.current = false;
-    };
-
-    window.addEventListener('touchstart', handleTouchStart, { passive: false });
-    window.addEventListener('touchmove', handleTouchMove, { passive: false });
-    window.addEventListener('touchend', handleTouchEndOrCancel, { passive: false });
-    window.addEventListener('touchcancel', handleTouchEndOrCancel, { passive: false });
+    // passive: false 옵션으로 preventDefault 가능하도록 설정
+    container.addEventListener('touchstart', handleTouchStart, { passive: false });
 
     return () => {
-      window.removeEventListener('touchstart', handleTouchStart);
-      window.removeEventListener('touchmove', handleTouchMove);
-      window.removeEventListener('touchend', handleTouchEndOrCancel);
-      window.removeEventListener('touchcancel', handleTouchEndOrCancel);
+      container.removeEventListener('touchstart', handleTouchStart);
     };
   }, []);
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#F8F8F8] relative">
+    <div ref={mainContainerRef} className="flex flex-col min-h-screen bg-[#F8F8F8] relative">
       {/* 상단 로고/설정 */}
       <header className="flex justify-between items-center pt-6 px-5 absolute top-0 left-0 right-0 z-10">
         <div className="relative">
