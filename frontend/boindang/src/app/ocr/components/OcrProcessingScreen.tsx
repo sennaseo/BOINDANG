@@ -113,7 +113,7 @@ export default function OcrProcessingScreen(/*{}: OcrProcessingScreenProps*/) {
         ></div>
       </div>
       <p className="mt-4 text-center text-xl font-semibold text-white">
-        영양 리포트를 준비중이에요
+        성분 분석 리포트를 준비중이에요
       </p>
       <p className="mt-2 text-center text-sm text-gray-300">
         평균 분석 시간은 20초 내외에요

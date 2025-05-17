@@ -15,13 +15,13 @@ const DangDangi = dynamic(() => import('@/components/3D/DangDangi'), {
   ),
 });
 
-export default function Home() {  
+export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen bg-[#F8F8F8] relative">
+    <div className="flex flex-col min-h-screen bg-[#F8F8F8] relative overscroll-x-contain">
       {/* 상단 로고/설정 */}
       <header className="flex justify-between items-center pt-6 px-5 absolute top-0 left-0 right-0 z-10">
         <div className="relative">
-          <Image src="/보인당black.png" alt="보인당 로고" width={126} height={40}/>
+          <Image src="/보인당black.png" alt="보인당 로고" width={126} height={40} />
         </div>
       </header>
 
