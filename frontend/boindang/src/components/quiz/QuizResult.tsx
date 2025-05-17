@@ -13,31 +13,10 @@ interface QuizResultProps {
   fixedButton?: boolean;
 }
 
-export default function QuizResult({ quiz, selected, onNext, onPrev, showPrev, isLast, index, answerResult, fixedButton = false }: QuizResultProps) {
+export default function QuizResult({ quiz, selected, onNext, onPrev, showPrev, isLast, index, answerResult, fixedButton }: QuizResultProps) {
     // answerResult: { correct: boolean, explanation: string }
     console.log('answerResult:', answerResult);
     console.log('quiz.options:', quiz.options);
-
-    const ButtonGroup = (
-      <div className="flex gap-2 mt-8">
-        {showPrev && (
-          <button
-            className="w-1/2 bg-gray-200 text-gray-700 py-3 rounded-xl font-bold text-lg shadow hover:bg-gray-300 transition"
-            onClick={onPrev}
-          >
-            이전 문제
-          </button>
-        )}
-        <button
-          className={`w-full bg-[#ede9fe] text-[#6C2FF2] border-2 border-[#6C2FF2] py-3 rounded-xl font-bold text-lg shadow hover:bg-[#d1c4e9] transition flex items-center justify-center gap-2 ${showPrev ? 'w-1/2' : ''}`}
-          onClick={onNext}
-        >
-          {isLast ? '결과 보기' : '다음 문제'}
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-        </button>
-      </div>
-    );
-
     return (
       <div>
         <div className="text-3xl font-extrabold text-center mb-4 mt-4">Q{index + 1}</div>
@@ -72,10 +51,44 @@ export default function QuizResult({ quiz, selected, onNext, onPrev, showPrev, i
         </div>
         {fixedButton ? (
           <div className="absolute left-0 bottom-0 w-full px-6 pb-28 bg-white z-20">
-            {ButtonGroup}
+            <div className="flex gap-3">
+              {showPrev && (
+                <button
+                  className="flex-1 bg-white text-[#6C2FF2] border-2 border-[#6C2FF2] py-3 rounded-xl font-bold text-lg shadow hover:bg-[#f5f3ff] transition flex items-center justify-center gap-2"
+                  onClick={onPrev}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                  이전 문제
+                </button>
+              )}
+              <button
+                className={`${showPrev ? 'flex-1' : 'w-full'} bg-[#ede9fe] text-[#6C2FF2] border-2 border-[#6C2FF2] py-3 rounded-xl font-bold text-lg shadow hover:bg-[#d1c4e9] transition flex items-center justify-center gap-2`}
+                onClick={onNext}
+              >
+                {isLast ? '결과 보기' : '다음 문제'}
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+              </button>
+            </div>
           </div>
         ) : (
-          ButtonGroup
+          <div className="flex gap-3">
+            {showPrev && (
+              <button
+                className="flex-1 bg-white text-[#6C2FF2] border-2 border-[#6C2FF2] py-3 rounded-xl font-bold text-lg shadow hover:bg-[#f5f3ff] transition flex items-center justify-center gap-2"
+                onClick={onPrev}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                이전 문제
+              </button>
+            )}
+            <button
+              className={`${showPrev ? 'flex-1' : 'w-full'} bg-[#ede9fe] text-[#6C2FF2] border-2 border-[#6C2FF2] py-3 rounded-xl font-bold text-lg shadow hover:bg-[#d1c4e9] transition flex items-center justify-center gap-2`}
+              onClick={onNext}
+            >
+              {isLast ? '결과 보기' : '다음 문제'}
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+            </button>
+          </div>
         )}
       </div>
     );
