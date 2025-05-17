@@ -1,21 +1,29 @@
 package com.boindang.quiz.common.exception;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.boindang.quiz.common.response.BaseResponse;
+import com.boindang.quiz.common.response.ApiResponses;
+import com.boindang.quiz.common.response.ErrorResponse;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
 	@ExceptionHandler(QuizException.class)
-	public BaseResponse<?> handleQuizException(QuizException e) {
-		return BaseResponse.fail(e.getCode(), e.getMessage());
+	public ApiResponses<?> handleInvalidateTokenException(Exception e) {
+		return ApiResponses.error(new ErrorResponse(HttpStatus.UNAUTHORIZED, e.getMessage()));
 	}
 
+	// 기타 예외 처리
 	@ExceptionHandler(Exception.class)
-	public BaseResponse<?> handleUnexpected(Exception e) {
-		return BaseResponse.fail(500, e.getMessage());
+	public ResponseEntity<ApiResponses<String>> handleAllExceptions(Exception e) {
+		log.info(e.getMessage());
+		log.info(e.toString());
+		return ResponseEntity.ok(
+			ApiResponses.error(new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage())));
 	}
-
 }
