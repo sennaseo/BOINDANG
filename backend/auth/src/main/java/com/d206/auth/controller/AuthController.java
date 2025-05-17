@@ -25,7 +25,7 @@ public class AuthController {
 		return ApiResponses.success(authService.createToken(userId));
 	}
 
-	@PostMapping("/refresh/{userId}")
+	@GetMapping("/refresh/{userId}")
 	public ApiResponses<String> refreshToken(@PathVariable Long userId) {
 		return ApiResponses.success(authService.refreshToken(userId));
 	}
