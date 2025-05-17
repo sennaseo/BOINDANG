@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 
-import com.boindang.quiz.common.response.BaseResponse;
+import com.boindang.quiz.common.response.ApiResponses;
 import com.boindang.quiz.presentation.dto.request.AnswerRequest;
 import com.boindang.quiz.presentation.dto.response.QuizAnswerResponse;
 import com.boindang.quiz.presentation.dto.response.QuizResponse;
@@ -20,14 +20,13 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "영양퀴즈", description = "영양퀴즈 관련 API입니다.")
 public interface QuizApi {
 
 	@Operation(summary = "퀴즈 5문제 출제", description = "사용자가 아직 풀지 않은 퀴즈 중 무작위로 5문제를 출제합니다.")
-	@ApiResponses(value = {
+	@io.swagger.v3.oas.annotations.responses.ApiResponses(value = {
 		@ApiResponse(
 			responseCode = "200",
 			description = "퀴즈 5문제 출제가 완료되었습니다.",
@@ -83,13 +82,13 @@ public interface QuizApi {
 		)
 	})
 	@GetMapping
-	BaseResponse<List<QuizResponse>> getBatchQuiz(
+	ApiResponses<List<QuizResponse>> getBatchQuiz(
 		@Parameter(description = "사용자 ID", required = true, example = "1")
 		@RequestHeader("X-User-Id") String userId
 	);
 
 	@Operation(summary = "퀴즈 정답 제출", description = "사용자가 선택한 보기와 퀴즈 ID를 전달하면 정답 여부와 해설을 반환합니다.")
-	@ApiResponses(value = {
+	@io.swagger.v3.oas.annotations.responses.ApiResponses(value = {
 		@ApiResponse(responseCode = "200", description = "정답 제출 결과 반환이 완료되었습니다.",
 			content = @Content(mediaType = "application/json",
 				examples = @ExampleObject(value = """
@@ -119,7 +118,7 @@ public interface QuizApi {
 		)
 	})
 	@PostMapping("/submit")
-	BaseResponse<QuizAnswerResponse> submitAnswer(
+	ApiResponses<QuizAnswerResponse> submitAnswer(
 		@Parameter(description = "사용자 ID", required = true, example = "1")
 		@RequestHeader("X-User-Id") String userId,
 
@@ -140,7 +139,7 @@ public interface QuizApi {
 	);
 
 	@Operation(summary = "오답노트 조회", description = "사용자의 퀴즈 풀이 이력 중 오답만 조회합니다.")
-	@ApiResponses(value = {
+	@io.swagger.v3.oas.annotations.responses.ApiResponses(value = {
 		@ApiResponse(responseCode = "200", description = "오답노트 조회에 성공하였습니다.",
 			content = @Content(mediaType = "application/json",
 				schema = @Schema(implementation = AnswerResponse.class),
@@ -176,13 +175,13 @@ public interface QuizApi {
 		)
 	})
 	@GetMapping("/wrong-answers")
-	BaseResponse<List<AnswerResponse>> getWrongAnswers(
+	ApiResponses<List<AnswerResponse>> getWrongAnswers(
 		@Parameter(description = "사용자 ID", required = true, example = "1")
 		@RequestHeader("X-User-Id") String userId
 	);
 
 	@Operation(summary = "퀴즈 통계 조회", description = "총 풀이 수, 정답/오답 수, 정확도(%)를 반환합니다.")
-	@ApiResponses({
+	@io.swagger.v3.oas.annotations.responses.ApiResponses({
 		@ApiResponse(responseCode = "200", description = "퀴즈 통계 조회에 성공하였습니다.",
 			content = @Content(examples = @ExampleObject(value = """
             {
@@ -208,7 +207,7 @@ public interface QuizApi {
         """)))
 	})
 	@GetMapping("/statistics")
-	BaseResponse<QuizStatisticsResponse> getStatistics(
+	ApiResponses<QuizStatisticsResponse> getStatistics(
 		@Parameter(description = "사용자 ID", required = true, example = "1")
 		@RequestHeader("X-User-Id") String userId
 	);

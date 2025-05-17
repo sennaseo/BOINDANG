@@ -1,7 +1,6 @@
 package com.boindang.quiz.application;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -10,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import com.boindang.quiz.common.exception.ErrorCode;
 import com.boindang.quiz.common.exception.QuizException;
 import com.boindang.quiz.domain.Quiz;
 import com.boindang.quiz.domain.QuizOption;
@@ -78,18 +76,18 @@ public class QuizService {
 	public QuizAnswerResponse submitAnswer(Long userId, AnswerRequest request) {
 		// 1. 퀴즈 조회
 		Quiz quiz = quizRepository.findById(request.quizId())
-			.orElseThrow(() -> new QuizException(ErrorCode.QUIZ_NOT_FOUND));
+			.orElseThrow(() -> new QuizException("해당 퀴즈를 찾을 수 없습니다."));
 
 		// 2. 보기 ID 유효성 검증
 		if (!quiz.hasOption(request.selectedOptionId())) {
-			throw new QuizException(ErrorCode.OPTION_QUIZ_MISMATCH);
+			throw new QuizException("선택한 보기는 해당 퀴즈에 속하지 않습니다.");
 		}
 
 		// 3. 선택한 보기
 		QuizOption selectedOption = quiz.getOptions().stream()
 			.filter(option -> option.getOptionId() == request.selectedOptionId())
 			.findFirst()
-			.orElseThrow(() -> new QuizException(ErrorCode.INVALID_QUIZ_OPTION));
+			.orElseThrow(() -> new QuizException("퀴즈 보기 정보가 유효하지 않습니다."));
 
 		// 4. 정답 판별
 		boolean isCorrect = quiz.isCorrect(selectedOption.getOptionId());
