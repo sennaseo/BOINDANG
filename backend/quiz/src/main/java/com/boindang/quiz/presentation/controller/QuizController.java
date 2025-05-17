@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.boindang.quiz.application.QuizService;
+import com.boindang.quiz.common.exception.UserException;
 import com.boindang.quiz.common.response.ApiResponses;
 import com.boindang.quiz.presentation.dto.request.AnswerRequest;
 import com.boindang.quiz.presentation.dto.response.AnswerResponse;
@@ -29,6 +30,10 @@ public class QuizController implements QuizApi {
 	@Override
 	@GetMapping
 	public ApiResponses<List<QuizResponse>> getBatchQuiz(@RequestHeader("X-User-Id") String userId) {
+		if (userId == null || userId.trim().isEmpty()) {
+			throw new UserException("유효하지 않은 사용자입니다.");
+		}
+
 		return ApiResponses.success(quizService.generateQuizzes(Long.parseLong(userId)));
 	}
 
@@ -38,18 +43,30 @@ public class QuizController implements QuizApi {
 		@RequestHeader("X-User-Id") String userId,
 		@RequestBody AnswerRequest request
 	) {
+		if (userId == null || userId.trim().isEmpty()) {
+			throw new UserException("유효하지 않은 사용자입니다.");
+		}
+
 		return ApiResponses.success(quizService.submitAnswer(Long.parseLong(userId), request));
 	}
 
 	@Override
 	@GetMapping("/wrong-answers")
 	public ApiResponses<List<AnswerResponse>> getWrongAnswers(@RequestHeader("X-User-Id") String userId) {
+		if (userId == null || userId.trim().isEmpty()) {
+			throw new UserException("유효하지 않은 사용자입니다.");
+		}
+
 		return ApiResponses.success(quizService.getAnswerHistories(Long.parseLong(userId)));
 	}
 
 	@Override
 	@GetMapping("/statistics")
 	public ApiResponses<QuizStatisticsResponse> getStatistics(@RequestHeader("X-User-Id") String userId) {
+		if (userId == null || userId.trim().isEmpty()) {
+			throw new UserException("유효하지 않은 사용자입니다.");
+		}
+
 		return ApiResponses.success(quizService.getStatistics(Long.parseLong(userId)));
 	}
 

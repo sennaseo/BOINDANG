@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import com.boindang.quiz.common.exception.QuizException;
+import com.boindang.quiz.common.exception.QuizNotFoundException;
 import com.boindang.quiz.domain.Quiz;
 import com.boindang.quiz.domain.QuizOption;
 import com.boindang.quiz.domain.QuizSolvedHistory;
@@ -76,7 +77,7 @@ public class QuizService {
 	public QuizAnswerResponse submitAnswer(Long userId, AnswerRequest request) {
 		// 1. 퀴즈 조회
 		Quiz quiz = quizRepository.findById(request.quizId())
-			.orElseThrow(() -> new QuizException("해당 퀴즈를 찾을 수 없습니다."));
+			.orElseThrow(() -> new QuizNotFoundException("해당 퀴즈를 찾을 수 없습니다."));
 
 		// 2. 보기 ID 유효성 검증
 		if (!quiz.hasOption(request.selectedOptionId())) {
