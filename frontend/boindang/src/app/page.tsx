@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import { CameraPlus, CaretRight, SealPercent, Sparkle } from '@phosphor-icons/react';
 import BottomNavBar from '@/components/navigation/BottomNavBar';
 import Image from 'next/image';
@@ -16,8 +17,55 @@ const DangDangi = dynamic(() => import('@/components/3D/DangDangi'), {
 });
 
 export default function Home() {
+  const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
+  const aLiveSwipe = useRef(false);
+
+  useEffect(() => {
+    const handleTouchStart = (event: TouchEvent) => {
+      const firstTouch = event.targetTouches[0];
+      if (firstTouch.clientX < 30) {
+        touchStartX.current = firstTouch.clientX;
+        touchStartY.current = firstTouch.clientY;
+        aLiveSwipe.current = true;
+      } else {
+        aLiveSwipe.current = false;
+      }
+    };
+
+    const handleTouchMove = (event: TouchEvent) => {
+      if (!aLiveSwipe.current) return;
+
+      const currentX = event.targetTouches[0].clientX;
+      const currentY = event.targetTouches[0].clientY;
+
+      const deltaX = currentX - touchStartX.current;
+      const deltaY = currentY - touchStartY.current;
+
+      if (deltaX > 10 && Math.abs(deltaX) > Math.abs(deltaY)) {
+        event.preventDefault();
+      }
+    };
+
+    const handleTouchEndOrCancel = () => {
+      aLiveSwipe.current = false;
+    };
+
+    window.addEventListener('touchstart', handleTouchStart, { passive: false });
+    window.addEventListener('touchmove', handleTouchMove, { passive: false });
+    window.addEventListener('touchend', handleTouchEndOrCancel, { passive: false });
+    window.addEventListener('touchcancel', handleTouchEndOrCancel, { passive: false });
+
+    return () => {
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEndOrCancel);
+      window.removeEventListener('touchcancel', handleTouchEndOrCancel);
+    };
+  }, []);
+
   return (
-    <div className="flex flex-col min-h-screen bg-[#F8F8F8] relative overscroll-x-contain">
+    <div className="flex flex-col min-h-screen bg-[#F8F8F8] relative">
       {/* 상단 로고/설정 */}
       <header className="flex justify-between items-center pt-6 px-5 absolute top-0 left-0 right-0 z-10">
         <div className="relative">
