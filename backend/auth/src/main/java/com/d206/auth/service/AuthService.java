@@ -31,13 +31,13 @@ public class AuthService {
 
     public Long validateToken(String token) {
         if (!jwtTokenProvider.validateToken(token)) {
-            throw new JwtAuthenticationException("유효하지 않은 액세스 토큰입니다.");
+            throw new JwtAuthenticationException("유효하지 않은 토큰입니다.");
         }
         return jwtTokenProvider.getUserIdFromToken(token);
     }
 
     //TODO
-    public Long invalidateToken(String accessToken) {
+    public Long invalidateToken(String token) {
 
         return null;
     }

@@ -31,15 +31,15 @@ public class AuthController {
 	}
 
 	@PostMapping("/validate")
-	public ApiResponses<Long> validateToken(@RequestBody JwtTokenDto jwtTokenDto) {
-		System.out.println("request token: " + jwtTokenDto.getAccessToken());
-		return ApiResponses.success(authService.validateToken(jwtTokenDto.getAccessToken()));
+	public ApiResponses<Long> validateToken(@RequestBody String authHeader) {
+		System.out.println("authHeader: " + authHeader);
+		return ApiResponses.success(authService.validateToken(authHeader.substring(7)));
 	}
 
 	@PostMapping("/invalidate")
-	public ApiResponses<Long> invalidateToken(@RequestBody JwtTokenDto jwtTokenDto) {
-		System.out.println("request token: " + jwtTokenDto.getAccessToken());
-		return ApiResponses.success(authService.invalidateToken(jwtTokenDto.getAccessToken()));
+	public ApiResponses<Long> invalidateToken(@RequestBody String authHeader) {
+		System.out.println("authHeader: " + authHeader);
+		return ApiResponses.success(authService.invalidateToken(authHeader.substring(7)));
 	}
 
 }
