@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { searchIngredients } from '@/api/ingredients';
 import type { IngredientSearchResponseData } from '@/types/api/ingredients';
+import type { ApiResponse } from '@/types/api';
 
 interface UseSearchIngredientsQueryParams {
   query: string;
@@ -36,7 +37,16 @@ export const useSearchIngredientsQuery = ({
   >({
     // 옵션 객체
     queryKey: queryKey,
-    queryFn: () => searchIngredients({ query, suggested }),
+    queryFn: async () => {
+      // searchIngredients는 ApiResponse<IngredientSearchResponseData>를 반환합니다.
+      const response: ApiResponse<IngredientSearchResponseData> = await searchIngredients({ query, suggested });
+      
+      if (response.success && response.data) {
+        return response.data; // 성공 시 IngredientSearchResponseData 반환
+      }
+      // 실패 시 TanStack Query가 에러로 처리하도록 Error 객체를 throw 합니다.
+      throw new Error(response.error?.message || '성분 검색에 실패했습니다.');
+    },
     enabled: !!query && enabled, // query 문자열이 존재하고, 외부에서도 enabled가 true일 때만 쿼리 실행
     // 기타 TanStack Query 옵션들 (필요에 따라 추가):
     // staleTime: 1000 * 60 * 5, // 데이터가 5분 동안 fresh 상태 유지 (네트워크 요청 X)
