@@ -1,13 +1,4 @@
 // 성분 검색 API 응답 타입
-
-
-export interface SearchPageApiResponse {
-  isSuccess : boolean;
-  code : number;
-  message : string;
-  data? : IngredientSearchResponseData; // 성공 시에만 data가 있을 수 있음
-}
-
 export interface IngredientSearchResponseData {
   originalQuery : string;
   suggestedName : string | null;
@@ -23,7 +14,6 @@ export interface IngredientResult {
 }
 
 
-
 // 새로운 API 명세에 따른 유사 성분 비교 테이블 타입
 export interface ApiCompareTableRow {
   name: string;
@@ -33,17 +23,6 @@ export interface ApiCompareTableRow {
 export interface ApiCompareTable {
   rows: ApiCompareTableRow[];
 }
-
-// 기존 ComparisonTableItem은 IngredientDetailData에서 직접 사용되지 않으므로 주석 처리하거나 삭제 (일단 주석 처리)
-/*
-export interface ComparisonTableItem {
-  name: string;
-  gi: number;
-  calories: number;
-  sweetness: number;
-  note: string; 
-}
-*/
 
 // 성분 상세 정보 API 응답의 data 필드 타입 (새로운 API 명세 반영)
 export interface IngredientDetailData {
@@ -78,26 +57,6 @@ export interface IngredientDetailData {
   compareTable: ApiCompareTable; // 새로운 API 명세에 맞게 타입 변경
 }
 
-
-// 제네릭 API 응답 타입
-export interface ApiResponse<T> {
-  isSuccess: boolean;
-  code: number;
-  message: string;
-  data: T;
-}
-
-// 성분 상세 보기 API의 전체 응답 타입
-export type IngredientDetailApiResponse = ApiResponse<IngredientDetailData>;
-
-// 실패 시 API 응답 타입 (data가 없을 수 있음)
-export interface ApiErrorResponse {
-  isSuccess: boolean;
-  code: number;
-  message: string;
-  data?: null; // 혹은 T | null 등으로 유연하게 처리 가능
-}
-
 /**
  * 카테고리별 성분 목록 조회 API의 data 필드 타입
  */
@@ -107,11 +66,14 @@ export interface CategoryIngredientsData {
 }
 
 /**
- * 카테고리별 성분 목록 조회 API의 전체 응답 타입
+ * 카테고리별 성분 목록 조회 API의 백엔드 직접 응답 타입 (isSuccess, code, message 포함)
  */
-export type CategoryIngredientsApiResponse = ApiResponse<CategoryIngredientsData>;
-
-// --- 프론트엔드용 타입 정의 시작 ---
+export interface CategoryIngredientsApiResponse {
+  isSuccess: boolean;
+  code: number;
+  message: string;
+  data: CategoryIngredientsData; // 실제 데이터는 CategoryIngredientsData 타입
+}
 
 // 프론트엔드에서 사용할 가공된 참고문헌 타입
 export interface ProcessedReference {
