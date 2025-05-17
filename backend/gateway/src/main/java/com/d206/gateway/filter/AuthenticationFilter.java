@@ -49,6 +49,7 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
         AntPathMatcher pathMatcher = new AntPathMatcher();
         List<String> excludedPatterns = List.of(
                 "/user/login",
+                "/user/logout",
                 "/user/signup",
                 "/user/check-username",
                 "/**/swagger-ui/**",
