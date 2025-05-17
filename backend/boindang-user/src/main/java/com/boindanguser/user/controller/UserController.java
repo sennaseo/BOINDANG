@@ -35,6 +35,11 @@ public class UserController {
         return ApiResponses.success(userService.login(request));
     }
 
+    @GetMapping("/logout")
+    public ApiResponses<Boolean> refresh(@RequestHeader("token") String token) {
+        return ApiResponses.success(userService.logout(token));
+    }
+
     @GetMapping("/refresh")
     public ApiResponses<String> refresh(@RequestHeader("X-User-Id") Long userId) {
         return ApiResponses.success(userService.refresh(userId));
