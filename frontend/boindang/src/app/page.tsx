@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { CameraPlus, CaretRight, SealPercent, Sparkle } from '@phosphor-icons/react';
+import { useRef } from 'react';
+import { CameraPlus, CaretRight, SealPercent } from '@phosphor-icons/react';
 import BottomNavBar from '@/components/navigation/BottomNavBar';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
+import { usePreventSwipeBack } from '@/hooks/usePreventSwipeBack';
 
 // 클라이언트 사이드에서만 로드하기 위해 dynamic import 사용
 const DangDangi = dynamic(() => import('@/components/3D/DangDangi'), {
@@ -19,25 +20,7 @@ const DangDangi = dynamic(() => import('@/components/3D/DangDangi'), {
 export default function Home() {
   const mainContainerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const container = mainContainerRef.current;
-    if (!container) return;
-
-    const handleTouchStart = (event: TouchEvent) => {
-      // 단일 터치이고, 화면 왼쪽 가장자리에서 시작하는 경우
-      if (event.touches.length === 1 && event.touches[0].clientX < 30) {
-        // 스와이프 방향에 관계없이 가장자리에서 시작된 터치면 일단 막음
-        event.preventDefault();
-      }
-    };
-
-    // passive: false 옵션으로 preventDefault 가능하도록 설정
-    container.addEventListener('touchstart', handleTouchStart, { passive: false });
-
-    return () => {
-      container.removeEventListener('touchstart', handleTouchStart);
-    };
-  }, []);
+  usePreventSwipeBack(mainContainerRef, { edgeThreshold: 30 });
 
   return (
     <div ref={mainContainerRef} className="flex flex-col min-h-screen bg-[#F8F8F8] relative">
@@ -55,19 +38,6 @@ export default function Home() {
           <DangDangi />
         </div>
       </main>
-
-      {/* 혈당 알림 */}
-      <div className="bg-white/90 absolute top-20 left-0 right-0 px-5 z-10 backdrop-blur-sm rounded-xl shadow-md p-3 border-l-4 border-yellow-500 mx-5">
-        <div className="flex items-center">
-          <div className="mr-3 text-yellow-500">
-            <Sparkle size={28} weight="fill" />
-          </div>
-          <div className="flex-1">
-            <h3 className="font-bold text-gray-800">혈당 주의 알림</h3>
-            <p className="text-xs text-gray-600">최근 분석한 음식에 혈당을 높이는 성분이 포함되어 있습니다.</p>
-          </div>
-        </div>
-      </div>
 
 
       {/* 하단 분석 버튼 영역 */}

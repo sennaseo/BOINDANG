@@ -1,12 +1,17 @@
 'use client';
 
+import { useRef } from 'react';
 import { newsData } from '../../data/news';
 import NewsCard from '../../components/news/NewsCard';
 import BottomNavBar from '../../components/navigation/BottomNavBar';
+import { usePreventSwipeBack } from '@/hooks/usePreventSwipeBack';
 
 export default function NewsPage() {
+  const mainContainerRef = useRef<HTMLDivElement>(null);
+  usePreventSwipeBack(mainContainerRef, { edgeThreshold: 30 });
+
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col max-w-screen-sm mx-auto">
+    <div ref={mainContainerRef} className="min-h-screen bg-gray-50 flex flex-col max-w-screen-sm mx-auto">
       {/* 헤더 */}
       <div className="bg-white px-6 py-4">
         <h1 className="text-xl font-bold">건강 뉴스</h1>
