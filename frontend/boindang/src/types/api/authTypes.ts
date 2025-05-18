@@ -56,3 +56,6 @@ export interface UserProfileUpdatePayload {
 
 // 로그아웃 API 응답 타입
 export type LogoutResult = boolean;
+
+// 토큰 재발급 API 응답의 data 부분 타입
+export type RefreshTokenResult = string;

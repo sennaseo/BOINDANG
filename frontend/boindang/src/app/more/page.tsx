@@ -6,18 +6,22 @@ import { DotsThreeVertical, List, SignOut, UserMinus } from "@phosphor-icons/rea
 import { motion } from "framer-motion";
 import Image from 'next/image';
 import Link from 'next/link';
-import { getUserInfo, postLogout, postDeleteAccount } from "@/api/auth";
+import { useRouter } from 'next/navigation';
+import { getUserInfo, getLogout, postDeleteAccount } from "@/api/auth";
 import type { ApiResponse } from "@/types/api";
 import type { SignUpResult } from "@/types/api/authTypes";
 import { useAuthStore } from "@/stores/authStore";
 import { usePreventSwipeBack } from '@/hooks/usePreventSwipeBack';
+import ConfirmModal from '@/components/common/ConfirmModal';
 
 export default function MorePage() {
     const [userInfo, setUserInfo] = useState<ApiResponse<SignUpResult> | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
     const morePageContainerRef = useRef<HTMLDivElement>(null);
+    const router = useRouter();
 
     usePreventSwipeBack(morePageContainerRef, { edgeThreshold: 30 });
 
@@ -68,13 +72,35 @@ export default function MorePage() {
         setIsMenuOpen(!isMenuOpen);
     };
 
-    const handleLogout = async () => {
-        // TODO: Implement logout logic
-        const response = await postLogout();
-        if (response.success) {
+    const openLogoutModal = () => {
+        setIsMenuOpen(false);
+        setIsLogoutModalOpen(true);
+    };
+
+    const executeLogout = async () => {
+        setIsLogoutModalOpen(false);
+        try {
+            const response = await getLogout();
+            if (response.success && response.data) {
+                useAuthStore.getState().logout();
+                console.log("로그아웃 처리 완료");
+                router.push('/login');
+            } else {
+                console.error("로그아웃 실패:", response.error?.message || "알 수 없는 오류");
+                if (response.error?.status === "UNAUTHORIZED") {
+                    console.log("세션 만료로 인한 자동 로그아웃 처리");
+                    useAuthStore.getState().logout();
+                    router.push('/login');
+                } else {
+                    console.error("로그아웃 처리 중 예상치 못한 오류:", response.error?.message);
+                    useAuthStore.getState().logout();
+                    router.push('/login');
+                }
+            }
+        } catch (err) {
+            console.error("로그아웃 API 호출 중 에러 발생:", err);
             useAuthStore.getState().logout();
-            console.log("로그아웃 처리");
-            setIsMenuOpen(false);
+            router.push('/login');
         }
     };
 
@@ -90,8 +116,8 @@ export default function MorePage() {
     return (
         <div className="flex flex-col px-5 pt-15 pb-20 min-h-screen justify-between bg-[#F8F8F8]">
             <div className="flex flex-row justify-between items-center relative">
-                <Image  
-                    src="/assets/more/더보기.png" 
+                <Image
+                    src="/assets/more/더보기.png"
                     alt="더보기"
                     width={116}
                     height={38}
@@ -105,19 +131,19 @@ export default function MorePage() {
                             opacity: 0,
                             scale: 0.9,
                         }}
-                        animate={{
-                            type: "spring",
-                            opacity: 1,
-                            scale: 1,
-                        }}
-                        transition={{
-                            duration: 0.3,
-                            type: "spring",
-                            bounce: 0.5,
-                        }}
-                        className="absolute right-0 mt-2 w-30 bg-white rounded-md shadow-sm z-20">
+                            animate={{
+                                type: "spring",
+                                opacity: 1,
+                                scale: 1,
+                            }}
+                            transition={{
+                                duration: 0.3,
+                                type: "spring",
+                                bounce: 0.5,
+                            }}
+                            className="absolute right-0 mt-2 w-30 bg-white rounded-md shadow-sm z-20">
                             <button
-                                onClick={handleLogout}
+                                onClick={openLogoutModal}
                                 className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
                             >
                                 <SignOut size={20} className="mr-2" />
@@ -245,6 +271,16 @@ export default function MorePage() {
                 </div>
             </div>
             <BottomNavBar />
+
+            <ConfirmModal
+                isOpen={isLogoutModalOpen}
+                onClose={() => setIsLogoutModalOpen(false)}
+                onConfirm={executeLogout}
+                title="로그아웃"
+                message="정말로 로그아웃 하시겠습니까?"
+                confirmText="로그아웃"
+                cancelText="취소"
+            />
         </div>
     )
 }
