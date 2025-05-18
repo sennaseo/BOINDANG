@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft } from '@phosphor-icons/react';
 import BottomNavBar from "@/components/navigation/BottomNavBar";
 import { fetchMyApplications } from '@/api/more/experience';
 import MyApplicationCard from '@/components/more/experience/MyApplicationCard';
 import type { MyApplication } from '@/types/api/more/experience';
+import BackArrowIcon from '@/components/common/BackArrowIcon';
 
 export default function ExperiencePage() {
   const [applications, setApplications] = useState<MyApplication[]>([]);
@@ -30,10 +30,10 @@ export default function ExperiencePage() {
     <div className="flex flex-col mx-5 pt-5 pb-20 min-h-screen">
       {/* 헤더 */}
       <div className="flex flex-row items-center mb-6">
-        <Link href="/more">
-          <ArrowLeft size={24} weight="bold" fill="#363636" className="mr-3" />
+        <Link href="/more" className="flex items-center">
+          <BackArrowIcon size={24} weight="bold" className="mr-3" />
+          <h1 className="text-xl font-bold text-[#363636]">내 체험단 신청 내역</h1>
         </Link>
-        <h1 className="text-xl font-bold text-[#363636]">내 체험단 신청 내역</h1>
       </div>
       {/* 신청 내역 목록 */}
       <div>

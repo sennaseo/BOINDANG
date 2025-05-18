@@ -1,15 +1,59 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Lightbulb, X, HandPointing } from '@phosphor-icons/react';
+import { HandPointing, Lightbulb, X, CaretRight } from '@phosphor-icons/react'; // CaretRight 아이콘 추가
 import HandShakeDang from '@/components/3D/handShakeDang';
 import ConfirmModal from '@/components/common/ConfirmModal';
 
-// interface OcrProcessingScreenProps {
-//   // 필요하다면 외부에서 제어해야 할 props 추가
-// }
+// KnowledgeCard 컴포넌트 ("제안 1: 활기찬 당당이의 말풍선")
+interface KnowledgeCardProps {
+  tip: string;
+  onClose: () => void;
+  onNextTip: () => void;
+}
 
-const tips = [
+function KnowledgeCard({ tip, onClose, onNextTip }: KnowledgeCardProps) {
+  return (
+    <div className="fixed top-10 left-1/2 -translate-x-1/2 z-50 w-auto max-w-xs sm:max-w-sm md:max-w-md flex flex-col items-center">
+      <div className="relative w-72 rounded-xl bg-white p-4 text-gray-800 shadow-xl">
+        <div className="flex flex-col mb-3">
+          <div className="flex items-center mb-2">
+            <Lightbulb size={22} weight="fill" className="mr-2 flex-shrink-0 text-yellow-400" />
+            <h3 className="text-sm font-semibold text-gray-700">당당이의 상식 꿀팁!</h3>
+          </div>
+          <p className="text-sm leading-relaxed break-keep text-gray-700">{tip}</p>
+        </div>
+
+        {/* 하단 버튼 영역 - 구분선 제거 */}
+        <div className="flex justify-between items-center mt-3"> {/* pt-2 및 border-t 제거, mt-4를 mt-3으로 조정 */}
+          {/* 닫기 버튼 - 왼쪽 칩 스타일 */}
+          <button
+            onClick={onClose}
+            className="flex items-center justify-center gap-1.5 rounded-full bg-gray-100 text-gray-700 text-xs font-medium px-4 py-2 shadow-sm hover:bg-gray-200 active:bg-gray-300 transition-all duration-150 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-opacity-75"
+            aria-label="닫기"
+          >
+            <X size={14} weight="bold" />
+            <span>닫기</span>
+          </button>
+
+          {/* 다음 팁 버튼 - 오른쪽 칩 스타일 */}
+          <button
+            onClick={onNextTip}
+            className="flex items-center justify-center gap-1.5 rounded-full bg-[var(--color-maincolor)] text-white text-xs font-medium px-4 py-2 shadow-md hover:bg-[var(--color-maincolor-100)] active:bg-opacity-90 transition-all duration-150 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-maincolor)] focus-visible:ring-opacity-75"
+            aria-label="다음 팁"
+          >
+            <span>다음</span>
+            <CaretRight size={16} weight="bold" />
+          </button>
+        </div>
+      </div>
+      {/* 말풍선 꼬리 */}
+      <div className="mt-[-1px] w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-t-[10px] border-t-white shadow-md" />
+    </div>
+  );
+}
+
+const knowledgeTips = [
   "물을 하루 8잔 마시면 신진대사에 도움이 돼요!",
   "하루 30분 이상 햇볕을 쬐면 비타민 D 합성에 좋아요.",
   "견과류는 두뇌 건강에 좋은 불포화지방산이 풍부해요.",
@@ -17,29 +61,22 @@ const tips = [
   "스트레칭은 혈액순환 개선과 근육 이완에 효과적이랍니다."
 ];
 
-export default function OcrProcessingScreen(/*{}: OcrProcessingScreenProps*/) {
-  const [currentTip, setCurrentTip] = useState<string>("");
-  const [showTipBubble, setShowTipBubble] = useState<boolean>(false);
-  const [isDangClicked, setIsDangClicked] = useState<boolean>(false);
+export default function OcrProcessingScreen() {
   const [progress, setProgress] = useState<number>(0);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState<boolean>(false);
-  const [hasCharacterBeenClicked, setHasCharacterBeenClicked] = useState<boolean>(false);
+  const [shouldShowTouchText, setShouldShowTouchText] = useState<boolean>(false);
 
-  const handleCharacterClickInternal = () => {
-    const randomIndex = Math.floor(Math.random() * tips.length);
-    setCurrentTip(tips[randomIndex]);
-    setShowTipBubble(true);
-    if (!hasCharacterBeenClicked) {
-      setHasCharacterBeenClicked(true);
-    }
-  };
+  const [isKnowledgeCardVisible, setIsKnowledgeCardVisible] = useState<boolean>(false);
+  // const [knowledgeCardTip, setKnowledgeCardTip] = useState<string>(""); // currentTipIndex로 대체
+  const [currentTipIndex, setCurrentTipIndex] = useState<number>(0);
+  const [askDangToRunForward, setAskDangToRunForward] = useState<boolean>(false);
 
   useEffect(() => {
+    // 프로그레스 바 로직 (기존 유지)
     setProgress(0);
     const totalDuration = 20000;
     const updatesPerInterval = 1;
     const intervalTime = totalDuration / (100 / updatesPerInterval);
-
     const timer = setInterval(() => {
       setProgress(prev => {
         if (prev + updatesPerInterval >= 100) {
@@ -49,63 +86,64 @@ export default function OcrProcessingScreen(/*{}: OcrProcessingScreenProps*/) {
         return prev + updatesPerInterval;
       });
     }, intervalTime);
-
     return () => clearInterval(timer);
   }, []);
 
+  useEffect(() => {
+    if (askDangToRunForward) {
+      const timer = setTimeout(() => setAskDangToRunForward(false), 100);
+      return () => clearTimeout(timer);
+    }
+  }, [askDangToRunForward]);
+
+  const displayKnowledgeCardHandler = () => { // tip 인자 제거
+    console.log('OcrProcessingScreen: Displaying knowledge card.');
+    const randomIndex = Math.floor(Math.random() * knowledgeTips.length);
+    setCurrentTipIndex(randomIndex); // 랜덤 팁으로 시작
+    setIsKnowledgeCardVisible(true);
+    setAskDangToRunForward(false);
+  };
+
+  const handleKnowledgeCardClose = () => {
+    console.log('OcrProcessingScreen: Knowledge card closed. Asking Dang to run forward.');
+    setIsKnowledgeCardVisible(false);
+    setAskDangToRunForward(true);
+  };
+
+  const handleNextTip = () => {
+    setCurrentTipIndex(prevIndex => (prevIndex + 1) % knowledgeTips.length);
+  };
+
   return (
     <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/85 p-8">
+      {isKnowledgeCardVisible && (
+        <KnowledgeCard
+          tip={knowledgeTips[currentTipIndex]}
+          onClose={handleKnowledgeCardClose}
+          onNextTip={handleNextTip}
+        />
+      )}
+
       <div
-        className={`relative mb-4 h-64 w-full transition-transform duration-200 ease-in-out transform -translate-y-8 ${isDangClicked ? 'scale-95' : 'scale-100'}`}
-        onMouseDown={() => setIsDangClicked(true)}
-        onMouseUp={() => {
-          setIsDangClicked(false);
-          handleCharacterClickInternal();
-        }}
-        onMouseLeave={() => {
-          if (isDangClicked) {
-            setIsDangClicked(false);
-          }
-        }}
-        onTouchStart={() => {
-          setIsDangClicked(true);
-        }}
-        onTouchEnd={() => {
-          setIsDangClicked(false);
-          handleCharacterClickInternal();
-        }}
-        onTouchCancel={() => {
-          setIsDangClicked(false);
-        }}
+        className={`relative mb-4 h-64 w-full transition-transform duration-200 ease-in-out transform -translate-y-8 scale-100`}
       >
-        {!hasCharacterBeenClicked && (
-          <div className="absolute -bottom-6 left-1/2 z-40 flex -translate-x-1/2 flex-col items-center pointer-events-none animate-gentle-float">
-            <HandPointing size={28} className="text-[var(--color-maincolor)] drop-shadow-lg" weight="fill" />
-            <p className="mt-1 rounded-md bg-black/60 px-2.5 py-1 text-sm font-semibold text-white shadow-md">
-              터치해보세요!
-            </p>
-          </div>
-        )}
-        <HandShakeDang />
-        {showTipBubble && currentTip && (
-          <div
-            className="absolute left-1/2 top-0 z-50 mt-[-20px] w-full max-w-xs -translate-x-1/2 transform rounded-lg bg-white p-3 text-center text-sm text-gray-800 shadow-xl"
-            onClick={(e) => { e.stopPropagation(); setShowTipBubble(false); }}
-          >
-            <div className="flex items-start">
-              <Lightbulb size={28} className="mr-2 flex-shrink-0 text-yellow-500" />
-              <p className="text-left">{currentTip}</p>
-            </div>
-            <button
-              onClick={(e) => { e.stopPropagation(); setShowTipBubble(false); }}
-              className="absolute -right-2 -top-2 rounded-full bg-gray-200 p-0.5 text-gray-600 hover:bg-gray-300"
-              aria-label="팁 닫기"
-            >
-              <X size={14} />
-            </button>
-          </div>
-        )}
+        <HandShakeDang
+          onShouldShowTouchPrompt={setShouldShowTouchText}
+          onShowKnowledgeCard={displayKnowledgeCardHandler} // 핸들러 타입 일치
+          runForwardCommand={askDangToRunForward}
+        />
       </div>
+
+      {/* "터치해보세요!" UI */}
+      <div
+        className={`flex flex-col items-center animate-gentle-float pointer-events-none mb-1 ${shouldShowTouchText ? '' : 'invisible'}`}
+      >
+        <HandPointing size={28} className="text-[var(--color-maincolor)] drop-shadow-lg" weight="fill" />
+        <p className="mt-1 rounded-md bg-black/60 px-2.5 py-1 text-sm font-semibold text-white shadow-md whitespace-nowrap">
+          터치해보세요!
+        </p>
+      </div>
+
       <div className="my-6 h-2.5 w-full max-w-md overflow-hidden rounded-full bg-gray-700">
         <div
           className={`h-full rounded-full bg-gradient-to-r from-[var(--color-maincolor)] to-[#A779FF] transition-all duration-200 ease-linear ${progress === 100 ? 'animate-pulse-wait' : ''}`}
@@ -122,9 +160,7 @@ export default function OcrProcessingScreen(/*{}: OcrProcessingScreenProps*/) {
         <div className="flex items-center space-x-2">
           <button
             type="button"
-            onClick={() => {
-              setIsConfirmModalOpen(true);
-            }}
+            onClick={() => setIsConfirmModalOpen(true)}
             className="rounded-lg px-6 py-2.5 text-sm font-semibold text-white backdrop-blur-md bg-[var(--color-maincolor)]/20 border border-[var(--color-maincolor)]/50 active:bg-[var(--color-maincolor)]/30 transition-colors duration-150 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-maincolor)]"
           >
             홈에서 기다리기

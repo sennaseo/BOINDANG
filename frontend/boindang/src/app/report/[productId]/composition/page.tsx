@@ -2,12 +2,13 @@
 
 import React, { useState, useEffect, useMemo, use } from "react";
 import ReportTabNav from "@/components/navigation/ReportTabNav";
-import { CaretLeft, X, Info } from "@phosphor-icons/react";
+import { X, Info } from "@phosphor-icons/react";
 import CompositionChart from "@/components/chart/CompositionChart";
 import { useRouter } from 'next/navigation';
 import { getReport } from "@/api/report";
 import { ApiError } from "@/types/api";
 import { ReportPageProps, ReportResultData } from "@/types/api/report";
+import BackArrowIcon from '@/components/common/BackArrowIcon';
 
 // --- 타입 정의 시작 ---
 interface CompositionSubDataItem {
@@ -254,7 +255,7 @@ export default function CompositionPage({ params: paramsPromise }: ReportPagePro
     <div className="min-h-screen bg-gray-50 p-4 pb-10">
       {/* 헤더 */}
       <header className="flex items-center mb-2">
-        <button onClick={() => router.push(`/report/${productId}`)} className="mr-2 text-2xl"><CaretLeft/></button>
+        <button onClick={() => router.push(`/report/${productId}`)} className="mr-2 text-2xl"><BackArrowIcon/></button>
         <h1 className="text-2xl font-bold mx-auto">리포트 ({reportData.productName || "제품"})</h1>
       </header>
       <ReportTabNav productId={productId} />
@@ -346,7 +347,7 @@ export default function CompositionPage({ params: paramsPromise }: ReportPagePro
                     onClick={() => setSelectedItem(null)}
                     className="mb-4 text-blue-500 flex items-center text-sm"
                   >
-                    <CaretLeft size={16} />
+                    <BackArrowIcon size={16} />
                     <span className="ml-1">목록으로 돌아가기</span>
                   </button>
                   <h4 className="text-lg font-bold mb-2">{selectedItem.name}</h4>

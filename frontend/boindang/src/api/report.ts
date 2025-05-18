@@ -1,6 +1,6 @@
 import apiClient from "@/lib/apiClient";
 import { ApiResponse } from "@/types/api";
-import { ReportResultData } from "@/types/api/report";
+import { ReportHistory, ReportResultData } from "@/types/api/report";
 
 
 export const getReport = async (productId: string) => {
@@ -12,3 +12,9 @@ export const getReport = async (productId: string) => {
     console.log("API에서 리포트 데이터 가져옴:", response);
     return response;
 };
+
+export const getReportHistory = async () => {
+    const response = await apiClient.get<ApiResponse<ReportHistory[]>>("/nutrition/history");
+    return response;
+};
+

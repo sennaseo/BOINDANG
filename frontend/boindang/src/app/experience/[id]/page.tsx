@@ -3,7 +3,7 @@
 import { useRouter, useParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { ArrowLeft } from '@phosphor-icons/react';
+import BackArrowIcon from '../../../components/common/BackArrowIcon';
 import { fetchExperienceDetail, applyExperience } from '../../../api/experience';
 import { useAuthStore } from '../../../stores/authStore';
 import type { ExperienceDetail } from '../../../types/api/experience';
@@ -93,7 +93,7 @@ export default function ExperienceDetailPage() {
           aria-label="뒤로 가기"
           className="absolute top-4 left-4 z-20 bg-white rounded-full p-2 shadow-md"
         >
-          <ArrowLeft size={24} className="text-text-primary" />
+          <BackArrowIcon size={24} className="text-text-primary" />
         </button>
         <Image
           src={experience.imageUrl}

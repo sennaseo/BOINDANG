@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { newsData } from '../../../data/news';
-import { ArrowLeft } from '@phosphor-icons/react';
+import BackArrowIcon from '@/components/common/BackArrowIcon';
 import BottomNavBar from '../../../components/navigation/BottomNavBar';
 
 export default function NewsDetailPage() {
@@ -25,7 +25,7 @@ export default function NewsDetailPage() {
             onClick={() => router.back()}
             className="absolute left-6 top-1/2 -translate-y-1/2"
           >
-            <ArrowLeft size={24} />
+            <BackArrowIcon size={24} />
           </button>
           <h1 className="text-center text-lg font-semibold">건강 뉴스</h1>
         </div>

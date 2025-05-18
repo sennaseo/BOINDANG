@@ -3,14 +3,13 @@
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
-  CaretLeft,
   Scales,
   Barbell,
   Heartbeat,
   FirstAidKit
 } from '@phosphor-icons/react';
 import Button from '@/components/common/Button';
-
+import BackArrowIcon from '@/components/common/BackArrowIcon';
 // 1. Zustand 스토어 import
 import { useSignUpStore } from '@/stores/signupStore';
 // 2. TanStack Query 뮤테이션 훅 import
@@ -114,7 +113,7 @@ export default function SignUpType() {
     <div className="flex flex-col min-h-screen overflow-x-hidden">
       <div className="p-4">
         <Link href="/signup/physical-info" className="inline-block">
-          <CaretLeft size={24} weight="regular" />
+          <BackArrowIcon size={24} weight="regular" />
         </Link>
       </div>
 

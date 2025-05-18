@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { CaretLeft } from '@phosphor-icons/react';
+import BackArrowIcon from '@/components/common/BackArrowIcon';
 import Button from '@/components/common/Button'; // 공용 버튼 컴포넌트 경로 확인 필요
 
 // 1. Zustand 스토어 import
@@ -44,7 +44,7 @@ export default function PhysicalInfo() {
       {/* 뒤로가기 버튼 */}
       <div className="p-4">
         <Link href="/signup" className="inline-block">
-          <CaretLeft size={24} weight="regular" className="text-gray-800" />
+          <BackArrowIcon size={24} weight="regular" className="text-gray-800" />
         </Link>
       </div>
 
