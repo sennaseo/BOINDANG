@@ -1,69 +1,150 @@
 'use client';
 
-import { Camera, NewspaperClipping, Trophy, BookmarkSimple, X } from "@phosphor-icons/react";
-import Link from "next/link"; // Link 컴포넌트 사용을 위해 import
+import { Camera, NewspaperClipping, Trophy, BookmarkSimple, X, Plus } from "@phosphor-icons/react";
+import Link from "next/link";
+import { motion } from 'framer-motion';
 
 interface ActionMenuProps {
-  onClose: () => void; // 메뉴를 닫는 함수
+  onClose: () => void;
 }
 
+const menuLinks = [
+  { href: "/ocr/camera", icon: Camera, label: "성분 분석" },
+  { href: "/news", icon: NewspaperClipping, label: "카드 뉴스" },
+  { href: "/quiz", icon: Trophy, label: "영양 퀴즈" },
+  { href: "/experience", icon: BookmarkSimple, label: "체험단" },
+];
+
+const overlayVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.3 } },
+  exit: { opacity: 0, transition: { duration: 0.3, delay: 0.4 } },
+};
+
+const panelVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { type: "spring", bounce: 0.2, duration: 0.5 } },
+  exit: { opacity: 0, transition: { duration: 0.25 } },
+};
+
+const itemsAnchorVariants = {
+  hidden: { opacity: 1 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.2,
+    },
+  },
+  exit: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.07,
+      staggerDirection: -1,
+    },
+  },
+};
+
+const popOutItemVariants = {
+  hidden: { opacity: 0, scale: 0.3, y: 50 },
+  visible: (custom: { x: number; y: number; }) => ({
+    opacity: 1,
+    scale: 1,
+    x: custom.x,
+    y: custom.y,
+    transition: { type: "spring", stiffness: 280, damping: 18 },
+  }),
+  exit: {
+    opacity: 0,
+    scale: 0,
+    y: 0,
+    x: 0,
+    transition: { 
+      type: "spring", 
+      stiffness: 200, 
+      damping: 20, 
+      duration: 0.3 
+    },
+  },
+};
+
+const getArcPositions = (count: number, radius: number, verticalOffset: number = 0) => {
+  const positions: Array<{ x: number; y: number }> = [];
+  const angleSpread = count > 1 ? Math.PI * (2 / 3) : 0;
+  const angleStart = -Math.PI / 2 - angleSpread / 2;
+
+  for (let i = 0; i < count; i++) {
+    if (count === 1) {
+      positions.push({ x: 0, y: -radius + verticalOffset });
+      continue;
+    }
+    const angle = angleStart + (i / (count - 1)) * angleSpread;
+    positions.push({
+      x: Math.cos(angle) * radius,
+      y: Math.sin(angle) * radius + verticalOffset,
+    });
+  }
+  return positions;
+};
+
 export default function ActionMenu({ onClose }: ActionMenuProps) {
+  const itemPositions = getArcPositions(menuLinks.length, 120, 100);
+
   return (
-    // 1. 배경 처리 수정: bg-black bg-opacity-30 -> bg-gray-900/75 (어둡게 비치도록)
-    <div
-      className="fixed inset-0 bg-gray-900/25 z-50 flex items-end justify-center" // z-index 유지
-      onClick={onClose} // 오버레이 클릭 시 메뉴 닫기
+    <motion.div
+      className="fixed inset-0 bg-gray-900/75 z-50 flex items-end justify-center"
+      variants={overlayVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      onClick={onClose}
     >
-      {/* 메뉴 컨테이너: 상단 테두리 추가 */}
-      {/* 3. 검은 선 문제 해결 시도: z-[51], overflow-hidden 추가 */}
-      <div
-        className="bg-white w-full md:w-[440px] md:mx-auto rounded-t-2xl p-6 pt-8 flex flex-col items-center relative z-[51] overflow-hidden border-t border-gray-200"
-        onClick={(e) => e.stopPropagation()} // 메뉴 내부 클릭 시 이벤트 전파 방지
+      <motion.div
+        className="w-full md:w-[440px] md:mx-auto pt-10 pb-8.5 px-6 flex flex-col items-center relative z-[51] overflow-hidden shadow-xl"
+        variants={panelVariants}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+        onClick={(e) => e.stopPropagation()}
       >
-        {/* 성분 분석하기 버튼 */}
-        {/* TODO: 성분 분석 페이지 또는 기능 경로로 변경 */}
-        <Link
-          href="/ocr/camera"
-          className="w-full border border-[#6C2FF2] rounded-xl p-4 flex items-center justify-center gap-2 mb-6 text-[#6C2FF2] font-medium hover:bg-[#F5F1FF] transition-colors"
-          onClick={onClose} // 링크 클릭 시 메뉴 닫기
+        <motion.div
+          className="relative w-full h-[180px] flex justify-center items-center"
+          variants={itemsAnchorVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
         >
-          <Camera size={20} weight="bold" />
-          <span>성분 분석하기</span>
-        </Link>
+          {menuLinks.map((item, index) => (
+            <motion.div
+              key={item.label}
+              custom={itemPositions[index]}
+              variants={popOutItemVariants}
+              className="absolute"
+            >
+              <Link
+                href={item.href}
+                onClick={onClose}
+                className="flex flex-col items-center justify-center w-[72px] h-[72px] rounded-full bg-slate-100 hover:bg-slate-200 text-fuchsia-700 shadow-lg cursor-pointer transition-colors duration-150"
+              >
+                <item.icon size={26} weight="bold" />
+                <span className="mt-1 text-[10px] font-semibold text-center px-1">{item.label}</span>
+              </Link>
+            </motion.div>
+          ))}
+        </motion.div>
 
-        {/* 카드 뉴스 / 영양 퀴즈 / 체험단 / 커뮤니티: 3열 그리드, gap-y-6 추가 */}
-        <div className="grid grid-cols-3 gap-y-6 w-full mb-8">
-          {/* 카드 뉴스 */}
-          {/* TODO: 카드 뉴스 페이지 경로로 변경 */}
-          <Link href="/news" className="flex flex-col items-center gap-1 text-gray-700 text-sm" onClick={onClose}>
-            <NewspaperClipping size={28} weight="fill" />
-            <span>카드 뉴스</span>
-          </Link>
-
-          {/* 영양 퀴즈 */}
-          {/* TODO: 영양 퀴즈 페이지 경로로 변경 */}
-          <Link href="/quiz" className="flex flex-col items-center gap-1 text-gray-700 text-sm" onClick={onClose}>
-            <Trophy size={28} weight="fill" />
-            <span>영양 퀴즈</span>
-          </Link>
-
-          {/* 체험단 */}
-          {/* TODO: 체험단 페이지 경로로 변경 */}
-          <Link href="/experience" className="flex flex-col items-center gap-1 text-gray-700 text-sm" onClick={onClose}>
-            <BookmarkSimple size={28} weight="fill" />
-            <span>체험단</span>
-          </Link>
-        </div>
-
-        {/* 닫기 버튼 */}
-        <button
+        <motion.button
           onClick={onClose}
-          className="bg-[#6C2FF2] rounded-full w-15 h-15 flex items-center justify-center text-white shadow-md transform -translate-y-2 focus:outline-none"
+          className="bg-[#6C2FF2] rounded-full w-15 h-15 flex items-center justify-center text-white shadow-md focus:outline-none hover:bg-[#5A1EDC] transition-colors"
           aria-label="메뉴 닫기"
+          initial={{ rotate: 0 }}
+          animate={{ rotate: 135 }}
+          transition={{ duration: 0.5, type: "spring", stiffness: 100 }}
+          exit={{ rotate: 0, opacity: 0, scale: 0.5, transition: { duration: 0.2 } }}
         >
-          <X size={24} weight="bold" />
-        </button>
-      </div>
-    </div>
+          <Plus size={24} weight="bold" />
+        </motion.button>
+      </motion.div>
+    </motion.div>
   );
 }
