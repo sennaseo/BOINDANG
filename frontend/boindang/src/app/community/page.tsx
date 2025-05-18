@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image'; // Next.js Image 컴포넌트 임포트
 import { User, PencilSimple, Heart, ChatCircle } from '@phosphor-icons/react';
@@ -9,6 +9,7 @@ import { getCommunityPosts, getImageListByIds, toggleLikePost } from '../../api/
 import { ApiPostItem } from '../../types/api/community';
 import NewsCard from '../../components/news/NewsCard'; // NewsCard 컴포넌트 import
 import { newsData } from '../../data/news'; // newsData import
+import { usePreventSwipeBack } from '@/hooks/usePreventSwipeBack'; // 커스텀 훅 import
 
 const categories = ["전체", "식단", "운동", "고민&질문", "꿀팁", "목표", "체험단"];
 const tabs = ["피드", "매거진"];
@@ -38,6 +39,9 @@ export default function CommunityPage() {
   const [showFullHeader, setShowFullHeader] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const communityPageContainerRef = useRef<HTMLDivElement>(null); // ref 생성
+
+  usePreventSwipeBack(communityPageContainerRef, { edgeThreshold: 30 }); // 훅 사용
 
   useEffect(() => {
     const fetchPostsAndImages = async () => {
@@ -175,7 +179,7 @@ export default function CommunityPage() {
   }
 
   return (
-    <div className="bg-background min-h-screen text-text-primary">
+    <div ref={communityPageContainerRef} className="bg-background min-h-screen text-text-primary">
       {/* Sticky Header Container */}
       <div className="sticky top-0 z-20 bg-background">
         {/* Part 1: Always visible - Title and Icons */}

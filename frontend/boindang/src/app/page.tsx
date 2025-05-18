@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { CameraPlus, CaretRight, SealPercent } from '@phosphor-icons/react';
+import { useRef } from 'react';
+import { CameraPlus, CaretRight, SealPercent, Sparkle } from '@phosphor-icons/react';
 import BottomNavBar from '@/components/navigation/BottomNavBar';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
+import { usePreventSwipeBack } from '@/hooks/usePreventSwipeBack';
 
 // 클라이언트 사이드에서만 로드하기 위해 dynamic import 사용
 const DangDangi = dynamic(() => import('@/components/3D/DangDangi'), {
@@ -19,25 +20,7 @@ const DangDangi = dynamic(() => import('@/components/3D/DangDangi'), {
 export default function Home() {
   const mainContainerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const container = mainContainerRef.current;
-    if (!container) return;
-
-    const handleTouchStart = (event: TouchEvent) => {
-      // 단일 터치이고, 화면 왼쪽 가장자리에서 시작하는 경우
-      if (event.touches.length === 1 && event.touches[0].clientX < 30) {
-        // 스와이프 방향에 관계없이 가장자리에서 시작된 터치면 일단 막음
-        event.preventDefault();
-      }
-    };
-
-    // passive: false 옵션으로 preventDefault 가능하도록 설정
-    container.addEventListener('touchstart', handleTouchStart, { passive: false });
-
-    return () => {
-      container.removeEventListener('touchstart', handleTouchStart);
-    };
-  }, []);
+  usePreventSwipeBack(mainContainerRef, { edgeThreshold: 30 });
 
   return (
     <div ref={mainContainerRef} className="flex flex-col min-h-screen bg-[#F8F8F8] relative">
