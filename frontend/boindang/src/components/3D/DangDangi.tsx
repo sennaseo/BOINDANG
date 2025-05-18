@@ -1,5 +1,5 @@
 import { useRef, useEffect, Suspense, useState } from 'react';
-import { Canvas, useThree, useFrame } from '@react-three/fiber';
+import { Canvas } from '@react-three/fiber';
 import { useGLTF, OrbitControls, Html, useAnimations } from '@react-three/drei';
 import * as THREE from 'three';
 

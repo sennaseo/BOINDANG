@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { CameraPlus, CaretRight, SealPercent, Sparkle } from '@phosphor-icons/react';
+import { CameraPlus, CaretRight, SealPercent } from '@phosphor-icons/react';
 import BottomNavBar from '@/components/navigation/BottomNavBar';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
@@ -55,7 +55,6 @@ export default function Home() {
           <DangDangi />
         </div>
       </main>
-
 
 
       {/* 하단 분석 버튼 영역 */}
