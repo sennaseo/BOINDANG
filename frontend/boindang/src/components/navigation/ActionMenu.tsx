@@ -9,10 +9,10 @@ interface ActionMenuProps {
 }
 
 const menuLinks = [
-  { href: "/ocr/camera", icon: Camera, label: "성분 분석" },
-  { href: "/news", icon: NewspaperClipping, label: "카드 뉴스" },
-  { href: "/quiz", icon: Trophy, label: "영양 퀴즈" },
-  { href: "/experience", icon: BookmarkSimple, label: "체험단" },
+  { href: "/ocr/camera", icon: Camera, label: "성분 분석", className: "flex flex-col items-center justify-center w-[72px] h-[72px] rounded-full bg-maincolor hover:bg-moreblue text-slate-200 shadow-lg cursor-pointer transition-colors duration-150" },
+  { href: "/news", icon: NewspaperClipping, label: "카드 뉴스", className: "flex flex-col items-center justify-center w-[72px] h-[72px] rounded-full bg-slate-100 hover:bg-slate-200 text-maincolor shadow-lg cursor-pointer transition-colors duration-150" },
+  { href: "/quiz", icon: Trophy, label: "영양 퀴즈", className: "flex flex-col items-center justify-center w-[72px] h-[72px] rounded-full bg-slate-100 hover:bg-slate-200 text-maincolor shadow-lg cursor-pointer transition-colors duration-150" },
+  { href: "/experience", icon: BookmarkSimple, label: "체험단", className: "flex flex-col items-center justify-center w-[72px] h-[72px] rounded-full bg-slate-100 hover:bg-slate-200 text-maincolor shadow-lg cursor-pointer transition-colors duration-150" },
 ];
 
 const overlayVariants = {
@@ -124,7 +124,7 @@ export default function ActionMenu({ onClose }: ActionMenuProps) {
               <Link
                 href={item.href}
                 onClick={onClose}
-                className="flex flex-col items-center justify-center w-[72px] h-[72px] rounded-full bg-slate-100 hover:bg-slate-200 text-fuchsia-700 shadow-lg cursor-pointer transition-colors duration-150"
+                className={item.className}
               >
                 <item.icon size={26} weight="bold" />
                 <span className="mt-1 text-[10px] font-semibold text-center px-1">{item.label}</span>
