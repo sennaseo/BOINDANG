@@ -4,9 +4,4 @@ export interface PopularIngredient {
   count: number;
 }
 
-export interface PopularIngredientsApiResponse {
-  isSuccess: boolean;
-  code: number;
-  message: string;
-  data: PopularIngredient[];
-} 
+// PopularIngredientsApiResponse 인터페이스 삭제됨 
