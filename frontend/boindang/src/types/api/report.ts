@@ -49,3 +49,10 @@ export type ReportPageProps = {
     categorizedIngredients?: CategorizedIngredients;
     topRisks?: TopRisk[];
   }
+
+  export interface ReportHistory {
+    productId: string;
+    productName: string;
+    analyzedAt: string;
+  }
+  
