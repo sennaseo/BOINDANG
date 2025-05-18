@@ -6,6 +6,7 @@ import type {
   SignUpResult,
   LoginResult,
   UserProfileUpdatePayload,
+  LogoutResult,
 } from '@/types/api/authTypes';
 import type { ApiResponse } from '@/types/api';
 
@@ -84,8 +85,8 @@ export const updateUserProfile = async (
  * 로그아웃 API 요청 함수
  * @returns Promise<ApiResponse<void>> API 응답 전체를 반환 (공통 래퍼 적용)
  */
-export const postLogout = async (): Promise<ApiResponse<void>> => {
-  const response = await apiClient.get<ApiResponse<void>>('/user/logout');
+export const postLogout = async (): Promise<ApiResponse<LogoutResult>> => {
+  const response = await apiClient.get<ApiResponse<LogoutResult>>('/user/logout');
   return response.data;
 };
 

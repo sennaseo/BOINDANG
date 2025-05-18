@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import BottomNavBar from '@/components/navigation/BottomNavBar';
 import Link from 'next/link';
 import { MagnifyingGlass, WarningCircle, CheckCircle, Fire } from '@phosphor-icons/react';
@@ -8,6 +8,7 @@ import CategoryListSection from './components/CategoryListSection';
 import type { PopularIngredient } from '@/types/api/encyclopedia';
 import { fetchPopularIngredients } from '@/api/encyclopedia';
 import FeaturedIngredientsCarousel from './components/FeaturedIngredientsSection';
+import { usePreventSwipeBack } from '@/hooks/usePreventSwipeBack';
 
 const categoryIngredients = [
   { name: '단백질', imageSrc: '/assets/category_icon/danback.png' },
@@ -70,6 +71,9 @@ const surprisingGoodIngredients = [
 ];
 
 export default function IngredientsPage() {
+  const mainContainerRef = useRef<HTMLDivElement>(null);
+  usePreventSwipeBack(mainContainerRef, { edgeThreshold: 30 });
+
   const [popularIngredients, setPopularIngredients] = useState<PopularIngredient[]>([]);
   const [isLoadingPopular, setIsLoadingPopular] = useState<boolean>(true);
   const [errorPopular, setErrorPopular] = useState<string | null>(null);
@@ -102,7 +106,7 @@ export default function IngredientsPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div ref={mainContainerRef} className="min-h-screen bg-gray-50">
       <div className="max-w-md mx-auto shadow-sm pb-[70px]">
         <div className="bg-white p-4">
           <h1 className="text-xl font-bold mb-4">영양 성분 백과</h1>
