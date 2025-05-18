@@ -261,7 +261,7 @@ export default function PostDetailPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
+    <div className="flex flex-col min-h-screen bg-background max-w-md mx-auto w-full">
       <header className="sticky top-0 z-10 flex items-center justify-between p-4 bg-background border-b border-gray-200">
         <button onClick={() => router.back()} aria-label="뒤로 가기">
           <ArrowLeft size={24} className="text-text-primary" />
@@ -374,7 +374,8 @@ export default function PostDetailPage() {
         </div>
       </main>
 
-      <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3">
+      {/* 댓글 입력창 (footer 역할) - 화면 맨 아래 고정 */}
+      <footer className="fixed bottom-0 left-1/2 -translate-x-1/2 max-w-md w-full bg-white border-t border-gray-200 px-4 py-3 z-50">
         <form onSubmit={handleCommentSubmit} className="flex items-center gap-x-2">
           <ChatCircle size={24} weight="fill" color="#A0AEC0" className="flex-shrink-0" />
           <input
@@ -388,7 +389,11 @@ export default function PostDetailPage() {
           <button
             type="submit"
             disabled={!commentText.trim()}
-            className={`text-sm font-semibold px-3 py-2 rounded-full transition-colors ${commentText.trim() ? 'text-[#6C2FF2] hover:bg-purple-100' : 'text-gray-400 cursor-not-allowed'}`}
+            className={`text-sm font-semibold px-3 py-2 rounded-full transition-colors ${
+              commentText.trim()
+                ? 'text-[#6C2FF2] hover:bg-purple-100'
+                : 'text-gray-400 cursor-not-allowed'
+            }`}
           >
             등록
           </button>
