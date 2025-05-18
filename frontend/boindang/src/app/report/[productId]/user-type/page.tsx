@@ -5,7 +5,7 @@ import ReportTabNav from "@/components/navigation/ReportTabNav";
 import { CaretLeft } from "@phosphor-icons/react";
 import { useParams, useRouter } from 'next/navigation';
 import { getReport } from "@/api/report";
-import { ApiError, ApiResponse } from "@/types/api";
+import { ApiError } from "@/types/api";
 // --- 타입 정의 시작 ---
 interface TopRisk {
   name: string;    // 성분명 (e.g., "말토덱스트린")
@@ -52,12 +52,13 @@ export default function UserTypePage() {
         setLoading(true);
         setError(null);
         try {
-          const response: ApiResponse<ReportResultData> = await getReport(productId);
-          if (response && response.success) {
-            setReportData(response.data);
+          const axiosResponse = await getReport(productId);
+          const apiResponse = axiosResponse.data; // ApiResponse<ReportResultData> 추출
+          if (apiResponse && apiResponse.success) {
+            setReportData(apiResponse.data);
           } else {
-            setError(response?.error || null);
-            setReportData(null);
+            setError(apiResponse?.error || { status: 'UNKNOWN_ERROR', message: 'API 응답 실패 또는 데이터 없음' });
+            setReportData(null);  
           }
         } catch (err) {
           setError(err as ApiError);

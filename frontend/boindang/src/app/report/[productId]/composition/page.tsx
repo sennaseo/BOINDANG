@@ -1,45 +1,15 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, use } from "react";
 import ReportTabNav from "@/components/navigation/ReportTabNav";
 import { CaretLeft, X, Info } from "@phosphor-icons/react";
 import CompositionChart from "@/components/chart/CompositionChart";
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { getReport } from "@/api/report";
-import { ApiError, ApiResponse } from "@/types/api";
+import { ApiError } from "@/types/api";
+import { ReportPageProps, ReportResultData } from "@/types/api/report";
 
 // --- 타입 정의 시작 ---
-interface NutrientDetail {
-  name: string;
-  value: number; // g 또는 mg 단위의 실제 값
-  percent: number; // 일일 권장 섭취량 대비 퍼센트
-  grade: string;
-}
-
-interface IngredientItem {
-  name: string;
-  description?: string[];
-  gi?: number;
-  shortMessage?: string;
-  riskLevel?: string;
-}
-
-interface CategorizedIngredients {
-  [category: string]: IngredientItem[];
-}
-
-interface ReportResultData {
-  productName?: string;
-  totalWeight?: string;
-  kcal?: number;
-  estimatedGi?: number;
-  giGrade?: string;
-  nutrientRatios?: { name: string; percent: number }[];
-  nutrientDetails?: NutrientDetail[];
-  categorizedIngredients?: CategorizedIngredients;
-  topRisks?: { name: string; keyword: string; title: string; detail: string }[];
-}
-
 interface CompositionSubDataItem {
   id: string;
   label: string;
@@ -87,10 +57,10 @@ const additiveCategoryStyles: { [key: string]: { icon: string; color: string } }
 // Helper to slugify names for IDs
 const slugify = (text: string) => text.toLowerCase().replace(/\s+/g, '-');
 
-export default function CompositionPage() {
+export default function CompositionPage({ params: paramsPromise }: ReportPageProps) {
+  const params = use(paramsPromise);
+  const { productId } = params;
   const router = useRouter();
-  const params = useParams();
-  const productId = params.productId as string;
 
   const [reportData, setReportData] = useState<ReportResultData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -101,31 +71,33 @@ export default function CompositionPage() {
   const [selectedItem, setSelectedItem] = useState<AdditiveItem | null>(null);
 
   useEffect(() => {
+    console.log("productId:", productId);
     if (productId) {
-      const fetchReportData = async () => {
-        setLoading(true);
-        setError(null);
+      const fetchReport = async () => {
         try {
-          const response: ApiResponse<ReportResultData> = await getReport(productId);
-          if (response && response.success) {
-            setReportData(response.data);
-          } else {
-            setError(response?.error || null);
-            setReportData(null);
+          setLoading(true);
+          try {
+            const response = await getReport(productId);
+            const apiResponse = response.data;
+
+            if (apiResponse && apiResponse.success) {
+              setReportData(apiResponse.data);
+              setLoading(false);
+              return; // API 호출 성공 시 리턴
+            } else {
+              console.warn("API 호출 실패");
+            }
+          } catch (apiError) {
+            console.error("API 호출 오류 발생", apiError);
+            // API 오류 시 localStorage 확인으로 넘어감
           }
-        } catch (err) {
-          setError(err as ApiError);
-          setReportData(null);
+        } catch (error) {
+          console.error("오류 발생:", error);
+          setError({ message: "리포트를 불러오는 데 실패했습니다" } as ApiError);
+          setLoading(false);
         }
-        setLoading(false);
       };
-      fetchReportData();
-    } else {
-      setError({
-        status: "BAD_REQUEST",
-        message: "productId가 제공되지 않았습니다.",
-      });
-      setLoading(false);
+      fetchReport();
     }
   }, [productId]);
 
@@ -279,7 +251,7 @@ export default function CompositionPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 pb-20">
+    <div className="min-h-screen bg-gray-50 p-4 pb-10">
       {/* 헤더 */}
       <header className="flex items-center mb-2">
         <button onClick={() => router.push(`/report/${productId}`)} className="mr-2 text-2xl"><CaretLeft/></button>
