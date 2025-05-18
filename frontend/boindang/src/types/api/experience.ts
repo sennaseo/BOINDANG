@@ -12,13 +12,12 @@ export interface Experience {
   }
   
   export interface ExperienceListResponse {
-    isSuccess: boolean;
-    code: number;
-    message: string;
     data: {
       totalPages: number;
       campaigns: Experience[];
     };
+    error: any;
+    success: boolean;
   }
 
 export interface ExperienceDetail {

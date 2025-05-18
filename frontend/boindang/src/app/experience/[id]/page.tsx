@@ -37,7 +37,11 @@ export default function ExperienceDetailPage() {
     setApplying(true);
     try {
       const res = await applyExperience(campaignId);
-      alert(res.message);
+      if (res.success) {
+        alert('신청이 완료되었습니다.');
+      } else {
+        alert(res.error?.message || '신청에 실패했습니다.');
+      }
     } catch {
       alert('신청에 실패했습니다.');
     } finally {
