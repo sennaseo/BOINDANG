@@ -10,12 +10,16 @@ import { getUserInfo, postLogout, postDeleteAccount } from "@/api/auth";
 import type { ApiResponse } from "@/types/api";
 import type { SignUpResult } from "@/types/api/authTypes";
 import { useAuthStore } from "@/stores/authStore";
+import { usePreventSwipeBack } from '@/hooks/usePreventSwipeBack';
 
 export default function MorePage() {
     const [userInfo, setUserInfo] = useState<ApiResponse<SignUpResult> | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const morePageContainerRef = useRef<HTMLDivElement>(null);
+
+    usePreventSwipeBack(morePageContainerRef, { edgeThreshold: 30 });
 
     useEffect(() => {
         const fetchUserInfo = async () => {
