@@ -74,41 +74,48 @@ export const searchIngredients = async ({
 export const getIngredientDetail = async (
   ingredientId: string
 ): Promise<ApiResponse<IngredientDetailData>> => {
+  console.log('[getIngredientDetail] Called with ID:', ingredientId);
+  console.log('[getIngredientDetail] apiClient baseURL:', apiClient.defaults.baseURL);
   try {
     const response = await apiClient.get<ApiResponse<IngredientDetailData>>(
-      `/encyclopedia/detail/${ingredientId}`
+      `/encyclopedia/ingredient/${ingredientId}`
     );
+    console.log('[getIngredientDetail] Response received:', response.data);
     return response.data;
   } catch (error) {
-    console.error(`Error fetching ingredient detail for ID ${ingredientId}:`, error);
-    if (axios.isAxiosError(error)) {
-      if (error.response && error.response.data && typeof error.response.data.success === 'boolean') {
-        return error.response.data as ApiResponse<IngredientDetailData>;
+    console.error(`[getIngredientDetail] Error fetching ingredient detail for ID ${ingredientId}:`, error);
+    // Axios 에러이고, 에러 응답이 있는 경우 해당 응답을 최대한 활용
+    if (axios.isAxiosError(error) && error.response) {
+      // 서버가 ApiResponse 형태로 에러를 내려준 경우 (success: false 등)
+      if (error.response.data && typeof error.response.data.success === 'boolean') {
+        return error.response.data as ApiResponse<IngredientDetailData>; 
       }
+      // 그 외 Axios 에러 (예: 네트워크 오류는 아니지만 HTTP 상태 코드로 에러 표시)
       return {
         success: false,
         data: null,
         error: {
-          status: error.response?.status?.toString() || 'AXIOS_ERROR',
-          message: error.message || '성분 상세 정보 조회 중 Axios 오류 발생',
+          status: String(error.response.status),
+          message: (error.response.data as Record<string, unknown>)?.message as string || error.message || '성분 상세 정보 조회 중 Axios 오류 발생',
         },
       };
-    } else if (error instanceof Error) {
+    } else if (error instanceof Error) { // 네트워크 오류 또는 요청 설정 오류 등 error.response가 없는 경우
       return {
         success: false,
         data: null,
         error: {
           status: 'CLIENT_ERROR',
-          message: error.message || '성분 상세 정보 조회에 실패했습니다.',
+          message: error.message || '성분 상세 정보 조회에 실패했습니다 (클라이언트 오류).',
         },
       };
     }
+    // 모든 상황을 대비한 기본 에러 반환
     return {
       success: false,
       data: null,
       error: {
         status: 'UNKNOWN_ERROR',
-        message: '성분 상세 정보 조회에 실패했습니다.',
+        message: '알 수 없는 오류로 성분 상세 정보 조회에 실패했습니다.',
       },
     };
   }
