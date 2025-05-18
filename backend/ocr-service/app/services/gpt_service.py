@@ -71,6 +71,7 @@ async def ask_gpt_ingredient(ingredient_text: str) -> dict:
           "basicInfo": {...},
           "ingredientTree": [...],
           "categorizedIngredients": {...},
+          "giIndex": {value: ..., grade:"..."}
           "summary": "..."
         }
         """
