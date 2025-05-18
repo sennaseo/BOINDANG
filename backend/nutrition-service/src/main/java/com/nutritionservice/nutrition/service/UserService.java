@@ -1,6 +1,7 @@
 package com.nutritionservice.nutrition.service;
 
 import com.nutritionservice.common.model.dto.ApiResponse;
+import com.nutritionservice.common.model.dto.ApiResponses;
 import com.nutritionservice.common.service.EurekaService;
 import org.springframework.web.client.RestClient;
 import com.nutritionservice.nutrition.model.dto.external.UserInfo;
@@ -20,13 +21,13 @@ public class UserService {
             String url = eurekaService.getUrl("BOINDANG-USER") + "me";
             System.out.println("🔍 사용자 정보 요청 URL: " + url);
 
-            ApiResponse<UserInfo> response = restClient.get()
+            ApiResponses<UserInfo> response = restClient.get()
                     .uri(url)
                     .header("X-User-Id", userId)
                     .retrieve()
                     .body(new ParameterizedTypeReference<>() {});
 
-            return response.getResult();
+            return response.getData();
         } catch (Exception e) {
             throw new RuntimeException("❌ 사용자 정보 요청 실패: " + e.getMessage(), e);
         }
