@@ -7,6 +7,7 @@ import { X, Image as ImageIcon, ListBullets, Lightbulb, ChartBar, ArrowCounterCl
 import { postOcrAnalysis } from '@/api/ocr'; // 경로 확인 필요, @/api/ocr.ts 가정
 import { getPresignedUrl } from '@/api/image';
 import OcrProcessingScreen from '../components/OcrProcessingScreen'; // 새로 만든 컴포넌트 import
+import { usePreventSwipeBack } from '@/hooks/usePreventSwipeBack'; // 커스텀 훅 import
 
 // 애니메이션을 위한 상수 및 스타일 함수 정의 (컴포넌트 외부) - 사용되지 않는 변수 삭제
 // const handImg = '/assets/sugarcube/sugar_hand.png';
@@ -152,6 +153,10 @@ export default function OcrCameraPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null); // 캡처용 캔버스 참조
   const router = useRouter(); // useRouter 훅 사용
+  const cameraPageContainerRef = useRef<HTMLDivElement>(null); // 스와이프 방지용 ref
+
+  usePreventSwipeBack(cameraPageContainerRef, { edgeThreshold: 30 }); // 훅 사용
+
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isGuideVisible, setIsGuideVisible] = useState(true);
@@ -621,7 +626,7 @@ export default function OcrCameraPage() {
   };
 
   return (
-    <div className="flex flex-col h-screen w-full max-w-md mx-auto bg-black text-white relative overflow-hidden">
+    <div ref={cameraPageContainerRef} className="flex flex-col h-screen w-full max-w-md mx-auto bg-black text-white relative overflow-hidden">
       {/* 상단 바: X 버튼, 촬영 가이드 버튼 - 에러 없을 때만 표시 */}
       {!isProcessing && !error && (
         <div className="h-16 flex justify-between items-center p-4 z-10">

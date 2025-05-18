@@ -1,13 +1,18 @@
 'use client';
 
+import { useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import BottomNavBar from '../../components/navigation/BottomNavBar';
 import Image from 'next/image';
+import { usePreventSwipeBack } from '@/hooks/usePreventSwipeBack';
+
 export default function QuizIntroPage() {
   const router = useRouter();
+  const mainContainerRef = useRef<HTMLDivElement>(null);
+  usePreventSwipeBack(mainContainerRef, { edgeThreshold: 30 });
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#ede9fe] to-white flex flex-col max-w-screen-sm mx-auto relative overflow-hidden">
+    <div ref={mainContainerRef} className="min-h-screen bg-gradient-to-b from-[#ede9fe] to-white flex flex-col max-w-screen-sm mx-auto relative overflow-hidden">
       {/* 상단 연보라 원 */}
       <div className="absolute -top-24 -left-24 w-72 h-72 bg-[#c4b5fd] opacity-30 rounded-full z-0" />
       {/* 하단 연보라 원 */}

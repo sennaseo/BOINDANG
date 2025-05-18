@@ -5,6 +5,7 @@ import type {
   LoginRequestPayload,
   SignUpResult,
   LoginResult,
+  UserProfileUpdatePayload,
 } from '@/types/api/authTypes';
 import type { ApiResponse } from '@/types/api';
 
@@ -52,8 +53,29 @@ export const postLogin = async (
   return response.data;
 };
 
-export const getUserInfo = async (): Promise<SignUpResult> => {
-  const response = await apiClient.get<SignUpResult>('/user/me');
+
+/**
+ * 사용자 정보 조회 API 요청 함수
+ * @returns Promise<SignUpResponse> API 응답 전체를 반환
+ * 회원가입 후 회원 정보 조회 시 사용
+ */
+export const getUserInfo = async (): Promise<ApiResponse<SignUpResult>> => {
+  const response = await apiClient.get<ApiResponse<SignUpResult>>('/user/me');
   return response.data;
 };
 
+/**
+ * 사용자 프로필 정보 업데이트 API 요청 함수
+ * @param profileData 업데이트할 프로필 데이터 (UserProfileUpdatePayload 타입)
+ * @returns Promise<SignUpResponse> API 응답 전체를 반환 (성공 시 업데이트된 사용자 정보 포함)
+ */
+export const updateUserProfile = async (
+  profileData: UserProfileUpdatePayload
+): Promise<ApiResponse<UserProfileUpdatePayload>> => {
+  // apiClient를 사용하여 '/user/profile' 또는 해당하는 엔드포인트로 PUT 또는 PATCH 요청
+  // 여기서는 PUT '/user/me' (기존 getUserInfo와 유사한 엔드포인트 가정) 또는 '/user/profile' 등을 사용할 수 있습니다.
+  // 백엔드 API 명세에 따라 엔드포인트와 HTTP 메소드를 결정해야 합니다.
+  // 일반적인 RESTful API에서는 PATCH /user/me 또는 PUT /user/profile 등을 사용합니다.
+  const response = await apiClient.patch<ApiResponse<UserProfileUpdatePayload>>('/user/me', profileData); // 예시로 PATCH 사용
+  return response.data;
+};
