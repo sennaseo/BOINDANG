@@ -31,7 +31,8 @@ public class UserClient {
 				.body(new ParameterizedTypeReference<>() {});
 			return apiResponse.getData().getNickname();
 		} catch (Exception e) {
-			throw new RuntimeException("유저 이름 조회 실패: " + e.getMessage(), e);
+			log.warn("❗유저 조회 실패 (userId: {}): {}", userId, e.getMessage());
+			return "알 수 없음";
 		}
 	}
 
