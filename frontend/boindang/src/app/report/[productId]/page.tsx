@@ -5,6 +5,7 @@ import Link from "next/link";
 import { House, ChartLine, Info, Heart } from "@phosphor-icons/react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { getReport } from "@/api/report";
+import { ApiError, ApiResponse } from "@/types/api";
 
 // GI 색상 설정
 const giColors = {
@@ -63,37 +64,30 @@ interface ReportResultData {
   topRisks?: TopRisk[];
 }
 
-interface ApiReportResponse {
-  success: boolean;
-  code: number;
-  message: string;
-  result: ReportResultData;
-}
-
 export default function ReportPage({ params: paramsPromise }: ReportPageProps) {
   const params = use(paramsPromise);
   const { productId } = params;
   const [report, setReport] = useState<ReportResultData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ApiError | null>(null);
 
   useEffect(() => {
     if (productId) {
       const fetchReport = async () => {
         try {
           setLoading(true);
-          const data: ApiReportResponse = await getReport(productId);
+          const data: ApiResponse<ReportResultData> = await getReport(productId);
           if (data && data.success) {
-            setReport(data.result);
-            console.log("Fetched report data:", data.result);
+            setReport(data.data);
+            console.log("Fetched report data:", data.data);
           } else {
             console.error("Failed to fetch report or no data:", data);
-            setError(data?.message || "리포트 데이터를 불러오는데 실패했습니다.");
+            setError(data.error || null );
             setReport(null);
           }
         } catch (err) {
           console.error("Error fetching report:", err);
-          setError(err instanceof Error ? err.message : "알 수 없는 에러가 발생했습니다.");
+          setError(err as ApiError);
           setReport(null);
         } finally {
           setLoading(false);
@@ -137,7 +131,7 @@ export default function ReportPage({ params: paramsPromise }: ReportPageProps) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-5">
         <p className="text-xl font-semibold text-red-500 mb-4">오류 발생</p>
-        <p className="text-gray-700 mb-6">{error}</p>
+        <p className="text-gray-700 mb-6">{error.message}</p>
         <Link href="/" className="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700">
           홈으로 돌아가기
         </Link>

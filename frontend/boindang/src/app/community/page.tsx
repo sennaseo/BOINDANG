@@ -11,7 +11,7 @@ import NewsCard from '../../components/news/NewsCard'; // NewsCard 컴포넌트 
 import { newsData } from '../../data/news'; // newsData import
 import { usePreventSwipeBack } from '@/hooks/usePreventSwipeBack'; // 커스텀 훅 import
 
-const categories = ["전체", "식단", "운동", "고민&질문", "꿀팁", "목표", "체험단"];
+const categories = ["전체", "식단", "운동", "고민&질문", "꿀팁", "목표"];
 const tabs = ["피드", "매거진"];
 
 // 기존 Post 인터페이스는 API 연동으로 인해 ApiPostItem으로 대체되거나,
@@ -34,45 +34,51 @@ export default function CommunityPage() {
   const [activeCategory, setActiveCategory] = useState("전체");
   const [activeTab, setActiveTab] = useState("피드");
   const [posts, setPosts] = useState<ApiPostItem[]>([]);
-  const [imageUrlsMap, setImageUrlsMap] = useState<Map<number, string>>(new Map()); // 이미지 URL 맵 상태 추가
+  const [imageUrlsMap, setImageUrlsMap] = useState<Map<number, string>>(new Map());
   const [lastScrollY, setLastScrollY] = useState(0);
   const [showFullHeader, setShowFullHeader] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const communityPageContainerRef = useRef<HTMLDivElement>(null); // ref 생성
+  const communityPageContainerRef = useRef<HTMLDivElement>(null);
 
-  usePreventSwipeBack(communityPageContainerRef, { edgeThreshold: 30 }); // 훅 사용
+  usePreventSwipeBack(communityPageContainerRef, { edgeThreshold: 30 });
 
   useEffect(() => {
     const fetchPostsAndImages = async () => {
       setIsLoading(true);
       setError(null);
-      setPosts([]); // 데이터 초기화
-      setImageUrlsMap(new Map()); // 이미지 맵 초기화
+      setPosts([]);
+      setImageUrlsMap(new Map());
 
       try {
-        const postData = await getCommunityPosts();
-        if (postData && postData.posts) {
+        const categoryParam = activeCategory === "전체" ? undefined : activeCategory;
+        const apiResponse = await getCommunityPosts({ category: categoryParam });
+
+        if (apiResponse.success && apiResponse.data) {
+          const postData = apiResponse.data;
           setPosts(postData.posts);
 
-          // 이미지 ID 추출 및 이미지 URL 가져오기
           const imageIdsToFetch = postData.posts
             .map(post => post.imageId)
             .filter((id): id is number => id !== null && id !== undefined);
 
           if (imageIdsToFetch.length > 0) {
             const uniqueImageIds = [...new Set(imageIdsToFetch)];
-            const imageList = await getImageListByIds(uniqueImageIds);
-            if (imageList) {
+            const imageListResponse = await getImageListByIds(uniqueImageIds as number[]);
+
+            if (imageListResponse.success && imageListResponse.data) {
+              const imageList = imageListResponse.data;
               const newImageUrlsMap = new Map<number, string>();
               imageList.forEach(image => {
                 newImageUrlsMap.set(image.imageId, image.imageUrl);
               });
               setImageUrlsMap(newImageUrlsMap);
+            } else {
+              console.warn('Failed to fetch image list for community page:', imageListResponse.error?.message);
             }
           }
         } else {
-          setError("게시글을 불러오는데 실패했습니다.");
+          setError(apiResponse.error?.message || "게시글을 불러오는데 실패했습니다.");
         }
       } catch (err) {
         console.error(err);
@@ -85,7 +91,7 @@ export default function CommunityPage() {
     if (activeTab === '피드') {
       fetchPostsAndImages();
     }
-  }, [activeTab]);
+  }, [activeTab, activeCategory]);
 
   const handleLikeToggle = async (postIdToToggle: number) => {
     const originalPosts = [...posts]; // 롤백을 위한 원본 데이터 복사
@@ -105,12 +111,12 @@ export default function CommunityPage() {
     );
 
     try {
-      const response = await toggleLikePost(postIdToToggle);
-      if (!response || !response.isSuccess) {
+      const apiResponse = await toggleLikePost(postIdToToggle); // 반환 타입은 ApiResponse<null>
+      if (!apiResponse.success) { // isSuccess 대신 success 사용, !response 조건 제거
         // API 호출 실패 또는 응답 실패 시 롤백
-        console.error("Failed to toggle like on server:", response?.message);
+        console.error("Failed to toggle like on server:", apiResponse.error?.message);
         setPosts(originalPosts); // 원래 상태로 롤백
-        alert(response?.message || "좋아요 처리에 실패했습니다. 다시 시도해주세요.");
+        alert(apiResponse.error?.message || "좋아요 처리에 실패했습니다. 다시 시도해주세요.");
       }
       // 성공 시: UI는 이미 낙관적으로 업데이트 되었으므로 별도 처리 없음
       // 필요하다면 여기서 서버로부터 최신 데이터를 다시 받아올 수도 있습니다.
@@ -145,15 +151,18 @@ export default function CommunityPage() {
   const retryFetch = () => {
     if (activeTab === '피드') {
       // fetchPostsAndImages를 직접 호출하기 위해 useEffect 내부의 함수를 바깥으로 빼거나,
-      // activeTab 상태를 변경하여 useEffect를 다시 트리거하는 방식을 고려할 수 있습니다.
+      // activeTab 또는 activeCategory 상태를 변경하여 useEffect를 다시 트리거하는 방식을 고려할 수 있습니다.
       // 여기서는 간단하게 activeTab을 잠시 다른 값으로 바꿨다가 되돌려 useEffect를 재실행합니다.
-      // 좀 더 나은 방식은 fetchPostsAndImages 함수를 useEffect 밖으로 빼고 직접 호출하는 것입니다.
+      // 만약 카테고리 필터링 중 재시도라면 activeCategory도 고려해야 할 수 있습니다.
+      const currentCategory = activeCategory; // 현재 카테고리 저장
       const currentTab = activeTab;
-      setActiveTab(''); // 임시로 탭 변경하여 useEffect 트리거
-      setTimeout(() => setActiveTab(currentTab), 0);
+      setActiveTab('');
+      setActiveCategory(''); // 임시로 카테고리도 변경하여 확실히 트리거
+      setTimeout(() => {
+        setActiveCategory(currentCategory); // 원래 카테고리로 복원
+        setActiveTab(currentTab);
+      }, 0);
     }
-    // 매거진 탭에 대한 재시도 로직은 현재 newsData가 정적이라 불필요하지만,
-    // 추후 API 연동 시 추가될 수 있습니다.
   };
 
   if (isLoading && activeTab === '피드') {
