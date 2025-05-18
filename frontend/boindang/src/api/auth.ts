@@ -83,9 +83,18 @@ export const updateUserProfile = async (
 
 /**
  * 로그아웃 API 요청 함수
- * @returns Promise<ApiResponse<LogoutResult>> API 응답 전체를 반환
+ * @returns Promise<ApiResponse<void>> API 응답 전체를 반환 (공통 래퍼 적용)
  */
-export const getLogout = async (): Promise<ApiResponse<LogoutResult>> => {
-  const response = await apiClient.get<ApiResponse<LogoutResult>>('/user/logout');
+export const postLogout = async (): Promise<ApiResponse<void>> => {
+  const response = await apiClient.get<ApiResponse<void>>('/user/logout');
+  return response.data;
+};
+
+/**
+ * 회원탈퇴 API 요청 함수
+ * @returns Promise<ApiResponse<void>> API 응답 전체를 반환 (공통 래퍼 적용)
+ */
+export const postDeleteAccount = async (): Promise<ApiResponse<void>> => {
+  const response = await apiClient.delete<ApiResponse<void>>('/user/delete');
   return response.data;
 };
