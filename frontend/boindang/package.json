@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@ducanh2912/next-pwa": "^10.2.9",
+    "@headlessui/react": "^2.2.3",
     "@phosphor-icons/react": "^2.1.7",
     "@react-three/drei": "^10.0.7",
     "@react-three/fiber": "^9.1.2",

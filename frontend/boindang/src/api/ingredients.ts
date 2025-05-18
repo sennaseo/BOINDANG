@@ -3,7 +3,6 @@ import type {
   IngredientSearchResponseData,
   CategoryIngredientsData,
   IngredientDetailData,
-  CategoryIngredientsApiResponse
 } from '@/types/api/ingredients';
 import type { ApiResponse, ApiError } from '@/types/api';
 import axios from 'axios';
@@ -137,7 +136,7 @@ export const fetchCategoryIngredients = async ({
   page,
 }: FetchCategoryIngredientsParams): Promise<ApiResponse<CategoryIngredientsData>> => {
   try {
-    const response = await apiClient.get<CategoryIngredientsApiResponse>('/encyclopedia/category', {
+    const response = await apiClient.get<ApiResponse<CategoryIngredientsData>>('/encyclopedia/category', {
       params: {
         category: categoryName,
         page,
@@ -146,14 +145,14 @@ export const fetchCategoryIngredients = async ({
 
     const apiResult = response.data;
 
-    if (apiResult.isSuccess && apiResult.data) {
+    if (apiResult.success && apiResult.data) {
       return { data: apiResult.data, error: null, success: true };
     } else {
       return {
         data: null,
-        error: {
-          status: String(apiResult.code || 'API_LOGIC_ERROR'),
-          message: apiResult.message || '카테고리별 성분 목록을 가져오는데 실패했습니다.',
+        error: apiResult.error || {
+          status: 'API_LOGIC_ERROR',
+          message: '카테고리별 성분 목록을 가져오는데 실패했습니다 (API 응답 오류).',
         },
         success: false,
       };

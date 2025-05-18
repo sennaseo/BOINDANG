@@ -136,7 +136,7 @@ export default function BottomNavBar() {
             style={{ position: 'relative', zIndex: 40 }}
           >
             <Plus
-              size={30}
+              size={24}
               weight="bold"
               className={`transition-transform duration-500 ease-in-out ${isActionMenuOpen ? 'rotate-[135deg]' : 'rotate-0'}`}
             />

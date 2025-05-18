@@ -4,4 +4,8 @@ export interface PopularIngredient {
   count: number;
 }
 
-// PopularIngredientsApiResponse 인터페이스 삭제됨 
+// 검색어 카운트 증가 request 타입
+export interface IncreaseSearchCountRequest {
+  keyword: string;
+}
+

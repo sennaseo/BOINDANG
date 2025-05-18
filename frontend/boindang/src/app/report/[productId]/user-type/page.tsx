@@ -5,7 +5,7 @@ import ReportTabNav from "@/components/navigation/ReportTabNav";
 import { CaretLeft } from "@phosphor-icons/react";
 import { useParams, useRouter } from 'next/navigation';
 import { getReport } from "@/api/report";
-
+import { ApiError, ApiResponse } from "@/types/api";
 // --- 타입 정의 시작 ---
 interface TopRisk {
   name: string;    // 성분명 (e.g., "말토덱스트린")
@@ -19,13 +19,6 @@ interface ReportResultData {
   productName?: string;
   // ... 다른 ReportResultData 필드들 ...
   topRisks?: TopRisk[];
-}
-
-interface ApiReportResponse {
-  success: boolean;
-  code: number;
-  message: string;
-  result: ReportResultData;
 }
 // --- 타입 정의 끝 ---
 
@@ -51,7 +44,7 @@ export default function UserTypePage() {
 
   const [reportData, setReportData] = useState<ReportResultData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ApiError | null>(null);
 
   useEffect(() => {
     if (productId) {
@@ -59,22 +52,25 @@ export default function UserTypePage() {
         setLoading(true);
         setError(null);
         try {
-          const response: ApiReportResponse = await getReport(productId);
+          const response: ApiResponse<ReportResultData> = await getReport(productId);
           if (response && response.success) {
-            setReportData(response.result);
+            setReportData(response.data);
           } else {
-            setError(response?.message || "리포트 데이터를 불러오는데 실패했습니다.");
+            setError(response?.error || null);
             setReportData(null);
           }
         } catch (err) {
-          setError(err instanceof Error ? err.message : "알 수 없는 에러가 발생했습니다.");
+          setError(err as ApiError);
           setReportData(null);
         }
         setLoading(false);
       };
       fetchReportData();
     } else {
-      setError("productId가 제공되지 않았습니다.");
+      setError({
+        status: "BAD_REQUEST",
+        message: "productId가 제공되지 않았습니다.",
+      });
       setLoading(false);
     }
   }, [productId]);
@@ -87,7 +83,7 @@ export default function UserTypePage() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-5">
         <p className="text-xl font-semibold text-red-500 mb-4">오류 발생</p>
-        <p className="text-gray-700 mb-6 text-center">{error}</p>
+        <p className="text-gray-700 mb-6 text-center">{error.message}</p>
         <button onClick={() => router.push('/')} className="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700">홈으로 돌아가기</button>
       </div>
     );
