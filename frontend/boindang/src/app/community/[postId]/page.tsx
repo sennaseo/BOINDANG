@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image'; // Next.js Image 컴포넌트 임포트
 import { ArrowLeft, DotsThree, Heart, ChatCircle, User } from '@phosphor-icons/react';
-import { getPostDetailById, getImageListByIds, deletePost } from '../../../api/community'; // API 함수 임포트
-import { ApiPostDetailData, ApiCommentItem, ApiResponseDeletePost } from '../../../types/api/community'; // API 타입 임포트
+import { getPostDetailById, getImageListByIds, deletePost, toggleLikePost } from '../../../api/community'; // API 함수 임포트
+import { ApiPostDetailData, ApiCommentItem } from '../../../types/api/community'; // ApiResponseDeletePost 제거
 import ConfirmModal from '../../../components/common/ConfirmModal'; // ConfirmModal 임포트
 import { toast } from 'react-hot-toast';
 
@@ -45,17 +45,22 @@ export default function PostDetailPage() {
       setImageUrl(null);
 
       try {
-        const postData = await getPostDetailById(postId);
-        if (postData) {
+        const apiResponse = await getPostDetailById(postId);
+        if (apiResponse.success && apiResponse.data) {
+          const postData = apiResponse.data; // 실제 ApiPostDetailData 추출
           setPost(postData);
           if (postData.imageId) {
-            const imageList = await getImageListByIds([postData.imageId]);
-            if (imageList && imageList.length > 0) {
+            const imageListResponse = await getImageListByIds([postData.imageId]);
+            if (imageListResponse.success && imageListResponse.data && imageListResponse.data.length > 0) {
+              const imageList = imageListResponse.data; // 실제 ApiImageListItem[] 추출
               setImageUrl(imageList[0].imageUrl);
+            } else if (!imageListResponse.success) {
+              // 이미지 정보 가져오기 실패 시 에러 처리
+              console.warn(`Failed to fetch image for post ${postId}:`, imageListResponse.error?.message);
             }
           }
         } else {
-          setError("게시글을 불러오는데 실패했습니다.");
+          setError(apiResponse.error?.message || "게시글을 불러오는데 실패했습니다.");
         }
       } catch (err) {
         console.error(err);
@@ -68,17 +73,37 @@ export default function PostDetailPage() {
     fetchPostDetails();
   }, [postId]);
 
-  const handleLikeToggle = () => {
-    if (!post) return;
+  const handleLikeToggle = async () => {
+    if (!post || postId === null) return;
+
+    const originalPost = { ...post }; // 롤백을 위한 원본 데이터 복사
+
+    // 낙관적 업데이트: UI를 먼저 변경
     setPost(currentPost => {
       if (!currentPost) return null;
-      // TODO: API 호출하여 좋아요 상태 업데이트 ( optimistic update )
       return {
         ...currentPost,
         likedByMe: !currentPost.likedByMe,
         likeCount: currentPost.likedByMe ? currentPost.likeCount - 1 : currentPost.likeCount + 1,
       };
     });
+
+    try {
+      const apiResponse = await toggleLikePost(postId); // postId 사용
+      if (!apiResponse.success) {
+        // API 호출 실패 또는 응답 실패 시 롤백
+        console.error("Failed to toggle like on server:", apiResponse.error?.message);
+        setPost(originalPost); // 원래 상태로 롤백
+        // 사용자에게 알림 (예: toast 메시지)
+        toast.error(apiResponse.error?.message || "좋아요 처리에 실패했습니다. 다시 시도해주세요.");
+      }
+      // 성공 시: UI는 이미 낙관적으로 업데이트 되었으므로 별도 처리 없음
+    } catch (error) {
+      // 네트워크 오류 등 예외 발생 시 롤백
+      console.error("Error in handleLikeToggle:", error);
+      setPost(originalPost); // 원래 상태로 롤백
+      toast.error("좋아요 처리 중 오류가 발생했습니다. 다시 시도해주세요.");
+    }
   };
 
   const handleCommentSubmit = (e: React.FormEvent) => {
@@ -128,16 +153,16 @@ export default function PostDetailPage() {
     setShowDeleteModal(false); // 먼저 삭제 확인 모달을 닫음
 
     try {
-      const response: ApiResponseDeletePost = await deletePost(postId);
+      const apiResponse = await deletePost(postId); // 반환 타입은 ApiResponse<null>
 
-      if (response.isSuccess) {
+      if (apiResponse.success) { // isSuccess 대신 success 사용
         console.log(`게시글 ${postId} 삭제 성공`);
         toast.success('게시글이 성공적으로 삭제되었습니다.');
         router.push('/community');
       } else {
-        console.error(`게시글 ${postId} 삭제 실패:`, response.message);
+        console.error(`게시글 ${postId} 삭제 실패:`, apiResponse.error?.message); // response.message 대신 apiResponse.error.message 사용
         setInfoModalTitle('삭제 실패');
-        setInfoModalMessage(response.message || '게시글 삭제에 실패했습니다. 다시 시도해주세요.');
+        setInfoModalMessage(apiResponse.error?.message || '게시글 삭제에 실패했습니다. 다시 시도해주세요.');
         setInfoModalOnConfirm(() => () => setShowInfoModal(false));
         setInfoModalOnClose(() => () => setShowInfoModal(false));
         setShowInfoModal(true);
@@ -170,17 +195,21 @@ export default function PostDetailPage() {
       // (아래는 예시이며, 실제 구현 시에는 fetchPostDetails를 useEffect 밖으로 빼는 것이 더 명확할 수 있습니다.)
       const fetchAgain = async () => {
         try {
-          const postData = await getPostDetailById(currentPostId);
-          if (postData) {
+          const apiResponse = await getPostDetailById(currentPostId);
+          if (apiResponse.success && apiResponse.data) {
+            const postData = apiResponse.data; // 실제 ApiPostDetailData 추출
             setPost(postData);
             if (postData.imageId) {
-              const imageList = await getImageListByIds([postData.imageId]);
-              if (imageList && imageList.length > 0) {
+              const imageListResponse = await getImageListByIds([postData.imageId]);
+              if (imageListResponse.success && imageListResponse.data && imageListResponse.data.length > 0) {
+                const imageList = imageListResponse.data;
                 setImageUrl(imageList[0].imageUrl);
+              } else if (!imageListResponse.success) {
+                console.warn(`Failed to fetch image for post ${currentPostId} (retry):`, imageListResponse.error?.message);
               }
             }
           } else {
-            setError("게시글을 불러오는데 실패했습니다.");
+            setError(apiResponse.error?.message || "게시글을 불러오는데 실패했습니다.");
           }
         } catch (err) {
           console.error(err);
