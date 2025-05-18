@@ -2,8 +2,10 @@ package com.boindang.community.common.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 
 import com.boindang.community.dto.response.ApiResponses;
 import com.boindang.community.dto.response.ErrorResponse;
@@ -21,6 +23,18 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(NotFoundException.class)
 	public ApiResponses<?> handleNotFoundException(Exception e) {
 		return ApiResponses.error(new ErrorResponse(HttpStatus.NOT_FOUND, e.getMessage()));
+	}
+
+	// ✅ @Valid 유효성 검사 실패 처리
+	@ExceptionHandler(MethodArgumentNotValidException.class)
+	public ApiResponses<?> handleValidationException(MethodArgumentNotValidException e) {
+		String errorMessage = e.getBindingResult()
+			.getFieldErrors()
+			.stream()
+			.findFirst()
+			.map(DefaultMessageSourceResolvable::getDefaultMessage)
+			.orElse("잘못된 요청입니다.");
+		return ApiResponses.error(new ErrorResponse(HttpStatus.BAD_REQUEST, errorMessage));
 	}
 
 	// 기타 예외 처리
