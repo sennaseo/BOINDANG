@@ -6,11 +6,10 @@ import java.util.Map;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
 
 import com.boindang.community.client.UserClient;
 import com.boindang.community.common.exception.CommunityException;
-import com.boindang.community.common.exception.ErrorCode;
+import com.boindang.community.common.exception.NotFoundException;
 import com.boindang.community.dto.request.CreatePostRequest;
 import com.boindang.community.dto.response.CommentResponse;
 import com.boindang.community.dto.response.PostListResponse;
@@ -21,6 +20,7 @@ import com.boindang.community.entity.Post;
 import com.boindang.community.repository.CommentRepository;
 import com.boindang.community.repository.LikeRepository;
 import com.boindang.community.repository.PostRepository;
+import com.boindang.community.common.PostCategory;
 
 import lombok.RequiredArgsConstructor;
 
@@ -37,11 +37,14 @@ public class PostService {
 		PageRequest pageRequest = PageRequest.of(page, size);
 		Page<Post> postPage;
 
-		// ✅ 카테고리 조건 분기
 		if (category == null) {
 			postPage = postRepository.findAllByIsDeletedFalseOrderByCreatedAtDesc(pageRequest);
 		} else {
-			postPage = postRepository.findAllByIsDeletedFalseAndCategoryOrderByCreatedAtDesc(category, pageRequest);
+			if (!PostCategory.isValid(category)) {
+				throw new NotFoundException("존재하지 않는 카테고리입니다.");
+			}
+			postPage = postRepository.findAllByIsDeletedFalseAndCategoryOrderByCreatedAtDesc(
+				PostCategory.from(category).name(), pageRequest);
 		}
 
 		List<Post> posts = postPage.getContent();
@@ -69,7 +72,7 @@ public class PostService {
 
 	public PostResponse getPostById(Long postId, Long currentUserId) {
 		Post post = postRepository.findByIdAndIsDeletedFalse(postId)
-			.orElseThrow(() -> new RuntimeException("존재하지 않는 게시글입니다."));
+			.orElseThrow(() -> new NotFoundException("존재하지 않는 게시글입니다."));
 
 		boolean likedByMe = likeRepository.existsByPostIdAndUserIdAndIsDeletedFalse(postId, currentUserId);
 		String username = userClient.getUsernameById(post.getUserId());
@@ -110,10 +113,10 @@ public class PostService {
 
 	public void deletePost(Long postId, Long userId) {
 		Post post = postRepository.findByIdAndIsDeletedFalse(postId)
-			.orElseThrow(() -> new RuntimeException("존재하지 않는 게시글입니다."));
+			.orElseThrow(() -> new NotFoundException("존재하지 않는 게시글입니다."));
 
 		if (!post.getUserId().equals(userId)) {
-			throw new CommunityException(ErrorCode.FORBIDDEN_DELETE_POST);
+			throw new CommunityException("해당 게시글의 삭제 권한이 없습니다.");
 		}
 
 		post.softDelete();
