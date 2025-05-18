@@ -1,6 +1,7 @@
 package com.boindang.campaign.application;
 
-import com.boindang.campaign.common.exception.CampaignException;
+import com.boindang.campaign.common.exception.BadRequestException;
+import com.boindang.campaign.common.exception.CampaignNotFoundException;
 import com.boindang.campaign.domain.model.Campaign;
 import com.boindang.campaign.domain.model.CampaignStatus;
 import com.boindang.campaign.infrastructure.repository.CampaignApplicationRepository;
@@ -46,7 +47,7 @@ public class CampaignService {
 					case "진행중" -> dynamicStatus == CampaignStatus.OPEN;
 					case "모집 예정" -> dynamicStatus == CampaignStatus.PENDING;
 					case "종료" -> dynamicStatus == CampaignStatus.CLOSED;
-					default -> throw new IllegalArgumentException("유효하지 않은 상태입니다.");
+					default -> throw new BadRequestException("유효하지 않은 상태입니다.");
 				};
 			})
 			.toList();
@@ -91,7 +92,7 @@ public class CampaignService {
 	@Transactional(readOnly = true)
 	public CampaignDetailResponse getCampaignDetail(Long campaignId, Long userId) {
 		Campaign campaign = campaignRepository.findById(campaignId)
-			.orElseThrow(() -> new CampaignException("해당 체험단이 존재하지 않습니다."));
+			.orElseThrow(() -> new CampaignNotFoundException("해당 체험단이 존재하지 않습니다."));
 
 		campaign.getNotices().size(); // Lazy 초기화
 

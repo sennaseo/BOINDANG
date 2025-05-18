@@ -14,8 +14,28 @@ import lombok.extern.slf4j.Slf4j;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(CampaignException.class)
-    public ApiResponses<?> handleInvalidateTokenException(Exception e) {
+    public ApiResponses<?> handleCampaignException(Exception e) {
+        return ApiResponses.error(new ErrorResponse(HttpStatus.CONFLICT, e.getMessage()));
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ApiResponses<?> handleBadRequestException(Exception e) {
+        return ApiResponses.error(new ErrorResponse(HttpStatus.BAD_REQUEST, e.getMessage()));
+    }
+
+    @ExceptionHandler(CampaignNotFoundException.class)
+    public ApiResponses<?> handleCampaignNotFoundException(Exception e) {
+        return ApiResponses.error(new ErrorResponse(HttpStatus.NOT_FOUND, e.getMessage()));
+    }
+
+    @ExceptionHandler(UserException.class)
+    public ApiResponses<?> handleUserException(Exception e) {
         return ApiResponses.error(new ErrorResponse(HttpStatus.UNAUTHORIZED, e.getMessage()));
+    }
+
+    @ExceptionHandler(KafkaException.class)
+    public ApiResponses<?> handleKafkaException(Exception e) {
+        return ApiResponses.error(new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage()));
     }
 
     // 기타 예외 처리
