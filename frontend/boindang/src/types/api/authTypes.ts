@@ -53,3 +53,6 @@ export interface UserProfileUpdatePayload {
   height?: number;
   weight?: number;
 }
+
+// 로그아웃 API 응답 타입
+export type LogoutResult = boolean;

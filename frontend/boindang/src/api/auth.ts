@@ -6,6 +6,7 @@ import type {
   SignUpResult,
   LoginResult,
   UserProfileUpdatePayload,
+  LogoutResult,
 } from '@/types/api/authTypes';
 import type { ApiResponse } from '@/types/api';
 
