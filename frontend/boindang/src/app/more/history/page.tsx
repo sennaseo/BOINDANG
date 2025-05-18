@@ -8,6 +8,7 @@ import BottomNavBar from '@/components/navigation/BottomNavBar';
 import { getReportHistory } from '@/api/report';
 import { ReportHistory } from '@/types/api/report';
 import { ApiError, ApiResponse } from '@/types/api';
+import BackArrowIcon from '@/components/common/BackArrowIcon';
 
 // 날짜 포맷팅 함수
 function formatAnalyzedAt(dateString: string): string {
