@@ -51,8 +51,10 @@ export default function CommunityPage() {
       setImageUrlsMap(new Map()); // 이미지 맵 초기화
 
       try {
-        const postData = await getCommunityPosts();
-        if (postData && postData.posts) {
+        const apiResponse = await getCommunityPosts(); // 반환 타입을 명시적으로 ApiResponse<ApiPostListData>로 인지
+
+        if (apiResponse.success && apiResponse.data) {
+          const postData = apiResponse.data; // 실제 ApiPostListData 추출
           setPosts(postData.posts);
 
           // 이미지 ID 추출 및 이미지 URL 가져오기
@@ -62,7 +64,8 @@ export default function CommunityPage() {
 
           if (imageIdsToFetch.length > 0) {
             const uniqueImageIds = [...new Set(imageIdsToFetch)];
-            const imageList = await getImageListByIds(uniqueImageIds);
+            // getImageListByIds를 호출하기 전에 uniqueImageIds가 number[] 타입임을 명확히 합니다.
+            const imageList = await getImageListByIds(uniqueImageIds as number[]);
             if (imageList) {
               const newImageUrlsMap = new Map<number, string>();
               imageList.forEach(image => {
@@ -72,9 +75,10 @@ export default function CommunityPage() {
             }
           }
         } else {
-          setError("게시글을 불러오는데 실패했습니다.");
+          // apiResponse.success가 false이거나 apiResponse.data가 null인 경우
+          setError(apiResponse.error?.message || "게시글을 불러오는데 실패했습니다.");
         }
-      } catch (err) {
+      } catch (err) { // 이 catch는 getCommunityPosts 내부의 catch에서 처리되지 않은 네트워크 오류 등을 잡습니다.
         console.error(err);
         setError("게시글을 불러오는 중 오류가 발생했습니다.");
       } finally {

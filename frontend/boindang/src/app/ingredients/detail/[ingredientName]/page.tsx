@@ -18,6 +18,8 @@ import type {
 
 // Import custom hook
 import useIngredientDetail from '@/hooks/useIngredientDetail';
+// Import the new API function
+import { increaseSearchCount } from '@/api/encyclopedia';
 
 const TAB_NAMES = ['개요', '건강 영향', '사용자별', '더보기']; // Define tab names as a constant
 
@@ -27,6 +29,24 @@ export default function IngredientDetailPage({ params: paramsPromise }: { params
   const params = use(paramsPromise);
   const { ingredientName } = params;
   const { ingredientDetail, isLoading, error, refetch } = useIngredientDetail(ingredientName);
+
+  // Effect to call increaseSearchCount API when ingredientDetail is loaded
+  useEffect(() => {
+    if (ingredientDetail && ingredientDetail.name) {
+      console.log(`Attempting to increase search count for: ${ingredientDetail.name}`);
+      increaseSearchCount(ingredientDetail.name)
+        .then(response => {
+          if (response.success) {
+            console.log('Search count API success:', response.data);
+          } else {
+            console.warn('Search count API non-success:', response.error?.message || 'No error message');
+          }
+        })
+        .catch(apiError => {
+          console.error('Search count API call failed:', apiError);
+        });
+    }
+  }, [ingredientDetail]); // Trigger only when ingredientDetail changes
 
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const [indicatorStyle, setIndicatorStyle] = useState({});
