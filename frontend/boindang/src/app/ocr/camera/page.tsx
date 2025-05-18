@@ -8,35 +8,7 @@ import { postOcrAnalysis } from '@/api/ocr'; // 경로 확인 필요, @/api/ocr.
 import { getPresignedUrl } from '@/api/image';
 import OcrProcessingScreen from '../components/OcrProcessingScreen'; // 새로 만든 컴포넌트 import
 import { usePreventSwipeBack } from '@/hooks/usePreventSwipeBack'; // 커스텀 훅 import
-
-// 애니메이션을 위한 상수 및 스타일 함수 정의 (컴포넌트 외부) - 사용되지 않는 변수 삭제
-// const handImg = '/assets/sugarcube/sugar_hand.png';
-// const faceImgPath = '/assets/sugarcube/sugar_face.png';
-
-// const HAND_RADIUS = 28; // 손이 CheckCircle에 얼마나 가까이/멀리 있을지
-// const HAND_Y_OFFSET = -8; // 손을 위로 얼마나 올릴지 (CheckCircle 중심 기준)
-// const HAND_X_OFFSET_MULTIPLIER = 1.1; // 손을 옆으로 얼마나 더 벌릴지
-
-// const HAND_LEFT_ANGLE = (-145 * Math.PI) / 180; // 왼손 각도
-// const HAND_RIGHT_ANGLE = (-35 * Math.PI) / 180; // 오른손 각도
-
-// function ocrHandStyle(show: boolean, angle: number, isRight?: boolean): React.CSSProperties {
-//   const xPos = HAND_RADIUS * Math.cos(angle) * HAND_X_OFFSET_MULTIPLIER;
-//   const yPos = HAND_RADIUS * Math.sin(angle) + HAND_Y_OFFSET;
-//   return {
-//     position: 'absolute',
-//     left: '50%',
-//     top: 'calc(50% + 10px)',
-//     width: '24px',
-//     height: '24px',
-//     transform: `translate(-50%, -50%) translate(${xPos}px, ${yPos}px)${isRight ? ' scaleX(-1)' : ''}`,
-//     opacity: show ? 1 : 0,
-//     transition: 'opacity 0.3s 0.1s ease-in-out',
-//     zIndex: 15,
-//     pointerEvents: 'none',
-//   };
-// }
-
+import { ApiResponse } from '@/types/api'; 
 // 촬영 단계를 위한 타입 정의
 type PhotoStep = 'ingredient' | 'nutritionInfo';
 
@@ -44,7 +16,7 @@ type PhotoStep = 'ingredient' | 'nutritionInfo';
 const guideMessages = {
   ingredient: {
     title: "원재료명 및 함량 (1/2)",
-    main: "제품 뒷면의 \'원재료명 및 함량\' 부분을 모든 내용이 빠짐없이 나오도록 화면에 맞춰 촬영해주세요.",
+    main: "제품 뒷면의 '원재료명 및 함량' 부분을 모든 내용이 빠짐없이 나오도록 화면에 맞춰 촬영해주세요.",
     sub: [
       "글자가 선명하도록 빛 반사를 피해주세요",
       "원재료 전체를 프레임 안에 담아주세요."
@@ -52,7 +24,7 @@ const guideMessages = {
   },
   nutritionInfo: {
     title: "영양 정보표 (2/2)",
-    main: "제품의 \'영양정보표\' 전체가\n빠짐없이 나오도록 화면에 맞춰 촬영해주세요.",
+    main: "제품의 '영양정보표' 전체가\n빠짐없이 나오도록 화면에 맞춰 촬영해주세요.",
     sub: [
       "글자가 선명하도록 빛 반사를 피해주세요.",
       "영양정보표 전체를 프레임 안에 담아주세요."
@@ -60,26 +32,14 @@ const guideMessages = {
   }
 };
 
-// OCR API 응답 데이터 인터페이스 정의 (예시)
-interface OcrAnalysisResult {
-  summary?: string;
-  ingredientTree?: unknown[]; // 실제 타입으로 대체 필요
-  // 기타 필요한 필드들...
-}
-
-interface NutritionSummaryResult {
-  Kcal?: number;
-  // 기타 영양 정보 필드들...
-}
-
-interface OcrData {
-  ingredientAnalysis?: OcrAnalysisResult | null;
-  nutritionAnalysis?: {
-    summary?: string;
-    nutritionSummary?: NutritionSummaryResult | null;
-    // 기타 필요한 필드들...
-  } | null;
-  // 기타 최상위 API 응답 필드들...
+// API 응답 타입 정의 수정
+interface OcrResponseData {
+  productId?: string;
+  productName?: string;
+  result?: {
+    ingredientAnalysis?: unknown;
+    nutritionAnalysis?: unknown;
+  };
 }
 
 // Base64 문자열을 Blob 객체로 변환하는 헬퍼 함수
@@ -281,47 +241,6 @@ export default function OcrCameraPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // isProcessing 상태 변경에 따른 애니메이션 효과
-  useEffect(() => {
-    let handTimer: NodeJS.Timeout | null = null; // null로 초기화
-    let faceAnimationTimeout: NodeJS.Timeout | null = null;
-    let faceInterval: NodeJS.Timeout | null = null;
-
-    if (isProcessing) {
-
-      // Show hands once after a delay
-      handTimer = setTimeout(() => {
-        // setShowAnalysisHands(true);
-      }, 150);
-
-      // Start repeating face animation after an initial delay
-      const initialFaceDelay = 400; // 첫 애니메이션 시작 전 지연 시간
-      const animationCycleTime = 2000; // 얼굴이 올라갔다 내려오는 전체 주기 (ms)
-
-      // Use a timeout to delay the start of the interval
-      faceAnimationTimeout = setTimeout(() => {
-        // Start the interval immediately showing the face (first peek up)
-        // setShowAnalysisFace(true);
-        faceInterval = setInterval(() => {
-          // setShowAnalysisFace(prev => !prev); // 얼굴 보였다/숨겼다 토글 (위/아래 반복)
-        }, animationCycleTime / 2); // 주기의 절반마다 상태 변경 (1초 올라가고, 1초 내려오고)
-      }, initialFaceDelay);
-
-    } else {
-      // Clear timers/intervals and reset states when processing stops
-      if (handTimer) clearTimeout(handTimer); // 조건부 실행
-      if (faceAnimationTimeout) clearTimeout(faceAnimationTimeout);
-      if (faceInterval) clearInterval(faceInterval);
-    }
-
-    // Cleanup function
-    return () => {
-      if (handTimer) clearTimeout(handTimer); // 조건부 실행
-      if (faceAnimationTimeout) clearTimeout(faceAnimationTimeout);
-      if (faceInterval) clearInterval(faceInterval);
-    };
-  }, [isProcessing]);
-
   const handleAlbumClick = () => {
     fileInputRef.current?.click();
   };
@@ -394,166 +313,57 @@ export default function OcrCameraPage() {
       };
 
       console.log("OCR API 요청 (CloudFront URLs):", requestBody);
-      const ocrResponse: { productId?: string } = await postOcrAnalysis(requestBody);
+      const ocrResponse: ApiResponse<OcrResponseData> = await postOcrAnalysis(requestBody);
       console.log("OCR API 호출 성공:", ocrResponse);
 
       // ocrResponse에서 productId 추출
-      const productId = ocrResponse.productId;
+      const productId = ocrResponse.data?.productId;
       console.log("productId:", productId);
 
-      //productId가 있으면 report 페이지로 이동, 없으면 홈으로 이동
-      if (productId) {
-        console.log("productId가 있으므로 report 페이지로 이동합니다.");
+      // 분석 결과 데이터 가져오기
+      if (ocrResponse.data && productId) {
+        // 분석 결과 데이터를 로컬 스토리지에 저장
+        try {
+          localStorage.setItem(`product_data_${productId}`, JSON.stringify(ocrResponse.data));
+        } catch (storageErr) {
+          console.warn("로컬 스토리지 저장 실패:", storageErr);
+        }
+
+        // result 객체 내부에 ingredientAnalysis와 nutritionAnalysis가 있는 구조인지 확인
+        const hasIngredientAnalysis = ocrResponse.data.result && ocrResponse.data.result.ingredientAnalysis;
+        const hasNutritionAnalysis = ocrResponse.data.result && ocrResponse.data.result.nutritionAnalysis;
+        
+        // 두 분석 결과 중 하나라도 있으면 유효하다고 판단
+        const bothAnalysesUndefined = !hasIngredientAnalysis && !hasNutritionAnalysis;
+        
+        console.log("[Debug] 응답 유효성 검사:", {
+          hasIngredientAnalysis,
+          hasNutritionAnalysis,
+          bothAnalysesUndefined,
+          productId
+        });
+        
+        // 유효성 판단 로직 변경: 최소한 하나의 분석 결과라도 있으면 유효하다고 판단
+        if (bothAnalysesUndefined) {
+          console.warn("OCR 분석 결과, 유효하지 않은 이미지로 판단됨 (최종 결정):", {
+            hasIngredientAnalysis,
+            hasNutritionAnalysis,
+            productId
+          });
+          setError("이미지 인식에 실패했습니다.\n내용이 잘 보이도록 다시 촬영해주세요.");
+          setIsProcessing(false);
+          return;
+        }
+        
+        // 유효한 경우 리포트 페이지로 이동
+        console.log("OCR 분석 결과 유효함, /report로 이동");
         router.push(`/report/${productId}`);
+        
+        return; // 여기서 함수 종료
       } else {
         console.warn("productId를 찾을 수 없습니다. 홈으로 이동합니다.");
         router.push('/');
       }
-
-      let actualData: OcrData | undefined | null = null;
-      if (ocrResponse && typeof ocrResponse === 'object' && ocrResponse !== null) {
-        const responseObject = ocrResponse as Record<string, unknown>;
-
-        if (
-          responseObject.hasOwnProperty('data') &&
-          typeof responseObject.data === 'object' &&
-          responseObject.data !== null
-        ) {
-          console.log("ocrResponse.data에서 분석 데이터 추출 시도:", responseObject.data);
-          actualData = responseObject.data as OcrData;
-        } else if (
-          responseObject.hasOwnProperty('result') &&
-          typeof responseObject.result === 'object' &&
-          responseObject.result !== null
-        ) {
-          console.log("ocrResponse.result에서 분석 데이터 추출 시도:", responseObject.result);
-          actualData = responseObject.result as OcrData;
-        } else if (
-          responseObject.hasOwnProperty('ingredientAnalysis') ||
-          responseObject.hasOwnProperty('nutritionAnalysis')
-        ) {
-          if (
-            (responseObject.hasOwnProperty('ingredientAnalysis') && responseObject.ingredientAnalysis !== undefined) ||
-            (responseObject.hasOwnProperty('nutritionAnalysis') && responseObject.nutritionAnalysis !== undefined)
-          ) {
-            console.log("ocrResponse에서 직접 분석 데이터 추출 시도 (카멜 케이스 키 기반 - fallback):", responseObject);
-            actualData = responseObject as OcrData;
-          }
-        } else if (
-          responseObject.hasOwnProperty('ingredient_analysis') ||
-          responseObject.hasOwnProperty('nutrition_analysis')
-        ) {
-          if (
-            (responseObject.hasOwnProperty('ingredient_analysis') && responseObject.ingredient_analysis !== undefined) ||
-            (responseObject.hasOwnProperty('nutrition_analysis') && responseObject.nutrition_analysis !== undefined)
-          ) {
-            console.log("ocrResponse에서 직접 분석 데이터 추출 시도 (스네이크 케이스 키 기반 - fallback):", responseObject);
-            actualData = responseObject as OcrData;
-          }
-        }
-      }
-
-      console.log("--- [Debug] actualData 추출 시도 후 ---");
-      if (!actualData) {
-        console.error("[!!! Critical !!!] 유효한 OCR 분석 데이터를 찾을 수 없거나 API 응답 형식이 예상과 다릅니다:", ocrResponse);
-        setError("OCR 분석 결과를 처리할 수 없습니다.\n응답 형식을 확인해주세요.");
-        setIsProcessing(false);
-        return;
-      }
-      console.log("최종 분석 데이터(actualData) 성공적으로 추출됨:", actualData);
-
-      // actualData가 null이 아님을 확인했으므로, 이제 ingAnalysis와 nutAnalysis에 접근
-      const ingAnalysis = actualData.ingredientAnalysis;
-      const nutAnalysis = actualData.nutritionAnalysis;
-
-      if (ingAnalysis === null && nutAnalysis === null) {
-        console.warn("OCR 분석 결과, ingredientAnalysis와 nutritionAnalysis 모두 명시적으로 null입니다:", actualData);
-        setError("이미지 분석에 실패했습니다.\n두 정보 모두 인식되지 않았습니다.");
-        setIsProcessing(false);
-        return;
-      }
-
-      let isIngredientInvalid: boolean = false;
-      if (ingAnalysis) {
-        isIngredientInvalid = Boolean(
-          (typeof ingAnalysis.summary === 'string' &&
-            (ingAnalysis.summary.includes("불가능합니다") ||
-              ingAnalysis.summary.includes("정보가 없어") ||
-              ingAnalysis.summary.includes("제공되어 성분 정보가 없어"))) ||
-          (Array.isArray(ingAnalysis.ingredientTree) &&
-            ingAnalysis.ingredientTree.length === 0)
-        );
-        console.log("[Debug] Ingredient Analysis:", ingAnalysis.summary, "isInvalid:", isIngredientInvalid);
-      } else if (ingAnalysis === undefined && nutAnalysis?.summary?.includes("식품이 아닌")) {
-        isIngredientInvalid = true;
-        console.log("[Debug] Ingredient undefined, Nut non-food. isIngredientInvalid:", isIngredientInvalid);
-      } else if (ingAnalysis === undefined && nutAnalysis?.summary?.includes("비식품입니다")) {
-        isIngredientInvalid = true;
-        console.log("[Debug] Ingredient undefined, Nut non-food (bisikpum). isIngredientInvalid:", isIngredientInvalid);
-      } else {
-        console.log("[Debug] Ingredient Analysis: No specific invalid condition met or ingAnalysis is null/undefined.", ingAnalysis);
-      }
-
-      let isNutritionInvalid: boolean = false;
-      if (nutAnalysis) {
-        isNutritionInvalid = Boolean(
-          (typeof nutAnalysis.summary === 'string' &&
-            (nutAnalysis.summary.includes("식품이 아닌 제품입니다") ||
-              nutAnalysis.summary.includes("정보가 없는 식품이거나") ||
-              nutAnalysis.summary.includes("분석할 수 없습니다") ||
-              nutAnalysis.summary.includes("비식품입니다"))) ||
-          (nutAnalysis.nutritionSummary && typeof nutAnalysis.nutritionSummary.Kcal === 'number' &&
-            nutAnalysis.nutritionSummary.Kcal === 0 &&
-            (!nutAnalysis.summary || !nutAnalysis.summary.includes("영양 정보가 없는 식품이거나"))
-          )
-        );
-        console.log("[Debug] Nutrition Analysis:", nutAnalysis.summary, "isInvalid:", isNutritionInvalid);
-        if (nutAnalysis.nutritionSummary) {
-          console.log("[Debug] Nutrition Kcal:", nutAnalysis.nutritionSummary.Kcal);
-        }
-      } else if (nutAnalysis === undefined && ingAnalysis?.summary?.includes("불가능합니다")) {
-        isNutritionInvalid = true;
-        console.log("[Debug] Nutrition undefined, Ing impossible. isNutritionInvalid:", isNutritionInvalid);
-      } else {
-        console.log("[Debug] Nutrition Analysis: No specific invalid condition met or nutAnalysis is null/undefined.", nutAnalysis);
-      }
-
-      const finalIsIngredientInvalid = isIngredientInvalid;
-      const finalIsNutritionInvalid = isNutritionInvalid;
-      const bothAnalysesUndefined = ingAnalysis === undefined && nutAnalysis === undefined;
-
-      console.log("[Debug] Final Validation Check:", {
-        finalIsIngredientInvalid,
-        finalIsNutritionInvalid,
-        ingSummary: ingAnalysis?.summary,
-        nutSummary: nutAnalysis?.summary,
-        ingTreeLength: ingAnalysis?.ingredientTree?.length,
-        nutKcal: nutAnalysis?.nutritionSummary?.Kcal,
-        bothAnalysesUndefined
-      });
-
-      if (finalIsIngredientInvalid || finalIsNutritionInvalid || bothAnalysesUndefined) {
-        console.warn("OCR 분석 결과, 유효하지 않은 이미지로 판단됨 (최종 결정):", {
-          isIngredientInvalid: finalIsIngredientInvalid,
-          isNutritionInvalid: finalIsNutritionInvalid,
-          actualData
-        });
-        setError("이미지 인식에 실패했습니다.\n내용이 잘 보이도록 다시 촬영해주세요.");
-        setIsProcessing(false);
-        return;
-      }
-
-      if (ingAnalysis === undefined || nutAnalysis === undefined) {
-        if (!(ingAnalysis === null && nutAnalysis === null)) {
-          console.error("OCR API 응답 데이터에 주요 분석 필드(ingredientAnalysis 또는 nutritionAnalysis)가 누락되었습니다:", actualData);
-          setError("OCR 분석 정보가 완전하지 않습니다.\n다시 시도해주세요.");
-          setIsProcessing(false);
-          return;
-        }
-      }
-
-      console.log("OCR 분석 결과 유효함, /report로 이동");
-      router.push(`/report/${productId}`);
 
     } catch (err: unknown) {
       console.error("OCR 처리 중 오류 발생:", err);

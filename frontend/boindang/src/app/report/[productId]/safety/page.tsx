@@ -6,7 +6,7 @@ import { CaretLeft, Info } from "@phosphor-icons/react";
 import dynamic from "next/dynamic";
 import { useParams, useRouter } from 'next/navigation';
 import { getReport } from "@/api/report";
-import { ApiError, ApiResponse } from "@/types/api";
+import { ApiError } from "@/types/api";
 // 동적 import, SSR 비활성화
 const SafetyChart = dynamic(() => import("@/components/chart/SafetyChart"), {
   ssr: false,
@@ -123,11 +123,13 @@ export default function SafetyPage() {
         setLoading(true);
         setError(null);
         try {
-            const response: ApiResponse<ReportResultData> = await getReport(productId);
-          if (response && response.success) {
-            setReportData(response.data);
+            const axiosResponse = await getReport(productId);
+            const apiResponse = axiosResponse.data; // ApiResponse<ReportResultData> 추출
+
+          if (apiResponse && apiResponse.success) {
+            setReportData(apiResponse.data);
           } else {
-            setError(response?.error || null);
+            setError(apiResponse?.error || { status: 'UNKNOWN_ERROR', message: 'API 응답 실패 또는 데이터 없음' });
             setReportData(null);
           }
         } catch (err) {
@@ -275,14 +277,14 @@ export default function SafetyPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 pb-20">
+    <div className="min-h-screen bg-gray-50 p-4 pb-10">
       <header className="flex items-center mb-2">
-        <button onClick={() => router.push(`/report/${productId}`)} className="mr-2 text-2xl"><CaretLeft/></button>
+        <button onClick={() => router.push(`/report/${productId}`)} className="mr-2 text-2xl cursor-pointer"><CaretLeft/></button>
         <h1 className="text-2xl font-bold mx-auto">리포트 ({reportData.productName || "제품"})</h1>
       </header>
       <ReportTabNav productId={productId} />
 
-      <section className="mb-6">
+      <section>
         <h2 className="font-bold text-lg mb-1">종합 혈당 지수 측정</h2>
         <p className="text-gray-400 font-light text-xs mb-3">
           식품에 포함된 성분들의 혈당 지수를 기반으로 통합 등급을 지정하였습니다.
