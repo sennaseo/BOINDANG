@@ -7,11 +7,12 @@ import { motion } from "framer-motion";
 import Image from 'next/image';
 import Link from 'next/link';
 import { getUserInfo } from "@/api/auth";
+import type { ApiResponse } from "@/types/api";
 import type { SignUpResult } from "@/types/api/authTypes";
 import { usePreventSwipeBack } from '@/hooks/usePreventSwipeBack';
 
 export default function MorePage() {
-    const [result, setUserInfo] = useState<SignUpResult | null>(null);
+    const [userInfo, setUserInfo] = useState<ApiResponse<SignUpResult> | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const morePageContainerRef = useRef<HTMLDivElement>(null);
@@ -22,10 +23,9 @@ export default function MorePage() {
         const fetchUserInfo = async () => {
             try {
                 setLoading(true);
-                const result = await getUserInfo();
-                console.log(result);
-                if (result) {
-                    setUserInfo(result);
+                const userData = await getUserInfo();
+                if (userData) {
+                    setUserInfo(userData);
                 } else {
                     setError("사용자 정보를 불러오는데 실패했습니다.");
                 }
@@ -54,14 +54,13 @@ export default function MorePage() {
         );
     }
 
-    if (!result) {
+    if (!userInfo) {
         return (
             <div ref={morePageContainerRef} className="flex flex-col mx-5 pt-15 pb-20 min-h-screen justify-center items-center">
                 <p>사용자 정보를 찾을 수 없습니다.</p>
             </div>
         );
     }
-
     return (
         <div ref={morePageContainerRef} className="flex flex-col mx-5 pt-15 pb-20 min-h-screen justify-between">
             <div className="flex flex-row justify-between items-center">
@@ -75,24 +74,26 @@ export default function MorePage() {
             </div>
 
             <div className="relative my-auto text-[#363636]">
-                <h2 className="text-xl font-bold">안녕하세요 {result.nickname}님</h2>
+                <h2 className="text-xl font-bold">안녕하세요 {userInfo.data?.nickname}님</h2>
                 <p className="text-xl font-bold mt-1">오늘도 건강하게 드셨나요?</p>
             </div>
 
             <div className="relative mt-auto">
-                <div className="relative mt-auto border-2 w-2/3 border-[#363636] rounded-xl py-3 px-4 flex items-center justify-between">
-                    <span className="text-lg font-bold text-[#363636]">나의 분석 기록</span>
-                    <div className="absolute right-0 mr-7 -top-6.5">
-                        <Image
-                            src="/assets/more/말풍선.png"
-                            alt="말풍선"
-                            width={132}
-                            height={40}
-                        />
-                        <span className="absolute flex items-center justify-center text-center w-33 h-8 inset-0 text-xs font-semibold text-[#363636]">내가 분석한 식품 더보기</span>
+                <Link href="/more/history">
+                    <div className="relative mt-auto border-2 w-2/3 border-[#363636] rounded-xl py-3 px-4 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition-colors">
+                        <span className="text-lg font-bold text-[#363636]">나의 분석 기록</span>
+                        <div className="absolute right-0 mr-7 -top-6.5">
+                            <Image 
+                                src="/assets/more/말풍선.png" 
+                                alt="말풍선"
+                                width={132}
+                                height={40}
+                            />
+                            <span className="absolute flex items-center justify-center text-center w-33 h-8 inset-0 text-xs font-semibold text-[#363636]">내가 분석한 식품 더보기</span>
+                        </div>
+                        <List size={24} weight="bold" fill="#363636" />
                     </div>
-                    <List size={24} weight="bold" fill="#363636" />
-                </div>
+                </Link>
             </div>
 
             <div className="my-5 grid grid-cols-7 grid-rows-4 gap-5 items-end cursor-pointer">
@@ -178,7 +179,48 @@ export default function MorePage() {
                                 bounce: 0.5,
                             },
                         }}
-                        className="bg-moregray absolute bottom-0 right-0 h-full w-1/2 rounded-xl flex items-end justify-end p-3" />
+                        className="absolute inset-y-0 right-0 bg-morered-100 rounded-xl" layoutId="gradient-border" />
+                    </div>
+                </Link>
+
+                <Link href="/more/edit-profile" className="bg-moregreen h-full rounded-xl relative items-end p-3 row-start-1 row-end-3 col-end-8 col-span-2 shadow-sm cursor-pointer">
+                    <span className="text-white absolute text-lg bottom-3 right-3 font-bold z-10">회원 수정</span>
+                    <motion.div
+                    initial={{
+                        height: "0%",
+                    }}
+                    animate={{
+                        height: "80%",
+                    }}
+                    transition={{
+                        duration: 2,
+                        height: {
+                            duration: 2,
+                            type: "spring",         
+                            bounce: 0.5,
+                        },
+                    }}
+                    className="absolute bottom-0 inset-x-0 bg-moregreen-100 rounded-xl" layoutId="gradient-border" />
+                </Link>
+                
+                <div className="relative bg-moreblue h-full w-full rounded-xl col-span-5 col-start-3 row-span-2 row-end-5 shadow-sm cursor-pointer">
+                    <span className="text-white text-lg font-bold absolute bottom-3 right-3 z-10">내가 쓴 글/댓글</span>
+                    <motion.div
+                    initial={{
+                        width: "0%",
+                    }}
+                    animate={{
+                        width: "50%",
+                    }}
+                    transition={{   
+                        duration: 2,
+                        width: {
+                            duration: 2,
+                            type: "spring",
+                            bounce: 0.5,
+                        },
+                    }}
+                    className="bg-moregray absolute bottom-0 right-0 h-full w-1/2 rounded-xl flex items-end justify-end p-3"/>
                 </div>
             </div>
             <BottomNavBar />

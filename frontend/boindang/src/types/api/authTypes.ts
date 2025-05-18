@@ -47,3 +47,9 @@ export interface LoginResult {
   accessToken: string;
 }
 
+// 사용자 프로필 업데이트 API 요청 타입
+export interface UserProfileUpdatePayload {
+  userType?: UserTypeApi;
+  height?: number;
+  weight?: number;
+}
