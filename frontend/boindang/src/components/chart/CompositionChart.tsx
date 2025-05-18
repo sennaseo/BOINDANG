@@ -75,7 +75,7 @@ export default function CompositionChart({ data }: PieChartProps) {
                     cx={cx}
                     cy={cy}
                     innerRadius={innerRadius}
-                    outerRadius={Number(outerRadius) + 10} // 더 크게 강조
+                    outerRadius={Number(outerRadius) + 5} // 더 크게 강조
                     startAngle={startAngle}
                     endAngle={endAngle}
                     fill={fill}

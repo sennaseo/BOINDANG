@@ -57,23 +57,28 @@ export default function ExperiencePage() {
       isFetchingRef.current = true;
       const data = await fetchExperiences(status || undefined, ITEMS_PER_PAGE, currentPage);
       if (data && data.data && Array.isArray(data.data.campaigns)) {
-        setExperiences(prev => [
-          ...prev,
-          ...data.data.campaigns.map((item) => ({
-            id: String(item.id),
-            title: item.name,
-            description: item.content,
-            imageUrl: item.imageUrl,
-            tags: item.hashtags,
-            remainingDays: getRemainingDays(item.deadline, item.status),
-            maxParticipants: item.capacity,
-            openDateTime: item.startDate
-              ? item.startDate.slice(5, 10).replace('-', '/') + ' ' + item.startDate.slice(11, 16)
-              : '',
-            applied: item.applied,
-            status: item.status,
-          }))
-        ]);
+        const newItems = data.data.campaigns.map((item) => ({
+          id: String(item.id),
+          title: item.name,
+          description: item.content,
+          imageUrl: item.imageUrl,
+          tags: item.hashtags,
+          remainingDays: getRemainingDays(item.deadline, item.status),
+          maxParticipants: item.capacity,
+          openDateTime: item.startDate
+            ? item.startDate.slice(5, 10).replace('-', '/') + ' ' + item.startDate.slice(11, 16)
+            : '',
+          applied: item.applied,
+          status: item.status,
+        }));
+        // id 기준으로 중복 제거
+        setExperiences(prev => {
+          const merged = [...prev, ...newItems];
+          const unique = merged.filter(
+            (item, idx, arr) => arr.findIndex(i => i.id === item.id) === idx
+          );
+          return unique;
+        });
         setTotalPages(data.data.totalPages);
       }
       setIsLoading(false);
