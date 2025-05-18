@@ -83,8 +83,8 @@ export default function MorePage() {
                     <div className="relative mt-auto border-2 w-2/3 border-[#363636] rounded-xl py-3 px-4 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition-colors">
                         <span className="text-lg font-bold text-[#363636]">나의 분석 기록</span>
                         <div className="absolute right-0 mr-7 -top-6.5">
-                            <Image 
-                                src="/assets/more/말풍선.png" 
+                            <Image
+                                src="/assets/more/말풍선.png"
                                 alt="말풍선"
                                 width={132}
                                 height={40}
@@ -142,8 +142,8 @@ export default function MorePage() {
                     </div>
                 </Link>
 
-                <div className="bg-moregreen h-full rounded-xl relative items-end p-3 row-start-1 row-end-3 col-end-8 col-span-2 shadow-sm cursor-pointer">
-                    <span className="text-white absolute text-lg bottom-3 right-3 font-bold z-10">타입 변경</span>
+                <Link href="/more/edit-profile" className="bg-moregreen h-full rounded-xl relative items-end p-3 row-start-1 row-end-3 col-end-8 col-span-2 shadow-sm cursor-pointer">
+                    <span className="text-white absolute text-lg bottom-3 right-3 font-bold z-10">회원 수정</span>
                     <motion.div
                         initial={{
                             height: "0%",
@@ -160,7 +160,7 @@ export default function MorePage() {
                             },
                         }}
                         className="absolute bottom-0 inset-x-0 bg-moregreen-100 rounded-xl" layoutId="gradient-border" />
-                </div>
+                </Link>
 
                 <div className="relative bg-moreblue h-full w-full rounded-xl col-span-5 col-start-3 row-span-2 row-end-5 shadow-sm cursor-pointer">
                     <span className="text-white text-lg font-bold absolute bottom-3 right-3 z-10">내가 쓴 글/댓글</span>
@@ -179,48 +179,7 @@ export default function MorePage() {
                                 bounce: 0.5,
                             },
                         }}
-                        className="absolute inset-y-0 right-0 bg-morered-100 rounded-xl" layoutId="gradient-border" />
-                    </div>
-                </Link>
-
-                <Link href="/more/edit-profile" className="bg-moregreen h-full rounded-xl relative items-end p-3 row-start-1 row-end-3 col-end-8 col-span-2 shadow-sm cursor-pointer">
-                    <span className="text-white absolute text-lg bottom-3 right-3 font-bold z-10">회원 수정</span>
-                    <motion.div
-                    initial={{
-                        height: "0%",
-                    }}
-                    animate={{
-                        height: "80%",
-                    }}
-                    transition={{
-                        duration: 2,
-                        height: {
-                            duration: 2,
-                            type: "spring",         
-                            bounce: 0.5,
-                        },
-                    }}
-                    className="absolute bottom-0 inset-x-0 bg-moregreen-100 rounded-xl" layoutId="gradient-border" />
-                </Link>
-                
-                <div className="relative bg-moreblue h-full w-full rounded-xl col-span-5 col-start-3 row-span-2 row-end-5 shadow-sm cursor-pointer">
-                    <span className="text-white text-lg font-bold absolute bottom-3 right-3 z-10">내가 쓴 글/댓글</span>
-                    <motion.div
-                    initial={{
-                        width: "0%",
-                    }}
-                    animate={{
-                        width: "50%",
-                    }}
-                    transition={{   
-                        duration: 2,
-                        width: {
-                            duration: 2,
-                            type: "spring",
-                            bounce: 0.5,
-                        },
-                    }}
-                    className="bg-moregray absolute bottom-0 right-0 h-full w-1/2 rounded-xl flex items-end justify-end p-3"/>
+                        className="bg-moregray absolute bottom-0 right-0 h-full w-1/2 rounded-xl flex items-end justify-end p-3" />
                 </div>
             </div>
             <BottomNavBar />
