@@ -5,7 +5,9 @@ import java.time.LocalDateTime;
 
 import org.springframework.stereotype.Service;
 
+import com.boindang.campaign.common.exception.BadRequestException;
 import com.boindang.campaign.common.exception.CampaignException;
+import com.boindang.campaign.common.exception.CampaignNotFoundException;
 import com.boindang.campaign.domain.model.Campaign;
 import com.boindang.campaign.domain.model.CampaignStatus;
 import com.boindang.campaign.infrastructure.kafka.producer.KafkaCampaignProducer;
@@ -30,11 +32,11 @@ public class CampaignApplyService {
 		log.info("🔥 체험단 신청 시작: campaignId={}, userId={}", campaignId, userId);
 
 		Campaign campaign = campaignRepository.findById(campaignId)
-			.orElseThrow(() -> new CampaignException("해당 체험단이 존재하지 않습니다."));
+			.orElseThrow(() -> new CampaignNotFoundException("해당 체험단이 존재하지 않습니다."));
 
 		// 모집 상태 확인
 		if (campaign.getStatus() != CampaignStatus.OPEN) {
-			throw new CampaignException("진행중인 체험단만 신청할 수 있습니다.");
+			throw new BadRequestException("진행중인 체험단만 신청할 수 있습니다.");
 		}
 
 		// TTL 계산

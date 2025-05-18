@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 
 import com.boindang.campaign.common.annotation.DomainService;
+import com.boindang.campaign.common.exception.BadRequestException;
 import com.boindang.campaign.common.exception.CampaignException;
 import com.boindang.campaign.domain.model.Campaign;
 import com.boindang.campaign.domain.model.CampaignStatus;
@@ -29,7 +30,7 @@ public class CampaignApplicationPolicy {
         // 1. 모집 기간 상태 확인 (startDate/endDate 기준)
         CampaignStatus currentStatus = campaign.calculateStatus(now);
         if (currentStatus != CampaignStatus.OPEN) {
-            throw new CampaignException("현재 신청할 수 없는 체험단입니다.");
+            throw new BadRequestException("현재 신청할 수 없는 체험단입니다.");
         }
 
         // 2. 정원 초과 여부 체크

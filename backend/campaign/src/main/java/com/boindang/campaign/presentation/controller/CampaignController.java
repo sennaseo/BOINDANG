@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.boindang.campaign.application.CampaignApplyService;
 import com.boindang.campaign.application.CampaignService;
+import com.boindang.campaign.common.exception.UserException;
 import com.boindang.campaign.common.response.ApiResponses;
 import com.boindang.campaign.presentation.dto.response.ApplyResultResponse;
 import com.boindang.campaign.presentation.dto.response.CampaignDetailResponse;
@@ -36,6 +37,10 @@ public class CampaignController implements CampaignApi {
 		@RequestParam(defaultValue = "5") int size,
 		@RequestParam(defaultValue = "0") int page
 	) {
+		if (userId == null || userId.trim().isEmpty()) {
+			throw new UserException("유효하지 않은 사용자입니다.");
+		}
+
 		return ApiResponses.success(campaignService.getCampaigns(status, size, page, Long.parseLong(userId)));
 	}
 
@@ -45,6 +50,10 @@ public class CampaignController implements CampaignApi {
 		@RequestHeader("X-User-Id") String userId,
 		@PathVariable("campaignId") Long campaignId
 	) {
+		if (userId == null || userId.trim().isEmpty()) {
+			throw new UserException("유효하지 않은 사용자입니다.");
+		}
+
 		return ApiResponses.success(campaignService.getCampaignDetail(campaignId, Long.parseLong(userId)));
 	}
 
@@ -54,12 +63,20 @@ public class CampaignController implements CampaignApi {
 		@PathVariable("campaignId") Long campaignId,
 		@RequestHeader("X-User-Id") String userId
 	) {
+		if (userId == null || userId.trim().isEmpty()) {
+			throw new UserException("유효하지 않은 사용자입니다.");
+		}
+
 		return ApiResponses.success(applyService.apply(campaignId, Long.parseLong(userId)));
 	}
 
 	@Override
 	@GetMapping("/my-applications")
 	public ApiResponses<List<MyApplicationResponse>> getMyApplications(@RequestHeader("X-User-Id") String userId) {
+		if (userId == null || userId.trim().isEmpty()) {
+			throw new UserException("유효하지 않은 사용자입니다.");
+		}
+
 		return ApiResponses.success(campaignService.getMyApplications(Long.parseLong(userId)));
 	}
 }
