@@ -5,7 +5,8 @@ import Link from "next/link";
 import { House, ChartLine, Info, Heart } from "@phosphor-icons/react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { getReport } from "@/api/report";
-import { ApiError, ApiResponse } from "@/types/api";
+import { ApiError } from "@/types/api";
+import { ReportPageProps, ReportResultData } from "@/types/api/report";
 
 // GI 색상 설정
 const giColors = {
@@ -13,56 +14,6 @@ const giColors = {
   caution: '#facc15', // 주의 - 노란색 (40-69)
   danger: '#e53e3e'   // 위험 - 빨간색 (70-100)
 };
-
-// ReportPage Props 타입 정의
-type ReportPageProps = {
-  params: Promise<{ productId: string }>;
-};
-
-// API 응답 내의 타입 정의
-interface NutrientRatio {
-  name: string;
-  percent: number;
-}
-
-interface NutrientDetail {
-  name: string;
-  value: number;
-  percent: number;
-  grade: string;
-}
-
-interface IngredientItem {
-  name: string;
-  gi?: number; // Optional as not all ingredients have GI
-  shortMessage?: string;
-  description?: string[];
-  riskLevel?: string;
-}
-
-interface CategorizedIngredients {
-  [category: string]: IngredientItem[];
-}
-
-interface TopRisk {
-  name: string;
-  keyword: string;
-  title: string;
-  detail: string;
-}
-
-interface ReportResultData {
-  productName?: string;
-  productImageUrl?: string; // 이미지 URL 필드 추가 (API 응답에 따라 확인 필요)
-  totalWeight?: string; // API 응답에 없으므로, 필요시 추가 또는 고정값 사용
-  kcal?: number;
-  estimatedGi?: number;
-  giIndex?: number;
-  nutrientRatios?: NutrientRatio[];
-  nutrientDetails?: NutrientDetail[];
-  categorizedIngredients?: CategorizedIngredients;
-  topRisks?: TopRisk[];
-}
 
 export default function ReportPage({ params: paramsPromise }: ReportPageProps) {
   const params = use(paramsPromise);
@@ -72,30 +23,35 @@ export default function ReportPage({ params: paramsPromise }: ReportPageProps) {
   const [error, setError] = useState<ApiError | null>(null);
 
   useEffect(() => {
+    console.log("productId:", productId);
     if (productId) {
       const fetchReport = async () => {
         try {
           setLoading(true);
-          const data: ApiResponse<ReportResultData> = await getReport(productId);
-          if (data && data.success) {
-            setReport(data.data);
-            console.log("Fetched report data:", data.data);
-          } else {
-            console.error("Failed to fetch report or no data:", data);
-            setError(data.error || null );
-            setReport(null);
+          try {
+            const axiosResponse = await getReport(productId);
+            const apiResponse = axiosResponse.data;
+            if (apiResponse && apiResponse.success) {
+              setReport(apiResponse.data);
+              setLoading(false);
+              return; // API 호출 성공 시 리턴
+            } else {
+              console.warn("API 호출 실패");
+            }
+          } catch (apiError) {
+            console.error("API 호출 오류 발생", apiError);
+            // API 오류 시 localStorage 확인으로 넘어감
           }
-        } catch (err) {
-          console.error("Error fetching report:", err);
-          setError(err as ApiError);
-          setReport(null);
-        } finally {
+        } catch (error) {
+          console.error("오류 발생:", error);
+          setError({ message: "리포트를 불러오는 데 실패했습니다" } as ApiError);
           setLoading(false);
         }
       };
       fetchReport();
     }
   }, [productId]);
+
 
   // GI 지수 게이지 차트 데이터
   const giGaugeData = report?.giIndex !== undefined ? [
@@ -152,7 +108,7 @@ export default function ReportPage({ params: paramsPromise }: ReportPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-5 pb-24">
+    <div className="min-h-screen bg-gray-50 p-5 pb-30">
       {/* 헤더 */}
       <header className="flex items-center justify-center mb-6 relative">
         <div className="absolute left-0">
@@ -173,7 +129,13 @@ export default function ReportPage({ params: paramsPromise }: ReportPageProps) {
         <div className="bg-white rounded-2xl shadow-md p-5 transform transition-all hover:shadow-lg">
           <div className="flex items-center mb-4">
             <ChartLine size={22} className="text-violet-600 mr-2" weight="bold" />
-            <h2 className="font-bold text-lg text-gray-800">통합 GI 지수 ({report.giIndex || '정보없음'})</h2>
+            <h2 className="font-bold text-lg text-gray-800">통합 GI 지수 ({report.giIndex || '정보없음'})
+              {report.giGrade && <span className={`ml-2 text-sm px-2 py-0.5 rounded ${
+                report.giGrade === '위험' ? 'bg-red-100 text-red-600' : 
+                report.giGrade === '주의' ? 'bg-yellow-100 text-yellow-600' : 
+                'bg-green-100 text-green-600'
+              }`}>{report.giGrade}</span>}
+            </h2>
           </div>
           <div className="flex flex-col items-center">
             <div className="relative" style={{ width: 160, height: 100 }}>
@@ -336,17 +298,17 @@ export default function ReportPage({ params: paramsPromise }: ReportPageProps) {
       </section>
 
       {/* 버튼 */}
-      <div className="flex flex-col gap-3 mt-8">
+      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 z-10 p-4 bg-gray-50 w-full max-w-md mx-auto flex flex-col gap-3">
         <Link 
           href={`/report/${productId}/safety`} 
-          className="flex items-center justify-center gap-2 bg-violet-600 text-white rounded-xl py-4 font-bold shadow-md shadow-violet-200 transition-all hover:bg-violet-700 active:scale-[0.98]"
+          className="flex items-center justify-center gap-2 bg-violet-600 text-white rounded-xl py-4 font-bold shadow-md shadow-violet-200 transition-all hover:bg-violet-700 active:scale-[0.98] text-sm"
         >
           <ChartLine size={18} weight="bold" />
           식품 상세 리포트 보러가기
         </Link>
         <Link 
           href="/" 
-          className="flex items-center justify-center gap-2 bg-white border border-violet-600 text-violet-600 rounded-xl py-4 font-bold transition-all hover:bg-violet-50 active:scale-[0.98]"
+          className="flex items-center justify-center gap-2 bg-white border border-violet-600 text-violet-600 rounded-xl text-sm py-3 font-bold transition-all hover:bg-violet-50 active:scale-[0.98]"
         >
           <House size={18} weight="bold" />
           홈으로 가기
@@ -355,3 +317,4 @@ export default function ReportPage({ params: paramsPromise }: ReportPageProps) {
     </div>
   );
 }
+

@@ -1,4 +1,5 @@
 import apiClient from '@/lib/apiClient';
+import { ApiResponse } from '@/types/api';
 
 /**
  * OCR 분석 요청에 사용될 데이터의 타입 정의
@@ -23,11 +24,11 @@ export interface OcrResponse {
  */
 export const postOcrAnalysis = async (
   ocrData: OcrRequestPayload,
-): Promise<OcrResponse> => {
+): Promise<ApiResponse<OcrResponse>> => {
   // apiClient를 사용하여 '/api/ocr/upload' 경로로 POST 요청을 보냅니다.
   // ocrData (이미지 URL들)도 함께 보냅니다.
   // 서버로부터 OcrResponse 형태의 응답을 기대합니다.
   // apiClient의 인터셉터에서 Authorization 헤더 등을 처리한다고 가정합니다.
-  const response = await apiClient.post<OcrResponse>('/ocr/upload', ocrData);
-  return response.data; // axios는 실제 응답 데이터를 'data' 프로퍼티에 담아줍니다.
+  const response = await apiClient.post<ApiResponse<OcrResponse>>('/ocr/upload', ocrData);
+  return response.data;
 }; 
