@@ -6,6 +6,7 @@ import type {
   SignUpResult,
   LoginResult,
   UserProfileUpdatePayload,
+  LogoutResult,
 } from '@/types/api/authTypes';
 import type { ApiResponse } from '@/types/api';
 
@@ -77,5 +78,14 @@ export const updateUserProfile = async (
   // 백엔드 API 명세에 따라 엔드포인트와 HTTP 메소드를 결정해야 합니다.
   // 일반적인 RESTful API에서는 PATCH /user/me 또는 PUT /user/profile 등을 사용합니다.
   const response = await apiClient.patch<ApiResponse<UserProfileUpdatePayload>>('/user/me', profileData); // 예시로 PATCH 사용
+  return response.data;
+};
+
+/**
+ * 로그아웃 API 요청 함수
+ * @returns Promise<ApiResponse<LogoutResult>> API 응답 전체를 반환
+ */
+export const getLogout = async (): Promise<ApiResponse<LogoutResult>> => {
+  const response = await apiClient.get<ApiResponse<LogoutResult>>('/user/logout');
   return response.data;
 };
