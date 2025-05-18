@@ -70,8 +70,18 @@ export interface LoginResponse {
   result: LoginResult; // 로그인 성공 시 토큰 정보 포함
 }
 
+// --- 사용자 프로필 업데이트 추가 ---
+// 사용자 프로필 업데이트 시 API로 보내는 데이터 타입
+export interface UserProfileUpdatePayload {
+  nickname?: string;
+  userType?: UserTypeApi;
+  height?: number;
+  weight?: number;
+  gender?: GenderApi;
+}
+// --- 사용자 프로필 업데이트 끝 ---
+
 // 로그인 실패 시 API 응답은 기존 ApiErrorResponse 타입으로 처리 가능할 것으로 보입니다.
 // ApiErrorResponse: { success?: boolean; code?: number; message: string; errors?: ... }
 // 명세 이미지의 401 예시: { isSuccess: false, code: 401, message: "..." }
 // 'isSuccess' 키 이름이 다르지만, success?: boolean 으로 커버 가능합니다.
-
