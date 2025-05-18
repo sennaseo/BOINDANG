@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { Barbell, CaretLeft, FirstAidKit, FloppyDisk, Heartbeat, Scales } from '@phosphor-icons/react';
 import BottomNavBar from '@/components/navigation/BottomNavBar';
 import { getUserInfo, updateUserProfile } from '@/api/auth';
-import type { SignUpResponse, UserProfileUpdatePayload, UserTypeApi, SignUpResult } from '@/types/api/authTypes';
+import type { UserProfileUpdatePayload, UserTypeApi } from '@/types/api/authTypes';
+import type { ApiResponse } from '@/types/api';
 
 type UserType = '다이어트' | '근성장' | '당뇨병' | '신장질환';
 
@@ -35,7 +36,7 @@ const TypeCard: React.FC<TypeCardProps> = ({ title, description, icon, isSelecte
   
 export default function EditProfilePage() {
   const router = useRouter();
-  const [initialUserInfo, setInitialUserInfo] = useState<SignUpResult | null>(null);
+  const [initialUserInfo, setInitialUserInfo] = useState<ApiResponse<UserProfileUpdatePayload> | null>(null);
   const [height, setHeight] = useState<string>('');
   const [weight, setWeight] = useState<string>('');
   const [selectedUserType, setSelectedUserType] = useState<UserTypeApi | '' >('');
@@ -51,13 +52,13 @@ export default function EditProfilePage() {
       setError(null);
       try {
         const response = await getUserInfo();
-        if (response && response.success && response.result) {
-          setInitialUserInfo(response.result);
-          setHeight(response.result.height?.toString() || '');
-          setWeight(response.result.weight?.toString() || '');
-          setSelectedUserType(response.result.userType || '');
+        if (response && response.success && response.data) {
+          setInitialUserInfo(response);
+          setHeight(response.data.height?.toString() || '');
+          setWeight(response.data.weight?.toString() || '');
+          setSelectedUserType(response.data.userType || '');
         } else {
-          setError(response.message || '사용자 정보를 불러오는데 실패했습니다.');
+          setError(response.error?.message || '사용자 정보를 불러오는데 실패했습니다.');
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : '데이터 로딩 중 오류 발생');
@@ -95,8 +96,8 @@ export default function EditProfilePage() {
         userType: selectedUserType,
         // 변경되지 않은 값도 포함하여 전송할지, 변경된 값만 보낼지는 API 명세에 따름
         // 여기서는 필수적인 세 값만 업데이트 한다고 가정
-        nickname: initialUserInfo.nickname, // 닉네임은 유지
-        gender: initialUserInfo.gender,     // 성별은 유지
+        // nickname: initialUserInfo.nickname, // 닉네임은 유지
+        // gender: initialUserInfo.gender,     // 성별은 유지
     };
 
     setSaving(true);
@@ -106,17 +107,17 @@ export default function EditProfilePage() {
       const response = await updateUserProfile(payload);
       if (response && response.success) {
         setSuccessMessage('프로필이 성공적으로 업데이트되었습니다!');
-        if (response.result) {
-            setInitialUserInfo(response.result); // 기존 사용자 정보 업데이트
+        if (response.data) {
+            setInitialUserInfo(response); // 기존 사용자 정보 업데이트
             // 서버로부터 받은 최신 정보로 폼 상태도 업데이트
-            setHeight(response.result.height?.toString() || '');
-            setWeight(response.result.weight?.toString() || '');
-            setSelectedUserType(response.result.userType || '');
+            setHeight(response.data.height?.toString() || '');
+            setWeight(response.data.weight?.toString() || '');
+            setSelectedUserType(response.data.userType || '');
         }
         // 선택적으로 이전 페이지로 리디렉션하거나, 메시지를 몇 초간 보여준 후 자동으로 닫기 등
         // setTimeout(() => router.back(), 2000);
       } else {
-        setError(response.message || '프로필 업데이트에 실패했습니다.');
+        setError(response.error?.message || '프로필 업데이트에 실패했습니다.');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : '프로필 업데이트 중 오류 발생');
@@ -148,13 +149,13 @@ export default function EditProfilePage() {
 
       <main className="flex-grow p-4 pb-20 max-w-md mx-auto w-full">
         {error && (
-          <div className="bg-red-100 border absolute top-0 left-0 right-0 z-10 border-red-400 text-red-700 px-4 py-3 rounded mb-4" role="alert">
+          <div className="bg-red-100 border absolute top-0 left-0 right-0 z-20 border-red-400 text-red-700 px-4 py-3 rounded mb-4" role="alert">
             <strong className="font-bold">오류: </strong>
             <span className="block sm:inline">{error}</span>
           </div>
         )}
         {successMessage && (
-          <div className="bg-green-100 border absolute top-0 left-0 right-0 z-10 border-green-400 text-green-700 px-4 py-3 rounded mb-4" role="alert">
+          <div className="bg-green-100 border absolute inset-x-50 z-10 border-green-400 text-green-700 px-4 py-3 rounded mb-4" role="alert">
             <strong className="font-bold">성공: </strong>
             <span className="block sm:inline">{successMessage}</span>
           </div>

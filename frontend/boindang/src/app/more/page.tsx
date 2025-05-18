@@ -7,10 +7,11 @@ import { motion } from "framer-motion";
 import Image from 'next/image';
 import Link from 'next/link';
 import { getUserInfo } from "@/api/auth";
-import type { SignUpResponse } from "@/types/api/authTypes";
+import type { ApiResponse } from "@/types/api";
+import type { SignUpResult } from "@/types/api/authTypes";
 
 export default function MorePage() {
-    const [userInfo, setUserInfo] = useState<SignUpResponse | null>(null);
+    const [userInfo, setUserInfo] = useState<ApiResponse<SignUpResult> | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -69,7 +70,7 @@ export default function MorePage() {
             </div>
             
             <div className="relative my-auto text-[#363636]">
-                <h2 className="text-xl font-bold">안녕하세요 {userInfo.result?.nickname}님</h2>
+                <h2 className="text-xl font-bold">안녕하세요 {userInfo.data?.nickname}님</h2>
                 <p className="text-xl font-bold mt-1">오늘도 건강하게 드셨나요?</p>
             </div>
             

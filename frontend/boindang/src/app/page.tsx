@@ -56,18 +56,6 @@ export default function Home() {
         </div>
       </main>
 
-      {/* 혈당 알림 */}
-      <div className="bg-white/90 absolute top-20 left-0 right-0 px-5 z-10 backdrop-blur-sm rounded-xl shadow-md p-3 border-l-4 border-yellow-500 mx-5">
-        <div className="flex items-center">
-          <div className="mr-3 text-yellow-500">
-            <Sparkle size={28} weight="fill" />
-          </div>
-          <div className="flex-1">
-            <h3 className="font-bold text-gray-800">혈당 주의 알림</h3>
-            <p className="text-xs text-gray-600">최근 분석한 음식에 혈당을 높이는 성분이 포함되어 있습니다.</p>
-          </div>
-        </div>
-      </div>
 
 
       {/* 하단 분석 버튼 영역 */}
