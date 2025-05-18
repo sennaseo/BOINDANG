@@ -17,6 +17,7 @@ public class PostResponse {
 	private String content;
 	private Long imageId;
 
+	private Long userId;
 	private String username;       // USER 서비스에서 가져옴
 
 	private int commentCount;
@@ -26,12 +27,13 @@ public class PostResponse {
 	private LocalDateTime createdAt;
 	private List<CommentResponse> comments;
 
-	public static PostResponse from(Post post, boolean likedByMe, String username, List<CommentResponse> comments) {
+	public static PostResponse from(Post post, Long userId, boolean likedByMe, String username, List<CommentResponse> comments) {
 		return PostResponse.builder()
 			.postId(post.getId())
 			.category(post.getCategory())
 			.content(post.getContent())
 			.imageId(post.getImageId())
+			.userId(userId)
 			.username(username)
 			.commentCount(post.getCommentCount())
 			.likeCount(post.getLikeCount())

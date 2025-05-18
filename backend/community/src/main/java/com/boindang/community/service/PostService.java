@@ -97,7 +97,7 @@ public class PostService {
 			})
 			.toList();
 
-		return PostResponse.from(post, likedByMe, username, commentResponses);
+		return PostResponse.from(post, currentUserId, likedByMe, username, commentResponses);
 	}
 
 	public Long createPost(Long userId, CreatePostRequest request) {
