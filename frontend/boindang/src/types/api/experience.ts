@@ -1,3 +1,8 @@
+export interface ExperienceApiError {
+  status: string;
+  message: string;
+}
+
 export interface Experience {
     id: number;
     name: string;
@@ -16,7 +21,7 @@ export interface Experience {
       totalPages: number;
       campaigns: Experience[];
     };
-    error: any;
+    error: ExperienceApiError | null;
     success: boolean;
   }
 
