@@ -10,7 +10,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
-import com.boindang.community.dto.response.ApiResponse;
+import com.boindang.community.dto.response.ApiResponses;
 import com.boindang.community.dto.response.UserResponse;
 import com.boindang.community.service.EurekaService;
 
@@ -39,12 +39,12 @@ public class UserClient {
 		try {
 			String url = eurekaService.getUrl("BOINDANG-USER") + "users/batch";
 			log.info("🩵url = " + url);
-			ApiResponse<Map<Long, String>> apiResponse = restClient.post()
+			ApiResponses<Map<Long, String>> apiResponse = restClient.post()
 				.uri(url)
 				.body(userIds)
 				.retrieve()
 				.body(new ParameterizedTypeReference<>() {});
-			return apiResponse.getResult();
+			return apiResponse.getData();
 		} catch (Exception e) {
 			throw new RuntimeException("유저명 배치 조회 실패: " + e.getMessage(), e);
 		}
