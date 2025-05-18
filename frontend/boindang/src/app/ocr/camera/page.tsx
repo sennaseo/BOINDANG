@@ -186,7 +186,7 @@ export default function OcrCameraPage() {
         setStream(null); // 모든 시도 실패 시 스트림 상태 null로 확실히 설정
       }
     }
-  }, [setStream, setError]); // videoRef는 ref이므로 의존성 배열에 불필요
+  }, [setStream, setError, stream]); // stream 추가, videoRef는 ref이므로 의존성 배열에 불필요
 
   useEffect(() => {
     const setMetaTag = (name: string, content: string): string | null => {
@@ -214,15 +214,17 @@ export default function OcrCameraPage() {
     showGuideTemporarily();
     getCameraStream();
 
+    const videoElement = videoRef.current; // useEffect 내부 변수로 복사
+
     return () => {
       // 컴포넌트 언마운트 시 스트림 정리
-      if (videoRef.current && videoRef.current.srcObject) {
-        stopMediaStream(videoRef.current.srcObject as MediaStream);
-        videoRef.current.srcObject = null;
-      } else if (stream) {
+      if (videoElement && videoElement.srcObject) { // 복사한 변수 사용
+        stopMediaStream(videoElement.srcObject as MediaStream);
+        // videoElement.srcObject = null; // 이미 DOM에서 사라지므로 이 줄은 불필요할 수 있음
+      } else if (stream) { // stream 사용
         stopMediaStream(stream);
       }
-      setStream(null);
+      // setStream(null); // 여기서 setStream(null) 호출 시, 이미 언마운트된 컴포넌트 상태 업데이트 경고 발생 가능성. 스트림 중지만 수행.
 
       if (guideTimeoutRef.current) {
         clearTimeout(guideTimeoutRef.current);
@@ -231,8 +233,8 @@ export default function OcrCameraPage() {
       if (originalStatusBarStyle !== null) setMetaTag('apple-mobile-web-app-status-bar-style', originalStatusBarStyle);
       if (originalThemeColor !== null) setMetaTag('theme-color', originalThemeColor);
     };
-  }, [getCameraStream, showGuideTemporarily]); // 의존성 배열에 콜백 함수들 추가
-  // stream 상태는 getCameraStream 내부에서 관리되므로, 최상위 useEffect의 의존성에서는 제외
+  }, [getCameraStream, showGuideTemporarily, stream]); // stream 추가
+  // stream 상태는 getCameraStream 내부에서 관리되므로, 최상위 useEffect의 의존성에서는 제외 => 이 주석은 틀렸음. cleanup에서 stream을 직접 사용하므로 추가해야 함.
 
   const handleAlbumClick = () => {
     fileInputRef.current?.click();
@@ -282,10 +284,12 @@ export default function OcrCameraPage() {
     setIsProcessing(true);
     setError(null);
 
-    // if (true) { // 항상 true가 되도록 하여 아래 로직을 건너뛰고 대기 화면에 머무르게 함
-    //   console.log('[Debug] OCR 대기 화면 테스트를 위해 API 호출 및 페이지 이동을 건너뜁니다.');
-    //   return;
-    // }
+    // OCR 분석 대기 화면 디자인을 위해 여기서 함수를 조기 종료합니다.
+    // 실제 프로덕션에서는 이 부분을 제거하거나 조건부로 처리해야 합니다.
+    if (process.env.NODE_ENV !== 'production') { // 프로덕션 환경이 아닐 때 (개발 또는 테스트 환경)
+      console.log('[Debug] OCR 대기 화면 테스트를 위해 API 호출 및 페이지 이동을 건너뜁니다.');
+      return; // 여기서 함수를 종료하여 대기 화면에 머무름
+    }
 
     try {
       const ingredientFileType = 'image/jpeg';
@@ -448,7 +452,10 @@ export default function OcrCameraPage() {
 
       setError(errorMessage);
     } finally {
-      setIsProcessing(false);
+      // 개발 중 디버깅을 위해 return으로 조기 종료하는 경우 setIsProcessing(false)를 호출하지 않도록 합니다.
+      if (process.env.NODE_ENV === 'production') { // 프로덕션 환경일 때만 false로 설정
+        setIsProcessing(false);
+      }
     }
   };
 

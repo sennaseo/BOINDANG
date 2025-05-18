@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import ReportTabNav from "@/components/navigation/ReportTabNav";     
-import { CaretLeft } from "@phosphor-icons/react";
+import BackArrowIcon from '@/components/common/BackArrowIcon';
 import { useParams, useRouter } from 'next/navigation';
 import { getReport } from "@/api/report";
 import { ApiError } from "@/types/api";
@@ -105,7 +105,7 @@ export default function UserTypePage() {
   return (
     <div className="min-h-screen bg-gray-50 p-4 pb-20">
       <header className="flex items-center mb-2">
-        <button onClick={() => router.push(`/report/${productId}`)} className="mr-2 text-2xl"><CaretLeft/></button>
+        <button onClick={() => router.push(`/report/${productId}`)} className="mr-2 text-2xl"><BackArrowIcon/></button>
         <h1 className="text-2xl font-bold mx-auto">리포트 ({reportData.productName || "제품"})</h1>
       </header>
       <ReportTabNav productId={productId} />

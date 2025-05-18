@@ -2,11 +2,12 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Eye, EyeSlash, CaretLeft, Shuffle, CheckCircle } from '@phosphor-icons/react'; // 아이콘 추가
+import { Eye, EyeSlash, Shuffle, CheckCircle } from '@phosphor-icons/react'; // 아이콘 추가
 import { getRandomNickname } from '@woowa-babble/random-nickname';
 import Button from '@/components/common/Button';
 import { useCheckUsername } from '@/hooks/useAuthMutations';
-import ConfirmModal from '@/components/common/ConfirmModal'; // ConfirmModal import
+import ConfirmModal from '@/components/common/ConfirmModal';
+import BackArrowIcon from '@/components/common/BackArrowIcon';
 
 // 1. Zustand 스토어 import
 import { useSignUpStore } from '@/stores/signupStore';
@@ -278,7 +279,7 @@ export default function SignUp() {
     <div className="flex flex-col min-h-screen overflow-x-hidden">
       <div className="p-4">
         <button onClick={handleBackNavigation} className="inline-block">
-          <CaretLeft size={24} weight="regular" />
+          <BackArrowIcon size={24} weight="regular" />
         </button>
       </div>
 

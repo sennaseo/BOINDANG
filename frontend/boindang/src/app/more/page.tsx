@@ -123,7 +123,7 @@ export default function MorePage() {
                     height={38}
                 />
                 <div className="relative">
-                    <button onClick={toggleMenu} className="focus:outline-none cursor-pointer">
+                    <button onClick={toggleMenu} className="focus:outline-none cursor-pointer hover:bg-gray-200 rounded-full">
                         <DotsThreeVertical size={24} weight="bold" fill="#363636" />
                     </button>
                     {isMenuOpen && (

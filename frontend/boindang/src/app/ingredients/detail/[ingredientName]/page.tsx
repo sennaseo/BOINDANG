@@ -3,7 +3,8 @@
 import React, { useState, use, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import BottomNavBar from '@/components/navigation/BottomNavBar';
-import { ArrowLeft, WarningCircle, ChartBar, Fire, Cookie, CheckCircle, XCircle, Spinner } from '@phosphor-icons/react';
+import { WarningCircle, ChartBar, Fire, Cookie, CheckCircle, XCircle, Spinner } from '@phosphor-icons/react';
+import BackArrowIcon from '@/components/common/BackArrowIcon';
 
 // Import Tab Components
 import OverviewTab from './OverviewTab';
@@ -116,7 +117,7 @@ export default function IngredientDetailPage({ params: paramsPromise }: { params
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
         <header className="sticky top-0 z-40 bg-white p-4 flex items-center border-b border-slate-200 gap-x-3 w-full max-w-md mb-4">
           <button onClick={() => router.push('/ingredients')} className="p-1">
-            <ArrowLeft size={24} className="text-slate-700" />
+            <BackArrowIcon size={24} className="text-slate-700" />
           </button>
           <h1 className="text-lg font-semibold text-slate-800">오류</h1>
         </header>
@@ -184,7 +185,7 @@ export default function IngredientDetailPage({ params: paramsPromise }: { params
       <div className="max-w-md mx-auto bg-white shadow-lg pb-[80px]">
         <header className="sticky top-0 z-40 bg-white p-4 flex items-center border-b border-slate-200 gap-x-3">
           <button onClick={() => router.back()} className="p-1">
-            <ArrowLeft size={24} className="text-slate-700" />
+            <BackArrowIcon size={24} className="text-slate-700" />
           </button>
           <h1 className="text-lg font-semibold text-slate-800">{displayData.name} {ingredientDetail.engName ? `(${ingredientDetail.engName})` : ''}</h1>
         </header>

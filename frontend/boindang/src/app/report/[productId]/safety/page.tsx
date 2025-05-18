@@ -2,11 +2,12 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import ReportTabNav from "@/components/navigation/ReportTabNav";
-import { CaretLeft, Info } from "@phosphor-icons/react";
+import { Info } from "@phosphor-icons/react";
 import dynamic from "next/dynamic";
 import { useParams, useRouter } from 'next/navigation';
 import { getReport } from "@/api/report";
 import { ApiError } from "@/types/api";
+import BackArrowIcon from '@/components/common/BackArrowIcon';
 // 동적 import, SSR 비활성화
 const SafetyChart = dynamic(() => import("@/components/chart/SafetyChart"), {
   ssr: false,
@@ -279,7 +280,7 @@ export default function SafetyPage() {
   return (
     <div className="min-h-screen bg-gray-50 p-4 pb-10">
       <header className="flex items-center mb-2">
-        <button onClick={() => router.push(`/report/${productId}`)} className="mr-2 text-2xl cursor-pointer"><CaretLeft/></button>
+        <button onClick={() => router.push(`/report/${productId}`)} className="mr-2 text-2xl cursor-pointer"><BackArrowIcon/></button>
         <h1 className="text-2xl font-bold mx-auto">리포트 ({reportData.productName || "제품"})</h1>
       </header>
       <ReportTabNav productId={productId} />

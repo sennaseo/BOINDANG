@@ -5,8 +5,9 @@ import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
 import type { IngredientResult, CategoryIngredientsData } from '@/types/api/ingredients';
 import { fetchCategoryIngredients } from '@/api/ingredients';
-import { ArrowLeft, CheckCircle, Warning, XCircle as RiskXCircle, CaretRight, Spinner, Info, Package, FadersHorizontal, Check, X as ModalCloseX } from '@phosphor-icons/react';
+import { CheckCircle, Warning, XCircle as RiskXCircle, CaretRight, Spinner, Info, Package, FadersHorizontal, Check, X as ModalCloseX } from '@phosphor-icons/react';
 import BottomNavBar from '@/components/navigation/BottomNavBar';
+import BackArrowIcon from '@/components/common/BackArrowIcon';
 
 // 카테고리명과 이미지 경로 매핑
 const categoryImageMap: { [key: string]: string } = {
@@ -212,7 +213,7 @@ const CategoryIngredientsPage = () => {
         <div className="max-w-md mx-auto flex flex-col h-screen">
           <header className="sticky top-0 bg-white z-10 p-4 flex items-center border-b border-gray-200 h-[57px]">
             <button onClick={handleGoBack} className="p-1 text-gray-600 hover:text-gray-800">
-              <ArrowLeft size={24} />
+              <BackArrowIcon size={22} />
             </button>
             <div className="flex items-center ml-3 flex-grow min-w-0">
               {categoryIconSrc && (
@@ -247,7 +248,7 @@ const CategoryIngredientsPage = () => {
         <div className="max-w-md mx-auto flex flex-col h-screen">
           <header className="sticky top-0 bg-white z-10 p-4 flex items-center border-b border-gray-200 h-[57px]">
             <button onClick={handleGoBack} className="p-1 text-gray-600 hover:text-gray-800">
-              <ArrowLeft size={24} />
+              <BackArrowIcon size={22} />
             </button>
             <div className="flex items-center ml-3 flex-grow min-w-0">
               {categoryIconSrc && (
@@ -291,7 +292,7 @@ const CategoryIngredientsPage = () => {
           {isScrolled ? (
             <>
               <button onClick={handleGoBack} className="p-1 text-gray-600 hover:text-gray-800">
-                <ArrowLeft size={22} />
+                <BackArrowIcon size={22} />
               </button>
               <div className="flex items-center flex-grow overflow-hidden mx-2">
                 {categoryIconSrc && (
@@ -318,7 +319,7 @@ const CategoryIngredientsPage = () => {
                 style={{ height: `${HEADER_INITIAL_BACK_BUTTON_AREA_HEIGHT}px` }}
               >
                 <button onClick={handleGoBack} className="p-1 text-gray-600 hover:text-gray-800">
-                  <ArrowLeft size={24} />
+                  <BackArrowIcon size={24} />
                 </button>
               </div>
               <div

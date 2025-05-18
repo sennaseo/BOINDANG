@@ -2,11 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Barbell, CaretLeft, FirstAidKit, FloppyDisk, Heartbeat, Scales } from '@phosphor-icons/react';
+import { Barbell, FirstAidKit, FloppyDisk, Heartbeat, Scales } from '@phosphor-icons/react';
 import BottomNavBar from '@/components/navigation/BottomNavBar';
 import { getUserInfo, updateUserProfile } from '@/api/auth';
 import type { UserProfileUpdatePayload, UserTypeApi } from '@/types/api/authTypes';
 import type { ApiResponse } from '@/types/api';
+import BackArrowIcon from '@/components/common/BackArrowIcon';
 
 type UserType = '다이어트' | '근성장' | '당뇨병' | '신장질환';
 
@@ -132,15 +133,15 @@ export default function EditProfilePage() {
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       <header className="sticky top-0 z-30 bg-white p-4 shadow-sm">
-        <div className="flex items-center justify-between max-w-md mx-auto">
-          <button onClick={() => router.back()} className="p-1.5 rounded-full hover:bg-gray-100">
-            <CaretLeft size={24} weight="bold" className="text-gray-700" />
+        <div className="flex items-center max-w-md mx-auto">
+          <button onClick={() => router.back()} className="flex items-center">
+            <BackArrowIcon size={24} weight="bold" className="text-gray-700 mr-3" />
+            <h1 className="text-xl font-bold text-gray-800">프로필 수정</h1>
           </button>
-          <h1 className="text-xl font-bold text-gray-800">프로필 수정</h1>
           <button 
             onClick={handleSave} 
             disabled={saving || loading}
-            className="p-1.5 rounded-full hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="ml-auto p-1.5 rounded-full hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <FloppyDisk size={24} weight={saving ? "duotone" : "bold"} className={`text-violet-600 ${saving ? 'animate-pulse' : ''}`} />
           </button>
