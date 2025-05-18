@@ -23,15 +23,19 @@ public enum PostCategory {
 
 	public static boolean isValid(String name) {
 		return Arrays.stream(PostCategory.values())
-			.anyMatch(category -> category.name().equalsIgnoreCase(name));
+			.anyMatch(category ->
+				category.name().equalsIgnoreCase(name) ||
+					category.displayName.equalsIgnoreCase(name)
+			);
 	}
 
 	public static PostCategory from(String name) {
 		return Arrays.stream(PostCategory.values())
-			.filter(category -> category.name().equalsIgnoreCase(name))
+			.filter(category ->
+				category.name().equalsIgnoreCase(name) ||
+					category.displayName.equalsIgnoreCase(name)
+			)
 			.findFirst()
 			.orElseThrow(() -> new NotFoundException("존재하지 않는 카테고리입니다."));
 	}
 }
-
-
