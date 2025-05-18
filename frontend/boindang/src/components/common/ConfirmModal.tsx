@@ -38,8 +38,8 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
     >
       <div className="bg-white rounded-lg shadow-xl w-full max-w-sm overflow-hidden">
         <div className="p-6">
-          <h2 className="text-lg font-semibold mb-3 text-gray-800">{title}</h2>
-          <p className="text-sm text-gray-600 whitespace-pre-line">{message}</p>
+          {title && <h2 className="text-lg font-semibold mb-3 text-gray-800">{title}</h2>}
+          <p className="text-base text-gray-900 whitespace-pre-line text-center">{message}</p>
         </div>
         <div className="grid grid-cols-2 gap-3 px-6 py-4 bg-gray-50">
           <button

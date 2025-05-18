@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import { CameraPlus, CaretRight, SealPercent, Sparkle } from '@phosphor-icons/react';
 import BottomNavBar from '@/components/navigation/BottomNavBar';
 import Image from 'next/image';
@@ -15,13 +16,35 @@ const DangDangi = dynamic(() => import('@/components/3D/DangDangi'), {
   ),
 });
 
-export default function Home() {  
+export default function Home() {
+  const mainContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const container = mainContainerRef.current;
+    if (!container) return;
+
+    const handleTouchStart = (event: TouchEvent) => {
+      // 단일 터치이고, 화면 왼쪽 가장자리에서 시작하는 경우
+      if (event.touches.length === 1 && event.touches[0].clientX < 30) {
+        // 스와이프 방향에 관계없이 가장자리에서 시작된 터치면 일단 막음
+        event.preventDefault();
+      }
+    };
+
+    // passive: false 옵션으로 preventDefault 가능하도록 설정
+    container.addEventListener('touchstart', handleTouchStart, { passive: false });
+
+    return () => {
+      container.removeEventListener('touchstart', handleTouchStart);
+    };
+  }, []);
+
   return (
-    <div className="flex flex-col min-h-screen bg-[#F8F8F8] relative">
+    <div ref={mainContainerRef} className="flex flex-col min-h-screen bg-[#F8F8F8] relative">
       {/* 상단 로고/설정 */}
       <header className="flex justify-between items-center pt-6 px-5 absolute top-0 left-0 right-0 z-10">
         <div className="relative">
-          <Image src="/보인당black.png" alt="보인당 로고" width={126} height={40}/>
+          <Image src="/보인당black.png" alt="보인당 로고" width={126} height={40} />
         </div>
       </header>
 

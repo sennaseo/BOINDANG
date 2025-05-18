@@ -65,8 +65,18 @@ export default function ExperienceCard({
               {statusLabel}
             </div>
           )}
-          {typeof remainingDays === 'string' && remainingDays === '종료' && (
-            <div className="absolute inset-0 bg-black/40 z-10 rounded-t-2xl pointer-events-none" />
+          {typeof remainingDays === 'string' && remainingDays === '종료' && !applied && (
+            <>
+              <div className="absolute inset-0 bg-black/40 z-10 rounded-t-2xl pointer-events-none" />
+              <Image
+                src="/assets/experience/sugar_fail.png"
+                alt="모집 마감"
+                width={200}
+                height={200}
+                className="absolute inset-0 w-full h-full object-contain z-10 pointer-events-none scale-140"
+                style={{ background: 'rgba(0,0,0,0.0)' }}
+              />
+            </>
           )}
           {applied && (
             <Image
@@ -74,7 +84,7 @@ export default function ExperienceCard({
               alt="신청 성공"
               width={200}
               height={200}
-              className="absolute inset-0 w-full h-full object-contain z-20 pointer-events-none"
+              className="absolute inset-0 w-full h-full object-contain z-10 pointer-events-none scale-100"
               style={{ background: 'rgba(0,0,0,0.4)' }}
             />
           )}
