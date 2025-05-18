@@ -12,6 +12,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 
+import jakarta.persistence.OrderBy;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -33,6 +34,7 @@ public class Quiz {
 	private int answerOptionId;
 
 	@OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@OrderBy("optionId ASC")  // 또는 "id ASC"
 	private List<QuizOption> options = new ArrayList<>();
 
 	public Quiz(String title, String question, int answerOptionId) {

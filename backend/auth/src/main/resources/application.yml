@@ -19,6 +19,13 @@ eureka:
       defaultZone: ${EUREKA_URL}
   instance:
     hostname: ${HOST_IP}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  server:
+    port: 1111
 
 server:
   port: 8080
