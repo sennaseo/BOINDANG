@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { CaretLeft, Info } from '@phosphor-icons/react';
+import { Info } from '@phosphor-icons/react';
 import BottomNavBar from '@/components/navigation/BottomNavBar';
 import { getReportHistory } from '@/api/report';
 import { ReportHistory } from '@/types/api/report';
@@ -47,12 +47,11 @@ export default function AnalysisHistoryPage() {
     <div className="flex flex-col min-h-screen bg-gray-50">
       {/* 헤더 */}
       <header className="sticky top-0 z-30 bg-white p-4 shadow-sm">
-        <div className="flex items-center justify-between max-w-md mx-auto">
-          <button onClick={() => router.back()} className="p-1.5 rounded-full hover:bg-gray-100">
-            <CaretLeft size={24} weight="bold" className="text-gray-700" />
+        <div className="flex items-center max-w-md mx-auto">
+          <button onClick={() => router.back()} className="flex items-center">
+            <BackArrowIcon size={24} weight="bold" className="text-gray-700 mr-3" />
+            <h1 className="text-xl font-bold text-gray-800">나의 분석 기록</h1>
           </button>
-          <h1 className="text-xl font-bold text-gray-800">나의 분석 기록</h1>
-          <div className="w-10">{/* 오른쪽 공간 확보용 */ }</div>
         </div>
       </header>
 
@@ -100,7 +99,7 @@ export default function AnalysisHistoryPage() {
                     <h3 className="font-semibold text-gray-800 truncate mb-2" title={item.productName}>{item.productName}</h3>
                     <p className="text-xs text-gray-500">분석일: {formatAnalyzedAt(item.analyzedAt)}</p>
                   </div>
-                  <CaretLeft size={20} weight="bold" className="text-gray-400 transform rotate-180" />
+                  <BackArrowIcon size={20} weight="bold" className="text-gray-400 transform rotate-180" />
                 </div>
               </Link>
             ))}

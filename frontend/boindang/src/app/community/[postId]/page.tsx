@@ -3,11 +3,12 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image'; // Next.js Image 컴포넌트 임포트
-import { ArrowLeft, DotsThree, Heart, ChatCircle, User } from '@phosphor-icons/react';
+import { DotsThree, Heart, ChatCircle, User } from '@phosphor-icons/react';
 import { getPostDetailById, getImageListByIds, deletePost, toggleLikePost } from '../../../api/community'; // API 함수 임포트
 import { ApiPostDetailData, ApiCommentItem } from '../../../types/api/community'; // ApiResponseDeletePost 제거
 import ConfirmModal from '../../../components/common/ConfirmModal'; // ConfirmModal 임포트
 import { toast } from 'react-hot-toast';
+import BackArrowIcon from '@/components/common/BackArrowIcon';
 
 // 임시 Post 타입 및 Comment 타입, getPostById 함수는 API 연동으로 인해 제거됩니다.
 
@@ -264,7 +265,7 @@ export default function PostDetailPage() {
     <div className="flex flex-col min-h-screen bg-background max-w-md mx-auto w-full">
       <header className="sticky top-0 z-10 flex items-center justify-between p-4 bg-background border-b border-gray-200">
         <button onClick={() => router.back()} aria-label="뒤로 가기">
-          <ArrowLeft size={24} className="text-text-primary" />
+          <BackArrowIcon size={24} className="text-text-primary" />
         </button>
         {/* TODO: 현재 사용자와 게시글 작성자가 동일할 경우에만 메뉴 버튼 표시 */}
         {/* 예를 들어, post.isMine 또는 post.username === currentUser.username 등으로 확인 */}

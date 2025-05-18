@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 // import Image from 'next/image'; // 사용하지 않으므로 주석 처리 또는 삭제
-import { ArrowLeft } from '@phosphor-icons/react';
+import BackArrowIcon from '@/components/common/BackArrowIcon';
 
 // 임시 사용자 정보
 const userInfo = {
@@ -30,7 +30,7 @@ export default function ProfilePage() {
       {/* Header */}
       <header className="sticky top-0 z-10 flex items-center p-4 bg-background">
         <Link href="/community" className="mr-4 text-text-primary">
-          <ArrowLeft size={24} weight="bold" />
+          <BackArrowIcon size={24} weight="bold" />
         </Link>
       </header>
 
