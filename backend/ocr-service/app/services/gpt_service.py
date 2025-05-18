@@ -48,10 +48,18 @@ async def ask_gpt_ingredient(ingredient_text: str) -> dict:
         name: 제품명 (있을 경우)
         totalWeightGram, pakageGram, pakages: 총중량, 개별 포장 중량, 포장 개수
 
-        2. ingredientTree
-        괄호는 하위 성분이며 중첩은 children 배열로 구조화
-        % 표시는 ratio로 반영, 부모 항목에만 order 부여
-        단, 괄호 안이 '감미료', '산도조절제', '유화제' 등 용도 설명일 경우에는 children에 포함하지 말고 무시할 것
+         2. ingredientTree
+        괄호는 하위 성분이며 중첩은 children 배열로 구조화한다.
+        % 표시는 ratio로 반영하고, order는 상위 항목에만 부여한다.
+        각 노드는 다음 필드를 반드시 포함해야 한다:
+          - name: 성분명 (필수)
+          - origin: 원산지 또는 null
+          - order: 상위 성분일 경우에만 숫자 (하위 성분은 null)
+          - children: 하위 성분 노드 리스트 (없으면 빈 배열 [])
+        
+        모든 노드는 children 필드를 반드시 포함하며, 하위 성분이 없더라도 "children": [] 으로 나타내야 한다.
+        
+        단, 괄호 안이 '감미료', '산도조절제', '유화제' 등 용도 설명일 경우에는 children에 포함하지 말고 무시할 것.
         - 단, 괄호 안에 용도와 함께 실제 성분이 명시되어 있다면(예: 감미료/에리스리톨), **용도는 무시하고 성분은 children에 포함**
 
         3. categorizedIngredients
