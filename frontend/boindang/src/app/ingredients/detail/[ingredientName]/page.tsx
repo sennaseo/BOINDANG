@@ -31,8 +31,11 @@ export default function IngredientDetailPage({ params: paramsPromise }: { params
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const [indicatorStyle, setIndicatorStyle] = useState({});
 
+  // Refs for dynamic height adjustment
+  const tabsContainerRef = useRef<HTMLDivElement | null>(null);
+  const contentTabRefs = useRef<(HTMLDivElement | null)[]>([]);
+
   useEffect(() => {
-    // ingredientDetail이 로드되고, tabRefs가 설정된 후에만 실행
     if (ingredientDetail && tabRefs.current.length === TAB_NAMES.length) {
       const activeTabIndex = TAB_NAMES.indexOf(activeTab);
       const activeTabButton = tabRefs.current[activeTabIndex];
@@ -44,8 +47,40 @@ export default function IngredientDetailPage({ params: paramsPromise }: { params
         });
       }
     }
-  }, [activeTab, ingredientDetail]); // TAB_NAMES is constant, so not strictly needed in deps, but ESLint might prefer it. For now, keep it minimal and correct.
-  // If ESLint complains, add TAB_NAMES or memoize it if it were dynamic.
+  }, [activeTab, ingredientDetail]);
+
+  // Effect for adjusting container height
+  useEffect(() => {
+    let animationFrameId: number;
+    const observer = new ResizeObserver(entries => {
+      // We only expect one entry, so take the first.
+      const entry = entries[0];
+      if (entry && tabsContainerRef.current) {
+        // Use requestAnimationFrame to batch updates and avoid layout thrashing
+        animationFrameId = requestAnimationFrame(() => {
+          if (tabsContainerRef.current) { // Check ref again inside rAF
+            tabsContainerRef.current.style.height = `${entry.target.scrollHeight}px`;
+          }
+        });
+      }
+    });
+
+    if (ingredientDetail && contentTabRefs.current.length === TAB_NAMES.length) {
+      const activeTabIndex = TAB_NAMES.indexOf(activeTab);
+      const activeContentTabElement = contentTabRefs.current[activeTabIndex];
+
+      if (activeContentTabElement) {
+        observer.observe(activeContentTabElement);
+      }
+    }
+
+    return () => {
+      observer.disconnect();
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
+  }, [activeTab, ingredientDetail]);
 
   if (isLoading) {
     return (
@@ -184,25 +219,28 @@ export default function IngredientDetailPage({ params: paramsPromise }: { params
             ))}
           </nav>
 
-          <div className="mt-6 overflow-hidden">
+          <div
+            ref={tabsContainerRef}
+            className="mt-6 overflow-hidden transition-all duration-300 ease-in-out"
+          >
             <div
-              className="flex transition-transform duration-300 ease-in-out"
-              style={{ transform: `translateX(-${TAB_NAMES.indexOf(activeTab) * 100}%)` }} // Use TAB_NAMES for translateX
+              className="flex items-start transition-transform duration-300 ease-in-out"
+              style={{ transform: `translateX(-${TAB_NAMES.indexOf(activeTab) * 100}%)` }}
             >
-              <div className="w-full flex-shrink-0 px-1">
+              <div ref={(el) => { contentTabRefs.current[0] = el; }} className="w-full flex-shrink-0 px-1">
                 <OverviewTab
                   description={ingredientDetail.description}
                   examples={ingredientDetail.examples}
                   references={ingredientDetail.references}
                 />
               </div>
-              <div className="w-full flex-shrink-0 px-1">
+              <div ref={(el) => { contentTabRefs.current[1] = el; }} className="w-full flex-shrink-0 px-1">
                 <HealthImpactTab effects={ingredientDetail.healthEffects} />
               </div>
-              <div className="w-full flex-shrink-0 px-1">
+              <div ref={(el) => { contentTabRefs.current[2] = el; }} className="w-full flex-shrink-0 px-1">
                 <UserSpecificTab considerations={ingredientDetail.userConsiderations} />
               </div>
-              <div className="w-full flex-shrink-0 px-1">
+              <div ref={(el) => { contentTabRefs.current[3] = el; }} className="w-full flex-shrink-0 px-1">
                 <MoreInfoTab info={ingredientDetail.moreInfo} />
               </div>
             </div>
