@@ -1,16 +1,15 @@
 "use client";
 
-import { useState, useEffect, useRef, ChangeEvent } from 'react';
+import { useState, useEffect, useRef, ChangeEvent, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image'; // Next Image import 추가
+import Image from 'next/image';
 import { X, Image as ImageIcon, ListBullets, Lightbulb, ChartBar, ArrowCounterClockwise, Check, ArrowRight } from '@phosphor-icons/react';
 import { postOcrAnalysis } from '@/api/ocr'; // 경로 확인 필요, @/api/ocr.ts 가정
 import { getPresignedUrl } from '@/api/image';
 import OcrProcessingScreen from '../components/OcrProcessingScreen'; // 새로 만든 컴포넌트 import
 import { usePreventSwipeBack } from '@/hooks/usePreventSwipeBack'; // 커스텀 훅 import
-import { ApiResponse } from '@/types/api'; 
-// 촬영 단계를 위한 타입 정의
-type PhotoStep = 'ingredient' | 'nutritionInfo';
+import { ApiResponse } from '@/types/api';
+import { PhotoStep, OcrResponseData } from '@/types/api/ocrCameraTypes';
 
 // 각 단계별 가이드 메시지 정의
 const guideMessages = {
@@ -32,15 +31,12 @@ const guideMessages = {
   }
 };
 
-// API 응답 타입 정의 수정
-interface OcrResponseData {
-  productId?: string;
-  productName?: string;
-  result?: {
-    ingredientAnalysis?: unknown;
-    nutritionAnalysis?: unknown;
-  };
-}
+// Helper to stop a stream
+const stopMediaStream = (mediaStream: MediaStream | null) => {
+  if (mediaStream) {
+    mediaStream.getTracks().forEach(track => track.stop());
+  }
+};
 
 // Base64 문자열을 Blob 객체로 변환하는 헬퍼 함수
 async function base64ToBlob(base64: string, fileType: string): Promise<Blob> {
@@ -131,6 +127,67 @@ export default function OcrCameraPage() {
   const [previewImageSrc, setPreviewImageSrc] = useState<string | null>(null);
   const [showPreviewScreen, setShowPreviewScreen] = useState(false);
 
+  const showGuideTemporarily = useCallback(() => {
+    if (guideTimeoutRef.current) {
+      clearTimeout(guideTimeoutRef.current);
+    }
+    setIsGuideVisible(true);
+    guideTimeoutRef.current = setTimeout(() => {
+      setIsGuideVisible(false);
+    }, 3000);
+  }, [setIsGuideVisible, guideTimeoutRef]);
+
+  const getCameraStream = useCallback(async () => {
+    // 기존 스트림 중지 (videoRef 또는 state 기준)
+    if (videoRef.current && videoRef.current.srcObject) {
+      stopMediaStream(videoRef.current.srcObject as MediaStream);
+      videoRef.current.srcObject = null;
+    } else if (stream) { // videoRef에 없지만 state에 남아있을 경우
+      stopMediaStream(stream);
+    }
+    setStream(null); // 상태도 확실히 초기화
+
+    try {
+      const constraints: MediaStreamConstraints = {
+        video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } },
+        audio: false
+      };
+      const newStream = await navigator.mediaDevices.getUserMedia(constraints);
+      setStream(newStream);
+      if (videoRef.current) {
+        videoRef.current.srcObject = newStream;
+      }
+      setError(null); // 성공 시 이전 카메라 오류 초기화
+    } catch (err) {
+      console.error("후면 카메라 접근 오류:", err);
+      let errorMessage = "카메라 접근 중 오류가 발생했어요. 권한을 확인해주세요.";
+      if (err instanceof Error) {
+        if (err.name === 'NotAllowedError') {
+          errorMessage = "카메라 권한이 거부되었어요. 설정에서 허용해주세요.";
+        } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+          errorMessage = "카메라를 찾을 수 없어요. 다른 앱에서 사용 중인지 확인해주세요.";
+        } else {
+          errorMessage = `카메라 오류: ${err.message}`;
+        }
+      }
+      // 후면 카메라 실패 시 전면 카메라 시도
+      try {
+        console.log("후면 카메라 실패, 전면 카메라 시도 중...");
+        const frontConstraints: MediaStreamConstraints = { video: { facingMode: 'user' }, audio: false };
+        const frontStream = await navigator.mediaDevices.getUserMedia(frontConstraints);
+        setStream(frontStream);
+        if (videoRef.current) {
+          videoRef.current.srcObject = frontStream;
+        }
+        setError(null); // 전면 카메라 성공 시 오류 초기화
+      } catch (frontErr) {
+        console.error("전면 카메라 접근 오류:", frontErr);
+        setError(errorMessage); // 전면도 실패하면 후면 카메라 오류 메시지 사용
+        setStream(null); // 모든 시도 실패 시 스트림 상태 null로 확실히 설정
+      }
+    }
+  }, [setStream, setError]); // videoRef는 ref이므로 의존성 배열에 불필요
+
   useEffect(() => {
     const setMetaTag = (name: string, content: string): string | null => {
       let metaTag = document.querySelector<HTMLMetaElement>(`meta[name="${name}"]`);
@@ -154,92 +211,28 @@ export default function OcrCameraPage() {
     const originalStatusBarStyle = setMetaTag('apple-mobile-web-app-status-bar-style', 'black');
     const originalThemeColor = setMetaTag('theme-color', '#000000');
 
-    // 페이지 벗어날 때 원래 스타일로 복구
-    return () => {
-      if (originalStatusBarStyle !== null) {
-        setMetaTag('apple-mobile-web-app-status-bar-style', originalStatusBarStyle);
-      }
-      if (originalThemeColor !== null) {
-        setMetaTag('theme-color', originalThemeColor);
-      } else {
-        // theme-color 태그가 원래 없었다면 제거
-        const themeColorMeta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
-        if (themeColorMeta && !originalThemeColor) { // originalThemeColor가 null이었다는 것은 우리가 동적으로 추가했다는 의미
-          document.head.removeChild(themeColorMeta);
-        }
-      }
-    };
-  }, []);
-
-  const showGuideTemporarily = () => {
-    if (guideTimeoutRef.current) {
-      clearTimeout(guideTimeoutRef.current);
-    }
-    setIsGuideVisible(true);
-    guideTimeoutRef.current = setTimeout(() => {
-      setIsGuideVisible(false);
-    }, 3000);
-  };
-
-  useEffect(() => {
     showGuideTemporarily();
-
-    let currentStream: MediaStream | null = null;
-
-    const getCameraStream = async () => {
-      try {
-        const constraints: MediaStreamConstraints = {
-          video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } },
-          audio: false
-        };
-        currentStream = await navigator.mediaDevices.getUserMedia(constraints);
-        setStream(currentStream);
-        if (videoRef.current) {
-          videoRef.current.srcObject = currentStream;
-        }
-      } catch (err) {
-        console.error("카메라 접근 오류:", err);
-        let errorMessage = "알 수 없는 카메라 오류가 발생했습니다.";
-        if (err instanceof Error) {
-          if (err.name === 'NotAllowedError') {
-            errorMessage = "카메라 접근 권한이 거부되었습니다. 설정에서 권한을 허용해주세요.";
-          } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
-            errorMessage = "사용 가능한 카메라를 찾을 수 없습니다.";
-          } else {
-            errorMessage = `카메라를 시작하는 중 오류가 발생했습니다: ${err.message}`;
-          }
-        }
-        setError(errorMessage);
-
-        try {
-          console.log("후면 카메라 실패, 전면 카메라 시도...");
-          const frontConstraints: MediaStreamConstraints = { video: { facingMode: 'user' }, audio: false };
-          currentStream = await navigator.mediaDevices.getUserMedia(frontConstraints);
-          setStream(currentStream);
-          setError(null);
-          if (videoRef.current) {
-            videoRef.current.srcObject = currentStream;
-          }
-        } catch (frontErr) {
-          console.error("전면 카메라 접근 오류:", frontErr);
-        }
-      }
-    };
-
     getCameraStream();
 
     return () => {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-        console.log("카메라 스트림 정리됨");
+      // 컴포넌트 언마운트 시 스트림 정리
+      if (videoRef.current && videoRef.current.srcObject) {
+        stopMediaStream(videoRef.current.srcObject as MediaStream);
+        videoRef.current.srcObject = null;
+      } else if (stream) {
+        stopMediaStream(stream);
       }
+      setStream(null);
+
       if (guideTimeoutRef.current) {
         clearTimeout(guideTimeoutRef.current);
-        console.log("가이드 타임아웃 정리됨");
       }
+      // 메타 태그 복원 (기존 로직 유지)
+      if (originalStatusBarStyle !== null) setMetaTag('apple-mobile-web-app-status-bar-style', originalStatusBarStyle);
+      if (originalThemeColor !== null) setMetaTag('theme-color', originalThemeColor);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [getCameraStream, showGuideTemporarily]); // 의존성 배열에 콜백 함수들 추가
+  // stream 상태는 getCameraStream 내부에서 관리되므로, 최상위 useEffect의 의존성에서는 제외
 
   const handleAlbumClick = () => {
     fileInputRef.current?.click();
@@ -316,53 +309,122 @@ export default function OcrCameraPage() {
       const ocrResponse: ApiResponse<OcrResponseData> = await postOcrAnalysis(requestBody);
       console.log("OCR API 호출 성공:", ocrResponse);
 
-      // ocrResponse에서 productId 추출
       const productId = ocrResponse.data?.productId;
       console.log("productId:", productId);
 
-      // 분석 결과 데이터 가져오기
       if (ocrResponse.data && productId) {
-        // 분석 결과 데이터를 로컬 스토리지에 저장
-        try {
-          localStorage.setItem(`product_data_${productId}`, JSON.stringify(ocrResponse.data));
-        } catch (storageErr) {
-          console.warn("로컬 스토리지 저장 실패:", storageErr);
+        // 1. "Unknown Product" 조기 차단
+        if (ocrResponse.data.productName === "Unknown Product") {
+          console.warn("[Validation Fail] productName이 'Unknown Product'입니다. productId:", productId);
+          setError("제품 정보를 명확히 인식할 수 없습니다.\n사진을 다시 촬영해주세요.");
+          setIsProcessing(false);
+          setCurrentPhotoStep('ingredient');
+          setIngredientPhoto(null);
+          setNutritionPhoto(null);
+          showGuideTemporarily();
+          return; // 로컬 스토리지 저장 및 추가 검증 없이 종료
         }
 
-        // result 객체 내부에 ingredientAnalysis와 nutritionAnalysis가 있는 구조인지 확인
-        const hasIngredientAnalysis = ocrResponse.data.result && ocrResponse.data.result.ingredientAnalysis;
-        const hasNutritionAnalysis = ocrResponse.data.result && ocrResponse.data.result.nutritionAnalysis;
-        
-        // 두 분석 결과 중 하나라도 있으면 유효하다고 판단
-        const bothAnalysesUndefined = !hasIngredientAnalysis && !hasNutritionAnalysis;
-        
-        console.log("[Debug] 응답 유효성 검사:", {
-          hasIngredientAnalysis,
-          hasNutritionAnalysis,
-          bothAnalysesUndefined,
+        // 일단 로컬 스토리지에 현재 분석 시도 결과를 저장
+        const currentProductDataKey = `product_data_${productId}`;
+        try {
+          localStorage.setItem(currentProductDataKey, JSON.stringify(ocrResponse.data));
+        } catch (storageErr) {
+          console.warn("로컬 스토리지 저장 실패 (초기 저장):", storageErr);
+          // 저장 실패 시 심각한 오류는 아니므로 일단 계속 진행하되, 복구 로직 고려 가능
+        }
+
+        const resultData = ocrResponse.data.result;
+        let isValidResponse = false;
+
+        if (resultData) {
+          const ia = resultData.ingredientAnalysis;
+          const na = resultData.nutritionAnalysis;
+
+          // 디버깅을 위해 각 분석 결과의 존재 여부와 내용을 로그로 남깁니다.
+          console.log("[Debug] Ingredient Analysis for validation:", ia);
+          console.log("[Debug] Nutrition Analysis for validation:", na);
+
+          const hasMeaningfulIngredientAnalysis =
+            ia &&
+            typeof ia.summary === 'string' &&
+            ia.summary.trim() !== "" &&
+            Array.isArray(ia.ingredientTree) && // ingredientTree가 배열인지 확인
+            ia.ingredientTree.length > 0;
+
+          let hasMeaningfulNutritionAnalysis = false;
+          if (na && na.nutrition) {
+            const nut = na.nutrition;
+            // Kcal 또는 다른 주요 영양소 중 하나라도 0보다 큰 유의미한 값이 있는지 확인
+            // 각 영양소 객체가 존재하는지 먼저 확인
+            if (
+              (nut.Kcal && nut.Kcal > 0) ||
+              (nut.carbohydrate && typeof nut.carbohydrate.gram === 'number' && nut.carbohydrate.gram > 0) ||
+              (nut.protein && typeof nut.protein.gram === 'number' && nut.protein.gram > 0) ||
+              (nut.fat && typeof nut.fat.gram === 'number' && nut.fat.gram > 0) ||
+              (nut.sodium && typeof nut.sodium.mg === 'number' && nut.sodium.mg > 0) ||
+              (nut.cholesterol && typeof nut.cholesterol.mg === 'number' && nut.cholesterol.mg > 0)
+            ) {
+              hasMeaningfulNutritionAnalysis = true;
+            }
+
+            // summary가 알려진 "정보 없음" 메시지가 아니고, 비어있지도 않은 경우 유효하다고 판단
+            const knownInvalidSummaries = [
+              "영양정보가 제공되지 않은 제품입니다.",
+              "영양정보가 제공되지 않아 분석할 수 없습니다." // 스크린샷에서 확인된 메시지
+              // 필요에 따라 다른 "정보 없음" 유형의 메시지 추가 가능
+            ];
+            if (
+              typeof na.summary === 'string' &&
+              na.summary.trim() !== "" &&
+              !knownInvalidSummaries.includes(na.summary.trim()) // trim() 추가하여 앞뒤 공백 제거 후 비교
+            ) {
+              hasMeaningfulNutritionAnalysis = true;
+            }
+          }
+
+          if (hasMeaningfulIngredientAnalysis || hasMeaningfulNutritionAnalysis) {
+            isValidResponse = true;
+          }
+        }
+
+        console.log("[Debug] 최종 응답 유효성 검사 결과:", {
+          isValidResponse,
           productId
         });
-        
-        // 유효성 판단 로직 변경: 최소한 하나의 분석 결과라도 있으면 유효하다고 판단
-        if (bothAnalysesUndefined) {
-          console.warn("OCR 분석 결과, 유효하지 않은 이미지로 판단됨 (최종 결정):", {
-            hasIngredientAnalysis,
-            hasNutritionAnalysis,
-            productId
-          });
+
+        if (!isValidResponse) {
+          console.warn("OCR 분석 결과, 유효하지 않은 이미지로 판단됨 (내용 부족). productId:", productId, "응답 데이터:", ocrResponse.data);
           setError("이미지 인식에 실패했습니다.\n내용이 잘 보이도록 다시 촬영해주세요.");
+
+          // 2. 상세 분석 실패 시 로컬 스토리지에서 해당 데이터 삭제
+          try {
+            localStorage.removeItem(currentProductDataKey);
+            console.log(`[LocalStorage Cleanup] 키 '${currentProductDataKey}'의 데이터를 삭제했습니다.`);
+          } catch (storageErr) {
+            console.warn("[LocalStorage Cleanup] 실패:", storageErr);
+          }
+
           setIsProcessing(false);
+          setCurrentPhotoStep('ingredient');
+          setIngredientPhoto(null);
+          setNutritionPhoto(null);
+          showGuideTemporarily();
           return;
         }
-        
-        // 유효한 경우 리포트 페이지로 이동
-        console.log("OCR 분석 결과 유효함, /report로 이동");
+
+        console.log("OCR 분석 결과 유효함, /report로 이동. productId:", productId);
         router.push(`/report/${productId}`);
-        
-        return; // 여기서 함수 종료
+
+        return;
       } else {
-        console.warn("productId를 찾을 수 없습니다. 홈으로 이동합니다.");
-        router.push('/');
+        console.warn("productId를 찾을 수 없거나 API 응답 데이터가 없습니다.");
+        setError("분석 결과를 가져오는데 실패했습니다. 다시 시도해주세요.");
+        setIsProcessing(false);
+        setCurrentPhotoStep('ingredient');
+        setIngredientPhoto(null);
+        setNutritionPhoto(null);
+        showGuideTemporarily();
       }
 
     } catch (err: unknown) {
@@ -433,6 +495,32 @@ export default function OcrCameraPage() {
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+  };
+
+  // "다시 시도" 버튼 핸들러
+  const handleRetryAfterError = () => {
+    // 현재 스트림 중지 (handleRetryAfterError 내에서 명시적으로 처리)
+    if (videoRef.current && videoRef.current.srcObject) {
+      stopMediaStream(videoRef.current.srcObject as MediaStream);
+      videoRef.current.srcObject = null;
+    } else if (stream) { // videoRef에 없지만 state에 남아있을 경우
+      stopMediaStream(stream);
+    }
+    setStream(null); // 스트림 상태 초기화
+
+    setError(null);
+    setIsProcessing(false);
+    setCurrentPhotoStep('ingredient');
+    setIngredientPhoto(null);
+    setNutritionPhoto(null);
+    setPreviewImageSrc(null);
+    setShowPreviewScreen(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+
+    getCameraStream(); // 새로운 스트림 요청
+    showGuideTemporarily(); // 가이드 다시 표시
   };
 
   return (
@@ -553,14 +641,29 @@ export default function OcrCameraPage() {
         {isProcessing && <OcrProcessingScreen />}
 
         {error && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-75 z-50 p-4">
-            <p className="text-center">{error}</p>
+          <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black bg-opacity-90 p-8 text-white">
+            <Image
+              src="/assets/quiz/sugar_X.png"
+              alt="Error Character"
+              width={180} // 이미지 크기는 디자인에 맞게 조절
+              height={180} // 이미지 크기는 디자인에 맞게 조절
+              className="mb-6 opacity-90"
+            />
+            <p className="mb-8 text-center text-lg font-semibold whitespace-pre-line">
+              {error}
+            </p>
+            <button
+              onClick={handleRetryAfterError}
+              className="rounded-lg bg-[var(--color-maincolor)] px-10 py-3 text-base font-bold text-white hover:bg-[var(--color-maincolor-100)] active:scale-95 transition-all duration-150 ease-in-out shadow-lg"
+            >
+              다시 시도
+            </button>
           </div>
         )}
       </div>
 
-      {/* 하단 컨트롤 바: 앨범, 촬영 버튼 등 */}
-      {!isProcessing && (
+      {/* 하단 컨트롤 바: 앨범, 촬영 버튼 등 - isProcessing이 false이고, error가 없을 때만 표시 */}
+      {!isProcessing && !error && (
         <div className="h-28 flex justify-between items-center px-8 py-4 z-10">
           <button className="p-2" onClick={handleAlbumClick}>
             <ImageIcon size={32} />
