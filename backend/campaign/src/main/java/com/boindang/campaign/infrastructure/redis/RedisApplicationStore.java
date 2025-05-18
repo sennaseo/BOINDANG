@@ -6,7 +6,6 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 import com.boindang.campaign.common.exception.CampaignException;
-import com.boindang.campaign.common.exception.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,13 +21,13 @@ public class RedisApplicationStore {
 
 		// 1. ttl 유효성 체크
 		if (ttl == null || ttl.isNegative() || ttl.isZero()) {
-			throw new CampaignException(ErrorCode.CAMPAIGN_NOT_AVAILABLE); // 캠페인 종료됨
+			throw new CampaignException("현재 신청할 수 없는 체험단입니다."); // 캠페인 종료됨
 		}
 
 		// 2. 중복 신청 여부 확인
 		Long added = redisTemplate.opsForSet().add(userKey, userId.toString());
 		if (added == 0L) {
-			throw new CampaignException(ErrorCode.ALREADY_APPLIED);
+			throw new CampaignException("이미 신청하신 체험단입니다.");
 		}
 
 		// 3. TTL 설정
