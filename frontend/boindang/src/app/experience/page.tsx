@@ -7,6 +7,7 @@ import BottomNavBar from '../../components/navigation/BottomNavBar';
 import { fetchExperiences } from '../../api/experience';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { ExperienceCardProps } from '../../components/experience/ExperienceCard';
+import { usePreventSwipeBack } from '@/hooks/usePreventSwipeBack';
 
 function getRemainingDays(deadline: string, status?: string) {
   if (status === '종료') return '종료';
@@ -39,6 +40,9 @@ export default function ExperiencePage() {
   const [showFixedDropdown, setShowFixedDropdown] = useState(false);
   const observerRef = useRef<HTMLDivElement | null>(null);
   const isFetchingRef = useRef(false);
+  const pageContainerRef = useRef<HTMLDivElement>(null);
+
+  usePreventSwipeBack(pageContainerRef, { edgeThreshold: 30 });
 
   // 무한스크롤 데이터 로딩
   useEffect(() => {
@@ -114,7 +118,7 @@ export default function ExperiencePage() {
   };
 
   return (
-    <div>
+    <div ref={pageContainerRef}>
       <main className="container mx-auto px-4 py-8 pb-36">
         {/* 헤더/설명/드롭다운 묶음: 스크롤 내리면 사라짐 */}
         <div className={showFixedDropdown ? 'hidden' : ''}>
