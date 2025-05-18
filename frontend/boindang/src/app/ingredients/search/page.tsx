@@ -2,10 +2,11 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, XCircle, Warning, CaretRight, CheckCircle, Info } from '@phosphor-icons/react';
+import { XCircle, Warning, CaretRight, CheckCircle, Info } from '@phosphor-icons/react';
 import BottomNavBar from '@/components/navigation/BottomNavBar';
 import type { IngredientResult } from '@/types/api/ingredients';
 import { useSearchIngredientsQuery } from '@/hooks/queries/useSearchIngredientsQuery';
+import BackArrowIcon from '@/components/common/BackArrowIcon';
 
 export default function IngredientSearchPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -62,7 +63,7 @@ export default function IngredientSearchPage() {
             onClick={handleGoBack}
             className="p-1 text-gray-600 hover:text-gray-800"
           >
-            <ArrowLeft size={24} />
+            <BackArrowIcon size={24} />
           </button>
           <div className="relative flex-grow">
             <input

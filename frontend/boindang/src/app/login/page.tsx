@@ -3,14 +3,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect, FormEvent, ChangeEvent } from "react";
-import { Eye, EyeSlash, X, CaretLeft } from "@phosphor-icons/react";
+import { Eye, EyeSlash, X} from "@phosphor-icons/react";
 import { useRouter } from 'next/navigation';
 import { useLogin } from '@/hooks/useAuthMutations';
 import { useAuthStore } from '@/stores/authStore';
 import { ApiResponse } from '@/types/api';
 import { LoginResult } from '@/types/api/authTypes';
 import axios from 'axios';
-
+import BackArrowIcon from '@/components/common/BackArrowIcon';
 // 타입 정의
 interface LoginFormData {
   username: string;
@@ -232,7 +232,7 @@ export default function LoginPage() {
       {/* 뒤로가기 버튼 */}
       <div className="self-start mb-10">
         <Link href="/onboarding" className="text-2xl" aria-label="온보딩으로 돌아가기">
-          <CaretLeft size={24} weight="bold" />
+          <BackArrowIcon size={24} weight="bold" />
         </Link>
       </div>
 
