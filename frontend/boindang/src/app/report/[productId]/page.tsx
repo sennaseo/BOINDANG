@@ -78,8 +78,8 @@ export default function ReportPage({ params: paramsPromise }: ReportPageProps) {
           setLoading(true);
           const data: ApiResponse<ReportResultData> = await getReport(productId);
           if (data && data.success) {
-            setReport(report);
-            console.log("Fetched report data:", report);
+            setReport(data.data);
+            console.log("Fetched report data:", data.data);
           } else {
             console.error("Failed to fetch report or no data:", data);
             setError(data.error || null );

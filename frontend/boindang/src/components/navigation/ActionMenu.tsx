@@ -1,6 +1,6 @@
 'use client';
 
-import { Camera, NewspaperClipping, Trophy, BookmarkSimple, X, Plus } from "@phosphor-icons/react";
+import { Camera, NewspaperClipping, Trophy, BookmarkSimple, Plus } from "@phosphor-icons/react";
 import Link from "next/link";
 import { motion } from 'framer-motion';
 
