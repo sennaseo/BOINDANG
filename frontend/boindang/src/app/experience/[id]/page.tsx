@@ -7,6 +7,7 @@ import { ArrowLeft } from '@phosphor-icons/react';
 import { fetchExperienceDetail, applyExperience } from '../../../api/experience';
 import { useAuthStore } from '../../../stores/authStore';
 import type { ExperienceDetail } from '../../../types/api/experience';
+import AlertModal from '../../../components/common/AlertModal';
 
 function getTimeDiff(target: string) {
   const now = new Date();
@@ -31,6 +32,9 @@ export default function ExperienceDetailPage() {
   const [error, setError] = useState('');
   const [applying, setApplying] = useState(false);
   const [countdown, setCountdown] = useState<{ days: number; hours: number; minutes: number; seconds: number } | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalMessage, setModalMessage] = useState('');
 
   const handleApply = async () => {
     if (!accessToken || !campaignId) return;
@@ -38,12 +42,17 @@ export default function ExperienceDetailPage() {
     try {
       const res = await applyExperience(campaignId);
       if (res.success) {
-        alert('신청이 완료되었습니다.');
+        setModalTitle('신청 완료');
+        setModalMessage('신청이 완료되었습니다.');
       } else {
-        alert(res.error?.message || '신청에 실패했습니다.');
+        setModalTitle('신청 실패');
+        setModalMessage(res.error?.message || '신청에 실패했습니다.');
       }
+      setModalOpen(true);
     } catch {
-      alert('신청에 실패했습니다.');
+      setModalTitle('신청 실패');
+      setModalMessage('신청에 실패했습니다.');
+      setModalOpen(true);
     } finally {
       setApplying(false);
     }
@@ -163,6 +172,12 @@ export default function ExperienceDetailPage() {
           </button>
         )}
       </div>
+      <AlertModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={modalTitle}
+        message={modalMessage}
+      />
     </div>
   );
 } 
