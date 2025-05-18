@@ -25,11 +25,11 @@ public class UserClient {
 	public String getUsernameById(Long userId) {
 		try {
 			String url = eurekaService.getUrl("BOINDANG-USER") + "users/" + userId;
-			ApiResponse<UserResponse> apiResponse = restClient.get()
+			ApiResponses<UserResponse> apiResponse = restClient.get()
 				.uri(url)
 				.retrieve()
 				.body(new ParameterizedTypeReference<>() {});
-			return apiResponse.getResult().getNickname();
+			return apiResponse.getData().getNickname();
 		} catch (Exception e) {
 			throw new RuntimeException("유저 이름 조회 실패: " + e.getMessage(), e);
 		}
