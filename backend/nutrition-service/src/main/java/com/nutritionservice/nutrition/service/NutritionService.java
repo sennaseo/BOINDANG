@@ -34,30 +34,37 @@ public class NutritionService {
     private final UserService userService;
 
     public NutritionReportResponse analyzeProductForUser(String userId, String productId){
-
+        logger.debug("분석 api service 시작!!!!!!!!!!!!!!!");
         // 0. 유저 조회
+        logger.debug("유저 조회 시작 --------------------------------");
         UserInfo userInfo = getUserInfoOrThrow(userId);
 
         // 1. 제품 조회
+        logger.debug("제품 조회 시작 --------------------------------");
         ProductNutrition product = productRepo.findById(productId)
                 .orElseThrow(() -> {
                     throw new BusinessException(ApiResponseStatus.MONGODB_DATA_NOT_FOUND);
                 });
 
         // 2. 영양성분 별 등급 계산
+        logger.debug("영양성분 별 등급 계산 시작 --------------------------------");
         Map<String, NutrientResult> ratios = AnalysisHelper.calculateRatios(product, userInfo);
 
         // 3. 제품 성분 트리에서 원재료 리스트 조회
+        logger.debug("제품 성분 트리에서 원재료 리스트 조회 시작 --------------------------------");
         List<String> ingredientNames = new ArrayList<>();
         for (IngredientNode node : product.getResult().getIngredientAnalysis().getIngredientTree()) {
             collectIngredientNames(node, ingredientNames);
         }
 
         // 4. 백과사전 API 호출
+        logger.debug("백과사전 API 호출 시작 --------------------------------");
         String userType = UserTypeConverter.toEnglish(userInfo.getUserType());
         EncyclopediaResponse encyclopediaResponse = fetchEncyclopediaData(ingredientNames, userType, userId);
 
         // 데이터 필드 검증, (원재료 디테일 + 상위 위험 성분)
+        logger.debug("데이터 필드 검증 시작 --------------------------------");
+
         List<IngredientDetail> allDetails = encyclopediaResponse.getData().getIngredients();
         List<TopRisk> topRisks = encyclopediaResponse.getData().getTopRisks();
 
@@ -71,9 +78,12 @@ public class NutritionService {
         }
 
         // 5. 원재료 용도별로 분리하여 매핑
+        logger.debug("원재료 용도별로 분리하여 매핑 시작 --------------------------------");
+
         Map<String, List<IngredientDetail>> categorizedMap = categorizeIngredients(product, allDetails);
 
         // 6. NutritionReport 구성
+        logger.debug("NutritionReport 구성 시작 --------------------------------");
         NutritionReport report = NutritionReport.from(
                 userInfo.getId(),
                 product,
