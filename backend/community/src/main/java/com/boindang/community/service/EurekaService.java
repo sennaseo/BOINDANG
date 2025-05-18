@@ -8,7 +8,7 @@ import com.netflix.discovery.EurekaClient;
 
 @Service
 public class EurekaService {
-	@Autowired
+	//@Autowired
 	private EurekaClient discoveryClient;
 
 	public String getUrl(String service) {
