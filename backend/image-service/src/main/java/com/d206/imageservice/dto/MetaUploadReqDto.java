@@ -1,0 +1,14 @@
+package com.d206.imageservice.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Getter
+@RequiredArgsConstructor
+@AllArgsConstructor
+@Builder
+public class MetaUploadReqDto {
+    String fileKey;
+}

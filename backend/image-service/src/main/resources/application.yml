@@ -45,15 +45,14 @@ cloud:
     stack:
       auto: false
 
-## prometheusds
-#management:
-#  endpoints:
-#    web:
-#      exposure:
-#        include: "*"
-#  server:
-#    port: 1111
-##    base-path:
+# prometheusds
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  server:
+    port: 1111
 
 server:
   port: 8081

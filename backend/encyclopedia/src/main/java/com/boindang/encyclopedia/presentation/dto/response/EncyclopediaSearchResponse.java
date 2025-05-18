@@ -1,4 +1,4 @@
-package com.boindang.encyclopedia.presentation.dto;
+package com.boindang.encyclopedia.presentation.dto.response;
 
 import com.boindang.encyclopedia.domain.IngredientDictionary;
 import lombok.Builder;
@@ -40,4 +40,5 @@ public class EncyclopediaSearchResponse {
                 .riskLevel(riskLabel)
                 .build();
     }
+
 }
