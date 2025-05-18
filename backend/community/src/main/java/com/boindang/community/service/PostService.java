@@ -20,7 +20,6 @@ import com.boindang.community.entity.Post;
 import com.boindang.community.repository.CommentRepository;
 import com.boindang.community.repository.LikeRepository;
 import com.boindang.community.repository.PostRepository;
-import com.boindang.community.common.PostCategory;
 
 import lombok.RequiredArgsConstructor;
 
@@ -33,6 +32,8 @@ public class PostService {
 	private final CommentRepository commentRepository;
 	private final UserClient userClient;
 
+	private static final List<String> VALID_CATEGORIES = List.of("식단", "운동", "고민&질문", "꿀팁", "목표");
+
 	public PostListResponse getAllPosts(Long currentUserId, String category, int size, int page) {
 		PageRequest pageRequest = PageRequest.of(page, size);
 		Page<Post> postPage;
@@ -40,11 +41,11 @@ public class PostService {
 		if (category == null) {
 			postPage = postRepository.findAllByIsDeletedFalseOrderByCreatedAtDesc(pageRequest);
 		} else {
-			if (!PostCategory.isValid(category)) {
+			if (!VALID_CATEGORIES.contains(category)) {
 				throw new NotFoundException("존재하지 않는 카테고리입니다.");
 			}
-			postPage = postRepository.findAllByIsDeletedFalseAndCategoryOrderByCreatedAtDesc(
-				PostCategory.from(category).name(), pageRequest);
+
+			postPage = postRepository.findAllByIsDeletedFalseAndCategoryOrderByCreatedAtDesc(category, pageRequest);
 		}
 
 		List<Post> posts = postPage.getContent();
