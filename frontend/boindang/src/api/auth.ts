@@ -79,3 +79,21 @@ export const updateUserProfile = async (
   const response = await apiClient.patch<ApiResponse<UserProfileUpdatePayload>>('/user/me', profileData); // 예시로 PATCH 사용
   return response.data;
 };
+
+/**
+ * 로그아웃 API 요청 함수
+ * @returns Promise<ApiResponse<void>> API 응답 전체를 반환 (공통 래퍼 적용)
+ */
+export const postLogout = async (): Promise<ApiResponse<void>> => {
+  const response = await apiClient.get<ApiResponse<void>>('/user/logout');
+  return response.data;
+};
+
+/**
+ * 회원탈퇴 API 요청 함수
+ * @returns Promise<ApiResponse<void>> API 응답 전체를 반환 (공통 래퍼 적용)
+ */
+export const postDeleteAccount = async (): Promise<ApiResponse<void>> => {
+  const response = await apiClient.delete<ApiResponse<void>>('/user/delete');
+  return response.data;
+};
