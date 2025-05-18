@@ -24,6 +24,19 @@ async def upload_images_by_url(payload: ImageUrlRequest):
             str(payload.ingredient_image_url),
             str(payload.nutrition_image_url)
         )
-        return result
+
+        return {
+            "data": result,
+            "error": None,
+            "success": True
+        }
+
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        return {
+            "data": None,
+            "error": {
+                "status": 500,
+                "message": str(e)
+            },
+            "success": False
+        }
