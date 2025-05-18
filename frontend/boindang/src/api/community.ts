@@ -1,35 +1,36 @@
-import { ApiResponsePosts, ApiPostListData } from '@/types/api/community';
+import { ApiPostListData } from '@/types/api/community';
 import apiClient from '../lib/apiClient';
 import { ApiImageIdListRequest, ApiImageListItem, ApiImageListResponse } from '@/types/api/community';
 import { ApiResponsePostDetail, ApiCreatePostRequest, ApiResponseCreatePost, ApiCreatePostResponseData, ApiResponseDeletePost, ApiResponseLikePost } from "@/types/api/community";
 import { AxiosError } from 'axios';
+import type { ApiResponse } from '@/types/api';
 
 /**
  * 커뮤니티 게시글 목록을 조회하는 API 함수
  * apiClient를 사용하여 요청하며, 인증 토큰은 apiClient의 인터셉터에서 처리합니다.
- * @returns ApiPostListData | null - 성공 시 게시글 데이터, 실패 시 null
+ * @returns Promise<ApiResponse<ApiPostListData>> - 성공 또는 실패 정보를 담은 ApiResponse 객체
  */
 
-export const getCommunityPosts = async (): Promise<ApiPostListData | null> => {
+export const getCommunityPosts = async (): Promise<ApiResponse<ApiPostListData>> => {
   try {
-    // apiClient는 이미 baseURL과 Content-Type 헤더를 가지고 있습니다.
-    // Authorization 헤더는 apiClient의 요청 인터셉터에서 처리됩니다.
-    const response = await apiClient.get<ApiResponsePosts>('/community/read');
+    const response = await apiClient.get<ApiResponse<ApiPostListData>>('/community/read');
 
-    // Axios는 2xx 상태 코드가 아닌 경우 오류를 발생시키므로, !response.ok와 같은 별도 확인 불필요
-    // 응답 데이터는 response.data에 있습니다.
-    const result = response.data;
+    // apiClient의 응답 인터셉터가 이미 ApiResponse<T> 형태로 데이터를 변환해준다고 가정합니다.
+    // 따라서 response.data는 이미 ApiResponse<ApiPostListData> 형태일 것입니다.
+    return response.data;
 
-    if (result.isSuccess && result.data) {
-      return result.data;
-    } else {
-      console.error('API request was not successful or data is missing:', result.message);
-      return null;
-    }
   } catch (error) {
-    const axiosError = error as AxiosError<{ message?: string }>;
+    const axiosError = error as AxiosError<{ status?: string; message?: string }>; // 서버 에러 응답 구조에 맞게 조정
     console.error('Error fetching community posts:', axiosError.response?.data?.message || axiosError.message || error);
-    return null;
+    // ApiResponse<T> 형식에 맞춰 에러 객체 반환
+    return {
+      data: null,
+      error: {
+        status: axiosError.response?.data?.status || 'CLIENT_ERROR',
+        message: axiosError.response?.data?.message || '커뮤니티 게시글을 불러오는데 실패했습니다.',
+      },
+      success: false,
+    };
   }
 };
 

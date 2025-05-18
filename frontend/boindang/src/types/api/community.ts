@@ -17,13 +17,6 @@ export interface ApiPostListData {
   posts: ApiPostItem[];
 }
 
-export interface ApiResponsePosts {
-  isSuccess: boolean;
-  code: number;
-  message: string;
-  data: ApiPostListData;
-}
-
 
 
 // 이미지 ID 목록으로 이미지 정보 목록 조회 API 관련 타입
