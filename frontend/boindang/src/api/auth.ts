@@ -7,8 +7,10 @@ import type {
   LoginResult,
   UserProfileUpdatePayload,
   LogoutResult,
+  RefreshTokenResult,
 } from '@/types/api/authTypes';
 import type { ApiResponse } from '@/types/api';
+import { useAuthStore } from '@/stores/authStore';
 
 /**
  * 회원가입 API 요청 함수
@@ -83,9 +85,9 @@ export const updateUserProfile = async (
 
 /**
  * 로그아웃 API 요청 함수
- * @returns Promise<ApiResponse<void>> API 응답 전체를 반환 (공통 래퍼 적용)
+ * @returns Promise<ApiResponse<LogoutResult>> API 응답 전체를 반환
  */
-export const postLogout = async (): Promise<ApiResponse<LogoutResult>> => {
+export const getLogout = async (): Promise<ApiResponse<LogoutResult>> => {
   const response = await apiClient.get<ApiResponse<LogoutResult>>('/user/logout');
   return response.data;
 };
@@ -96,5 +98,41 @@ export const postLogout = async (): Promise<ApiResponse<LogoutResult>> => {
  */
 export const postDeleteAccount = async (): Promise<ApiResponse<void>> => {
   const response = await apiClient.delete<ApiResponse<void>>('/user/delete');
+  return response.data;
+};
+
+/**
+ * 토큰 재발급 API 요청 함수
+ * @returns Promise<ApiResponse<RefreshTokenResult>> API 응답 전체를 반환
+ */
+export const postRefreshToken = async (): Promise<ApiResponse<RefreshTokenResult>> => {
+  const { refreshToken } = useAuthStore.getState();
+
+  if (!refreshToken) {
+    // 리프레시 토큰이 없으면 에러 처리 또는 특정 응답 반환
+    // 이 경우, 로그인 페이지로 리다이렉트하는 로직이 필요할 수 있으나,
+    // 여기서는 API 호출 함수의 역할에 집중하여 에러를 발생시키거나, success: false 응답을 모방하여 반환합니다.
+    // 실제로는 인터셉터에서 이 함수를 호출하기 전에 리프레시 토큰 유무를 확인할 가능성이 높습니다.
+    return Promise.resolve({
+      data: null,
+      error: {
+        status: 'UNAUTHORIZED',
+        message: '리프레시 토큰이 없습니다. 다시 로그인해주세요.',
+      },
+      success: false,
+    });
+  }
+
+  // apiClient를 직접 사용하지 않고, 새로운 axios 인스턴스를 사용하거나
+  // apiClient의 기본 설정을 임시로 변경하여 Authorization 헤더를 설정합니다.
+  // 여기서는 apiClient.post를 사용하되, config에 헤더를 명시적으로 전달합니다.
+  const response = await apiClient.get<ApiResponse<RefreshTokenResult>>(
+    '/user/refresh',
+    {
+      headers: {
+        Authorization: `Bearer ${refreshToken}`,
+      },
+    }
+  );
   return response.data;
 };
