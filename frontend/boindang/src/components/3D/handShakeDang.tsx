@@ -1,87 +1,208 @@
 "use client";
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { Canvas, ThreeEvent } from '@react-three/fiber';
 import { useGLTF, useAnimations } from '@react-three/drei';
 import * as THREE from 'three';
 
 interface ModelProps {
   onClick?: () => void;
+  onAnimationFinish?: () => void;
+  visible?: boolean;
 }
 
-function Model({ onClick }: ModelProps) {
+function HandShakeModel({ onClick, visible = true }: ModelProps) {
   const group = useRef<THREE.Group>(null);
-  // public 폴더의 glb 파일 경로를 정확히 지정해야 합니다.
-  // Next.js에서 public 폴더는 기본적으로 웹 루트에서 접근 가능합니다.
   const { scene, animations } = useGLTF('/assets/3D/당당이손흔들기.glb');
   const { actions, mixer } = useAnimations(animations, group);
 
   useEffect(() => {
-    // 로드된 애니메이션 중 첫 번째 애니메이션을 재생합니다.
-    // 모델에 여러 애니메이션이 있거나 특정 이름을 가진 애니메이션을 재생해야 한다면 이 부분을 수정해야 합니다.
-    if (actions && animations.length > 0) {
+    if (visible && actions && animations.length > 0) {
       const animationName = animations[0].name;
-      actions[animationName]?.play();
+      actions[animationName]?.reset().play();
+    } else if (!visible && actions && animations.length > 0) {
+      const animationName = animations[0].name;
+      actions[animationName]?.stop();
     }
-  }, [actions, animations, mixer]);
+  }, [actions, animations, mixer, visible]);
 
-  // 모델의 크기, 위치, 회전 등을 조정해야 할 수 있습니다.
-  // scene.scale.set(1, 1, 1);
-  // scene.position.set(0, -1, 0); // 예시: 모델이 바닥에 있도록 y축 조정
+  if (!visible) return null;
 
   return (
     <primitive
       ref={group}
       object={scene}
       onClick={(event: ThreeEvent<MouseEvent>) => {
-        event.stopPropagation(); // 이벤트 버블링 방지
+        event.stopPropagation();
         if (onClick) {
           onClick();
         }
-        console.log('3D Model clicked!');
+        console.log('HandShakeModel clicked!');
       }}
-      scale={1} // 모델이 작을 경우 크기 조절 (예시)
-      position={[0, 0, 0]} // 모델 위치 조절 (예시)
-      rotation={[0, -Math.PI / 2, 0]} // 모델 회전 (y축 -90도)
+      scale={1}
+      position={[0, 0, 0]}
+      rotation={[0, -Math.PI / 2, 0]}
     />
   );
 }
 
-interface HandShakeDangProps {
-  onCharacterClick?: () => void;
+function RunningAwayModel({ visible = true }: ModelProps) {
+  const group = useRef<THREE.Group>(null);
+  const { scene, animations } = useGLTF('/assets/3D/당당이달리기.glb');
+  const { actions, mixer } = useAnimations(animations, group);
+
+  useEffect(() => {
+    if (visible && actions && animations.length > 0) {
+      const animationName = animations[0].name;
+      actions[animationName]?.reset().play();
+    } else if (!visible && actions && animations.length > 0) {
+      const animationName = animations[0].name;
+      actions[animationName]?.stop();
+    }
+  }, [actions, animations, mixer, visible]);
+
+  if (!visible) return null;
+
+  return (
+    <group rotation={[0, Math.PI / 0.9, 0]} position={[0, 0.1, 0]}>
+      <primitive
+        ref={group}
+        object={scene}
+        scale={1.5}
+        rotation={[0, Math.PI / 2, 0]}
+      />
+    </group>
+  );
 }
 
-export default function HandShakeDang({ onCharacterClick }: HandShakeDangProps) {
+function RunningForwardModel({ visible = true, onAnimationFinish }: ModelProps) {
+  const group = useRef<THREE.Group>(null);
+  const { scene, animations } = useGLTF('/assets/3D/당당이앞으로달리기.glb');
+  const { actions, mixer } = useAnimations(animations, group);
+
+  useEffect(() => {
+    if (animations.length === 0) return;
+    const animationName = animations[0].name;
+    const action = actions[animationName];
+
+    if (action) {
+      if (visible) {
+        action.reset();
+        action.setLoop(THREE.LoopOnce, 1);
+        action.clampWhenFinished = true;
+        action.play();
+
+        const handleAnimationFinished = (event: { action: THREE.AnimationAction }) => {
+          if (event.action === action) {
+            console.log('RunningForwardModel animation finished by event');
+            if (onAnimationFinish) {
+              onAnimationFinish();
+            }
+            mixer.removeEventListener('finished', handleAnimationFinished);
+          }
+        };
+
+        mixer.addEventListener('finished', handleAnimationFinished);
+
+        return () => {
+          mixer.removeEventListener('finished', handleAnimationFinished);
+          if (action.isRunning()) {
+            action.stop();
+          }
+        };
+      } else {
+        if (action.isRunning()) {
+          action.stop();
+        }
+        action.reset();
+      }
+    }
+  }, [actions, animations, mixer, visible, onAnimationFinish]);
+
+  if (!visible) return null;
+
+  return (
+    <group rotation={[0, -Math.PI / 1.1, 0]} position={[0, 0.1, 0]}>
+      <primitive
+        ref={group}
+        object={scene}
+        scale={1.5}
+        rotation={[0, Math.PI / 2, 0]}
+      />
+    </group>
+  );
+}
+
+interface HandShakeDangProps {
+  onShouldShowTouchPrompt?: (shouldShow: boolean) => void;
+  onShowKnowledgeCard?: () => void;
+  runForwardCommand?: boolean;
+}
+
+type CurrentModelType = 'handShake' | 'runningAway' | 'runningForward';
+
+export default function HandShakeDang({
+  onShouldShowTouchPrompt,
+  onShowKnowledgeCard,
+  runForwardCommand
+}: HandShakeDangProps) {
+  const [currentModel, setCurrentModel] = useState<CurrentModelType>('handShake');
+
+  useEffect(() => {
+    if (onShouldShowTouchPrompt) {
+      const shouldShow = currentModel === 'handShake';
+      onShouldShowTouchPrompt(shouldShow);
+    }
+  }, [currentModel, onShouldShowTouchPrompt]);
+
+  useEffect(() => {
+    if (runForwardCommand && currentModel === 'runningAway') {
+      console.log("HandShakeDang: Received runForwardCommand, transitioning to runningForward");
+      setCurrentModel('runningForward');
+    }
+  }, [runForwardCommand, currentModel]);
+
+  const handleHandShakeClick = () => {
+    console.log("HandShakeModel clicked, transitioning to runningAway and requesting knowledge card");
+    setCurrentModel('runningAway');
+    if (onShowKnowledgeCard) {
+      onShowKnowledgeCard();
+    }
+  };
+
+  const handleRunningForwardAnimationFinish = () => {
+    console.log("RunningForwardModel animation finished, transitioning to handShake");
+    setCurrentModel('handShake');
+  };
+
   return (
     <Canvas
-      camera={{ position: [0, 0, 10], fov: 30 }} // 카메라 위치 및 시야각 조절
-      style={{ touchAction: 'none' }} // 모바일 환경 터치 제스처 충돌 방지
+      camera={{ position: [0, 0, 5], fov: 50 }}
+      style={{ touchAction: 'none' }}
+      className="w-full h-full"
     >
-      <ambientLight intensity={1.5} /> {/* 전체적인 주변광 */}
+      <ambientLight intensity={1.5} />
       <directionalLight
-        position={[5, 5, 5]}
-        intensity={2}
+        position={[5, 10, 5]}
+        intensity={2.5}
         castShadow
         shadow-mapSize-width={1024}
         shadow-mapSize-height={1024}
-      /> {/* 그림자를 만드는 주 조명 */}
-      <pointLight position={[-5, -5, -5]} intensity={1} /> {/* 보조 조명 */}
+      />
+      <pointLight position={[-5, -5, -5]} intensity={1} />
+      <pointLight position={[0, -2, 2]} intensity={0.5} />
 
-      <Model onClick={onCharacterClick} />
-
-      {/* OrbitControls는 개발 중에 카메라를 조작하여 모델을 여러 각도에서 보기 편하게 해줍니다. */}
-      {/* 실제 프로덕션에서는 제거하거나 필요에 따라 유지할 수 있습니다. */}
-      {/* <OrbitControls
-        enableZoom={true} // 줌 활성화 (디버깅용)
-        enablePan={true} // 패닝 활성화 (디버깅용)
-        // minPolarAngle={Math.PI / 2.2} // 수직 회전 최소 각도 (디버깅 중에는 주석 처리)
-        // maxPolarAngle={Math.PI / 2.2} // 수직 회전 최대 각도 (디버깅 중에는 주석 처리)
-        enableRotate={true} // 전체 회전 활성화 (디버깅용)
-      /> */}
+      <HandShakeModel onClick={handleHandShakeClick} visible={currentModel === 'handShake'} />
+      <RunningAwayModel visible={currentModel === 'runningAway'} />
+      <RunningForwardModel
+        visible={currentModel === 'runningForward'}
+        onAnimationFinish={handleRunningForwardAnimationFinish}
+      />
     </Canvas>
   );
 }
 
 // GLTF 파일 로딩 시 에러가 발생하면, public 폴더 경로 및 파일 이름이 정확한지,
 // 그리고 GLB 파일 자체가 유효한지 확인해주세요.
-// 또한, `next.config.js` 에 특별한 설정이 필요할 수도 있습니다 (일반적으로는 불필요). 
+// 각 모델의 애니메이션 이름이 'animations[0].name'으로 되어있는데,
+// 실제 GLB 파일에 포함된 애니메이션의 정확한 이름을 확인하고 필요시 수정해야 합니다. 
