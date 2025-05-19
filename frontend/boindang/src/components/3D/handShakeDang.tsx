@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { Canvas, ThreeEvent } from '@react-three/fiber';
 import { useGLTF, useAnimations } from '@react-three/drei';
 import * as THREE from 'three';
@@ -46,20 +46,43 @@ function HandShakeModel({ onClick, visible = true }: ModelProps) {
   );
 }
 
-function RunningAwayModel({ visible = true }: ModelProps) {
+function RunningAwayModel({ visible = true, onAnimationFinish }: ModelProps) {
   const group = useRef<THREE.Group>(null);
   const { scene, animations } = useGLTF('/assets/3D/당당이달리기.glb');
   const { actions, mixer } = useAnimations(animations, group);
 
   useEffect(() => {
-    if (visible && actions && animations.length > 0) {
-      const animationName = animations[0].name;
-      actions[animationName]?.reset().play();
-    } else if (!visible && actions && animations.length > 0) {
-      const animationName = animations[0].name;
-      actions[animationName]?.stop();
+    if (animations.length === 0) return;
+    const animationName = animations[0].name;
+    const action = actions && actions[animationName];
+
+    if (action) {
+      if (visible) {
+        action.reset();
+        action.setLoop(THREE.LoopOnce, 1);
+        action.clampWhenFinished = true;
+        action.play();
+
+        const handleAnimationFinished = (event: { action: THREE.AnimationAction }) => {
+          if (event.action === action) {
+            console.log('RunningAwayModel animation finished by event');
+            if (onAnimationFinish) {
+              onAnimationFinish();
+            }
+            mixer.removeEventListener('finished', handleAnimationFinished);
+          }
+        };
+        mixer.addEventListener('finished', handleAnimationFinished);
+        return () => {
+          mixer.removeEventListener('finished', handleAnimationFinished);
+          if (action.isRunning()) action.stop();
+        };
+      } else {
+        if (action.isRunning()) action.stop();
+        action.reset();
+      }
     }
-  }, [actions, animations, mixer, visible]);
+  }, [actions, animations, mixer, visible, onAnimationFinish]);
 
   if (!visible) return null;
 
@@ -75,46 +98,122 @@ function RunningAwayModel({ visible = true }: ModelProps) {
   );
 }
 
+function WavingFromBehindModel({ visible = true, onAnimationFinish }: ModelProps) {
+  const group = useRef<THREE.Group>(null);
+  const { scene, animations } = useGLTF('/assets/3D/당당이뒤에서손흔들기.glb');
+  const { actions, mixer } = useAnimations(animations, group);
+
+  useEffect(() => {
+    if (animations.length === 0) return;
+    const animationName = animations[0].name;
+    const action = actions && actions[animationName];
+
+    if (action) {
+      if (visible) {
+        console.log('WavingFromBehindModel: Playing animation (looping).');
+        action.reset();
+        action.play();
+
+        let finishedEventFired = false;
+        const handleFirstLoopFinished = (event: { action: THREE.AnimationAction }) => {
+          if (event.action === action && !finishedEventFired) {
+            console.log('WavingFromBehindModel first loop finished, calling onAnimationFinish if present.');
+            if (onAnimationFinish) {
+              onAnimationFinish();
+            }
+            finishedEventFired = true;
+          }
+        };
+
+        mixer.addEventListener('loop', handleFirstLoopFinished);
+
+        return () => {
+          console.log('WavingFromBehindModel: Cleanup. Stopping animation.');
+          mixer.removeEventListener('loop', handleFirstLoopFinished);
+          if (action.isRunning()) {
+            action.stop();
+          }
+        };
+      } else {
+        console.log('WavingFromBehindModel: Not visible. Stopping and resetting.');
+        if (action.isRunning()) {
+          action.stop();
+        }
+        action.reset();
+      }
+    }
+  }, [actions, animations, mixer, visible, onAnimationFinish]);
+
+  if (!visible) return null;
+
+  return (
+    <primitive
+      ref={group}
+      object={scene}
+      scale={1.3}
+      position={[1.2, 0, 0]}
+      rotation={[0, -Math.PI / 2.8, 0]}
+    />
+  );
+}
+
 function RunningForwardModel({ visible = true, onAnimationFinish }: ModelProps) {
   const group = useRef<THREE.Group>(null);
   const { scene, animations } = useGLTF('/assets/3D/당당이앞으로달리기.glb');
   const { actions, mixer } = useAnimations(animations, group);
 
   useEffect(() => {
-    if (animations.length === 0) return;
-    const animationName = animations[0].name;
-    const action = actions[animationName];
+    let action: THREE.AnimationAction | null | undefined = undefined;
+    let animationNameForLogic: string | undefined = undefined;
 
-    if (action) {
+    if (actions && Object.keys(actions).length > 0) {
+      const keysFromActions = Object.keys(actions);
+      animationNameForLogic = keysFromActions[0];
+      action = actions[animationNameForLogic];
+
+      if (animations.length > 0) {
+        const nameFromClips = animations[0].name;
+        if (nameFromClips !== animationNameForLogic) {
+        }
+      }
+    } else if (animations.length === 0) {
+    } else {
+    }
+
+    if (action && animationNameForLogic) {
       if (visible) {
         action.reset();
         action.setLoop(THREE.LoopOnce, 1);
         action.clampWhenFinished = true;
         action.play();
 
-        const handleAnimationFinished = (event: { action: THREE.AnimationAction }) => {
+        const handleAnimationFinishedEvent = (event: { action: THREE.AnimationAction }) => {
           if (event.action === action) {
             console.log('RunningForwardModel animation finished by event');
             if (onAnimationFinish) {
               onAnimationFinish();
             }
-            mixer.removeEventListener('finished', handleAnimationFinished);
+            mixer.removeEventListener('finished', handleAnimationFinishedEvent);
           }
         };
-
-        mixer.addEventListener('finished', handleAnimationFinished);
+        mixer.addEventListener('finished', handleAnimationFinishedEvent);
 
         return () => {
-          mixer.removeEventListener('finished', handleAnimationFinished);
-          if (action.isRunning()) {
+          mixer.removeEventListener('finished', handleAnimationFinishedEvent);
+          if (action && action.isRunning()) {
             action.stop();
           }
         };
       } else {
-        if (action.isRunning()) {
-          action.stop();
+        if (action) {
+          if (action.isRunning()) {
+            action.stop();
+          }
+          action.reset();
         }
-        action.reset();
+      }
+    } else {
+      if (visible) {
       }
     }
   }, [actions, animations, mixer, visible, onAnimationFinish]);
@@ -135,16 +234,18 @@ function RunningForwardModel({ visible = true, onAnimationFinish }: ModelProps) 
 
 interface HandShakeDangProps {
   onShouldShowTouchPrompt?: (shouldShow: boolean) => void;
-  onShowKnowledgeCard?: () => void;
+  onShouldShowKnowledgeCard?: () => void;
   runForwardCommand?: boolean;
+  onRunForwardAnimationFinished?: () => void;
 }
 
-type CurrentModelType = 'handShake' | 'runningAway' | 'runningForward';
+type CurrentModelType = 'handShake' | 'runningAway' | 'wavingFromBehind' | 'runningForward';
 
 export default function HandShakeDang({
   onShouldShowTouchPrompt,
-  onShowKnowledgeCard,
-  runForwardCommand
+  onShouldShowKnowledgeCard,
+  runForwardCommand,
+  onRunForwardAnimationFinished
 }: HandShakeDangProps) {
   const [currentModel, setCurrentModel] = useState<CurrentModelType>('handShake');
 
@@ -156,24 +257,36 @@ export default function HandShakeDang({
   }, [currentModel, onShouldShowTouchPrompt]);
 
   useEffect(() => {
-    if (runForwardCommand && currentModel === 'runningAway') {
-      console.log("HandShakeDang: Received runForwardCommand, transitioning to runningForward");
+    if (runForwardCommand && currentModel === 'wavingFromBehind') {
+      console.log("HandShakeDang: Received runForwardCommand while wavingFromBehind, transitioning to runningForward");
       setCurrentModel('runningForward');
     }
   }, [runForwardCommand, currentModel]);
 
-  const handleHandShakeClick = () => {
-    console.log("HandShakeModel clicked, transitioning to runningAway and requesting knowledge card");
+  const handleHandShakeClick = useCallback(() => {
+    console.log("HandShakeModel clicked, transitioning to runningAway");
     setCurrentModel('runningAway');
-    if (onShowKnowledgeCard) {
-      onShowKnowledgeCard();
-    }
-  };
+  }, []);
 
-  const handleRunningForwardAnimationFinish = () => {
+  const handleRunningAwayAnimationFinish = useCallback(() => {
+    console.log("RunningAwayModel animation finished, transitioning to wavingFromBehind");
+    setCurrentModel('wavingFromBehind');
+  }, []);
+
+  const handleWavingFromBehindAnimationFinish = useCallback(() => {
+    console.log("WavingFromBehindModel animation finished, requesting knowledge card");
+    if (onShouldShowKnowledgeCard) {
+      onShouldShowKnowledgeCard();
+    }
+  }, [onShouldShowKnowledgeCard]);
+
+  const handleRunningForwardAnimationFinish = useCallback(() => {
     console.log("RunningForwardModel animation finished, transitioning to handShake");
     setCurrentModel('handShake');
-  };
+    if (onRunForwardAnimationFinished) {
+      onRunForwardAnimationFinished();
+    }
+  }, [onRunForwardAnimationFinished]);
 
   return (
     <Canvas
@@ -192,8 +305,18 @@ export default function HandShakeDang({
       <pointLight position={[-5, -5, -5]} intensity={1} />
       <pointLight position={[0, -2, 2]} intensity={0.5} />
 
-      <HandShakeModel onClick={handleHandShakeClick} visible={currentModel === 'handShake'} />
-      <RunningAwayModel visible={currentModel === 'runningAway'} />
+      <HandShakeModel
+        onClick={handleHandShakeClick}
+        visible={currentModel === 'handShake'}
+      />
+      <RunningAwayModel
+        visible={currentModel === 'runningAway'}
+        onAnimationFinish={handleRunningAwayAnimationFinish}
+      />
+      <WavingFromBehindModel
+        visible={currentModel === 'wavingFromBehind'}
+        onAnimationFinish={handleWavingFromBehindAnimationFinish}
+      />
       <RunningForwardModel
         visible={currentModel === 'runningForward'}
         onAnimationFinish={handleRunningForwardAnimationFinish}

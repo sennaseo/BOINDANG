@@ -2,11 +2,12 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import localFont from "next/font/local";
-import { Toaster } from 'react-hot-toast';
 
 // QueryProvider import
 import QueryProvider from "@/components/providers/QueryProvider"; // 경로 확인!
 import AuthInitializer from "@/components/AuthInitializer"; // AuthInitializer 임포트 추가
+import { ToastProvider } from "@/context/ToastContext"; // 새로 만든 ToastProvider 임포트
+import OcrStatusObserver from "@/components/common/OcrStatusObserver"; // OcrStatusObserver 임포트 추가
 
 const pretendard = localFont({
   src: "../fonts/PretendardVariable.woff2",
@@ -63,14 +64,17 @@ export default function RootLayout({
         <QueryProvider>
           {/* AuthInitializer로 감싸서 인증 상태 확인 */}
           <AuthInitializer>
-            <div className="w-full md:mx-auto md:max-w-[440px] min-h-screen bg-white shadow-xl border-x-2 border-gray-100">
-              <main>
-                {children}
-              </main>
-            </div>
+            <ToastProvider> {/* ToastProvider 추가 */}
+              <OcrStatusObserver /> {/* OcrStatusObserver 추가 */}
+              <div className="w-full md:mx-auto md:max-w-[440px] min-h-screen bg-white shadow-xl border-x-2 border-gray-100">
+                <main>
+                  {children}
+                </main>
+              </div>
+            </ToastProvider>
           </AuthInitializer>
         </QueryProvider>
-        <Toaster position="top-center" reverseOrder={false} />
+        {/* <Toaster position="top-center" reverseOrder={false} /> */}{/* 기존 Toaster 주석 처리 또는 제거 */}
       </body>
     </html>
   );
