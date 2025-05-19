@@ -352,8 +352,9 @@ export default function SafetyPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {dynamicNutritionData.map((item) => (
               <div 
+              onClick={() => toggleInfo(item.id)}
                 key={item.id}
-                className={`bg-white rounded-xl shadow p-3 border relative overflow-hidden transition-all duration-300 ${activeInfo === item.id ? 'col-span-1 sm:col-span-2' : ''}`}
+                className={`bg-white cursor-pointer rounded-xl shadow p-3 border relative overflow-hidden transition-all duration-300 ${activeInfo === item.id ? 'col-span-1 sm:col-span-2' : ''}`}
                 style={{ borderColor: getStatusBorderColor(item.status) }}
               >
                 <div className="flex items-center justify-between">
@@ -380,7 +381,7 @@ export default function SafetyPage() {
                     </div>
                   </div>
                   <button 
-                    onClick={() => toggleInfo(item.id)}
+                    
                     className="hover:opacity-70 transition-opacity p-1"
                     style={{ color: getStatusTextColor(item.status) }}
                   >

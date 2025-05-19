@@ -27,7 +27,7 @@ export default function ReportTabNav({ productId }: { productId: string }) {
         <button
           key={tab.path}
           onClick={() => router.push(tab.path.replace("{productId}", productId))}
-          className={`flex-1 py-2 text-center font-semibold ${
+          className={`flex-1 py-2 text-center font-semibold cursor-pointer ${
             isActive(tab.path)
               ? "border-b-2 border-black text-black"
               : "text-gray-400"
