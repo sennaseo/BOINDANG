@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.boindang.community.dto.response.BaseResponse;
+import com.boindang.community.dto.response.ApiResponses;
 import com.boindang.community.service.LikeService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,12 +22,12 @@ public class LikeController {
 	private final LikeService likeService;
 	@Operation(summary = "게시글 좋아요 토글", description = "좋아요를 누르거나 취소합니다. 첫 누르면 추가, 다시 누르면 취소됩니다.")
 	@PostMapping("/{postId}/likes")
-	public BaseResponse<Void> toggleLike(
+	public ApiResponses<String> toggleLike(
 		@PathVariable Long postId,
 		@RequestHeader("X-User-Id") String userId
 	) {
 		likeService.toggleLike(postId, Long.parseLong(userId));
-		return BaseResponse.success(200, "좋아요 누르기/취소가 완료되었습니다.", null);
+		return ApiResponses.success("좋아요 누르기/취소가 완료되었습니다.");
 	}
 
 }

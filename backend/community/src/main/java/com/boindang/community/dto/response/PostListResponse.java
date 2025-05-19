@@ -1,12 +1,13 @@
 package com.boindang.community.dto.response;
 
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Getter
-@NoArgsConstructor
 @AllArgsConstructor
-public class ApiResponse<T> {
-	private T result;
+public class PostListResponse {
+	private int totalPage;
+	private List<PostSummaryResponse> posts;
 }
