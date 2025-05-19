@@ -280,13 +280,12 @@ export default function CommunityWritePage() {
           <div>
             {previewUrl ? (
               <div className="relative group w-full h-40 border border-gray-300 rounded-lg flex justify-center items-center bg-gray-50">
-                <Image src={previewUrl} alt="미리보기" layout="fill" objectFit="contain" className="rounded-lg" />
+                <Image src={previewUrl} alt="미리보기" layout="fill" objectFit="contain" className="rounded-lg" unoptimized />
                 <button
                   type="button"
                   onClick={removeSelectedImage}
                   className="absolute top-2 right-2 p-1 bg-black bg-opacity-40 rounded-full text-white hover:bg-opacity-60 transition-opacity"
                   aria-label="이미지 삭제"
-                  unoptimized
                 >
                   <X size={16} />
                 </button>
