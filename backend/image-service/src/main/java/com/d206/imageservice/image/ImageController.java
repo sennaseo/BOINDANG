@@ -46,7 +46,7 @@ public class ImageController {
     }
     @Tag(name = "이미지 업로드")
     @Operation(summary = "이미지 메타데이터 업로드",
-            description = "S3에 저장된 이미지의 uuid, 유저 id를 저장합니다",
+            description = "S3에 저장된 이미지의 메타데이터(유저 id, 파일 이름)를 백엔드 서버에 저장합니다",
             responses = {
                     @ApiResponse(responseCode = "200", description = "처리 성공!"),
                     @ApiResponse(responseCode = "500", description = "오류 발생!"),
