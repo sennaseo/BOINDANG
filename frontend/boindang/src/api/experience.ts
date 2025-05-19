@@ -19,6 +19,7 @@ export async function fetchExperienceDetail(
   campaignId: number
 ) {
   const response = await apiClient.get(`/campaign/${campaignId}`);
+  console.log(response.data);
   return response.data;
 }
 

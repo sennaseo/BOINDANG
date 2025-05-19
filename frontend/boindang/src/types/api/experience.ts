@@ -19,7 +19,7 @@ export interface Experience {
   export interface ExperienceListResponse {
     data: {
       totalPages: number;
-      campaigns: Experience[];
+        campaigns: Experience[];
     };
     error: ExperienceApiError | null;
     success: boolean;
