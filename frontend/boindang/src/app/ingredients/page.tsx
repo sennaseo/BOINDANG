@@ -148,7 +148,12 @@ export default function IngredientsPage() {
                         <span className="flex items-center justify-center w-6 h-6 bg-purple-600 text-white text-xs font-bold rounded-full">
                           {index + 1}
                         </span>
-                        <span className="text-gray-800">{item.ingredientName}</span>
+                        <Link
+                          href={`/ingredients/detail/${encodeURIComponent(item.ingredientId)}`}
+                          className="text-gray-800 hover:underline"
+                        >
+                          {item.ingredientName}
+                        </Link>
                       </div>
                       <span className="text-gray-600 font-medium">{item.count}회</span>
                     </div>
@@ -158,19 +163,6 @@ export default function IngredientsPage() {
                 )}
               </div>
             </section>
-
-            {/* 추천 영양 성분 */}
-            {/* <section className="mb-8">
-              <h2 className="text-lg font-semibold mb-3">추천 영양 성분 🙌</h2>
-              <div className="grid grid-cols-3 gap-3">
-                {recommendedIngredients.map((item) => (
-                  <div key={item.name} className="bg-white border border-gray-100 rounded-lg shadow-sm p-4 flex flex-col items-center justify-center aspect-square">
-                    <span className="text-3xl mb-2">{item.emoji}</span>
-                    <span className="text-sm text-gray-700 text-center">{item.name}</span>
-                  </div>
-                ))}
-              </div>
-            </section> */}
 
             {/* 카테고리별 성분 사전 */}
             <CategoryListSection categoryIngredients={categoryIngredients} />
