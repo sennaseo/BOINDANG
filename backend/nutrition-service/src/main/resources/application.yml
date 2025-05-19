@@ -4,11 +4,34 @@ server:
 spring:
   application:
     name: nutrition-service
+  config:
+    import: optional:application-secret.yml
 
   data:
     mongodb:
-      uri: mongodb://localhost:27017
-      database: nutrition_db
+      uri: ${DB_URL}
+      database: ${DB_NAME}
+
+eureka:
+  client:
+    enabled: true
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+      defaultZone: ${EUREKA_URL}
+  instance:
+    hostname: ${HOST_IP}
+
+springdoc:
+  swagger-ui:
+    path: /nutrition/swagger-ui
+  api-docs:
+    path: /nutrition/v3/api-docs
+
+logging:
+    level:
+      root: INFO
+      com.nutritionservice.nutrition.service: DEBUG
 
 #  logging:
 #    level:
@@ -25,14 +48,14 @@ spring:
 #      matching-strategy: ant_path_matcher  # Swagger 오류 방지용 (Spring 2.6+)
 
 
-user-service:
-  url: http://localhost:8081 # 실제 user-service 주소
-
-feign:
-  client:
-    config:
-      userClient:
-        name: user-service
-      default:
-        connectTimeout: 5000
-        readTimeout: 5000
+#user-service:
+#  url: http://localhost:8081 # 실제 user-service 주소
+#
+#feign:
+#  client:
+#    config:
+#      userClient:
+#        name: user-service
+#      default:
+#        connectTimeout: 5000
+#        readTimeout: 5000

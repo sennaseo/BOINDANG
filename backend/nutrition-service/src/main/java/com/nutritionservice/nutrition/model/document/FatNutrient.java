@@ -9,9 +9,10 @@ import org.springframework.data.mongodb.core.mapping.Field;
 @AllArgsConstructor
 @Builder
 @ToString
-public class NutritionAnalysis {
-    @Field("nutrition")
-    private Nutrition nutrition;
-    @Field("summary")
-    private String summary;
+public class FatNutrient {
+    private Double gram;
+    private Double ratio;
+
+    @Field("sub")
+    private FatDetail sub;
 }
