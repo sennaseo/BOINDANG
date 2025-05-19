@@ -44,10 +44,10 @@ public class ImageService {
         String fileKey = metaUploadReqDto.getFileKey();
 
         if (userId == null) {
-            throw new MissingUserIdException("유저 ID가 없습니다");
+            throw new MissingUserIdException("유저 ID가 누락되었습니다");
         }
         if (fileKey == null || fileKey.isEmpty()) {
-            throw new MissingUuidException("UUID가 없습니다");
+            throw new MissingUuidException("fileKey가 누락되었습니다");
         }
 
         Image image = Image.builder()
