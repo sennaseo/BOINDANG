@@ -13,7 +13,7 @@ services:
     env_file:
       - .env_ocr
     environment:
-      MONGODB_URI: mongodb://ocr-db:27017
+      MONGODB_URI: mongodb://${DB_USERNAME}:${DB_PASSWORD}@ocr-db:27017/${DB_NAME}
     volumes:
       - ./app:/code/app
     networks:
