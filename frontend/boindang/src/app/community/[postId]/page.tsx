@@ -326,6 +326,7 @@ export default function PostDetailPage() {
                 layout="fill"
                 objectFit="contain"
                 className="rounded-lg"
+                unoptimized
               />
             </div>
           )}
@@ -390,11 +391,10 @@ export default function PostDetailPage() {
           <button
             type="submit"
             disabled={!commentText.trim()}
-            className={`text-sm font-semibold px-3 py-2 rounded-full transition-colors ${
-              commentText.trim()
+            className={`text-sm font-semibold px-3 py-2 rounded-full transition-colors ${commentText.trim()
                 ? 'text-[#6C2FF2] hover:bg-purple-100'
                 : 'text-gray-400 cursor-not-allowed'
-            }`}
+              }`}
           >
             등록
           </button>
