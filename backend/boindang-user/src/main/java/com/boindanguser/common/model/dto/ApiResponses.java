@@ -1,4 +1,4 @@
-package com.d206.auth.common;
+package com.boindanguser.common.model.dto;
 
 import lombok.Getter;
 import lombok.Setter;
