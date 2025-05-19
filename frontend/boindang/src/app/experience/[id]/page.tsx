@@ -100,6 +100,7 @@ export default function ExperienceDetailPage() {
           alt={experience.name}
           fill
           className="object-contain bg-white"
+          unoptimized
         />
       </div>
 
