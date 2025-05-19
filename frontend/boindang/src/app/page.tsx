@@ -9,8 +9,9 @@ import { usePreventSwipeBack } from '@/hooks/usePreventSwipeBack';
 import { fetchQuizStatistics } from '@/api/more/quiz';
 import { QuizStatistics } from '@/types/api/more/quiz';
 import { useRouter } from 'next/navigation';
-// OCR 관련 토스트 로직은 OcrStatusObserver.tsx로 완전히 이전되었으므로 useToast는 여기서는 필요 없습니다.
-// import { useToast } from '@/context/ToastContext'; 
+import { getReportHistory } from '@/api/report';
+import { ReportHistory } from '@/types/api/report';
+import { ApiError } from '@/types/api';
 
 // 클라이언트 사이드에서만 로드하기 위해 dynamic import 사용
 const DangDangi = dynamic(() => import('@/components/3D/DangDangi'), {
@@ -22,8 +23,11 @@ const DangDangi = dynamic(() => import('@/components/3D/DangDangi'), {
   ),
 });
 
-// OcrAnalysisStatus 타입은 OcrStatusObserver.tsx로 이동했습니다.
-// type OcrAnalysisStatus = 'processing' | 'completed' | 'error' | 'attempted' | null;
+const guideMessages = [
+  "당당이를 터치해보세요! \n 방긋 웃는 얼굴을 만날 수 있어요 😊",
+  "당당이를 꾹 눌러보세요! \n 귀엽게 춤을 춰요 💃",
+  "당당이를 슬쩍 밀어보세요! \n 3D로 빙글빙글 감상할 수 있어요 🔄",
+];
 
 export default function Home() {
   const router = useRouter(); // router는 페이지 내 다른 곳에서 사용되므로 유지
@@ -31,30 +35,47 @@ export default function Home() {
   const mainContainerRef = useRef<HTMLDivElement>(null);
   const [quizStats, setQuizStats] = useState<QuizStatistics | null>(null);
   const [loadingQuizStats, setLoadingQuizStats] = useState(true);
+  const [historyItems, setHistoryItems] = useState<ReportHistory[] | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<ApiError | null>(null);
+  const [guideIndex, setGuideIndex] = useState(0);
 
   usePreventSwipeBack(mainContainerRef, { edgeThreshold: 30 });
 
   useEffect(() => {
     const getQuizStats = async () => {
       try {
+        setLoading(true);
+        setError(null);
         setLoadingQuizStats(true);
         const stats = await fetchQuizStatistics();
+        const axiosResponse = await getReportHistory();
         setQuizStats(stats);
+        setHistoryItems(axiosResponse.data.data);
       } catch (error) {
-        console.error("퀴즈 통계 로딩 실패:", error);
+        console.error("퀴즈 통계 및 분석 내역 로딩 실패:", error);
+        setError(error as ApiError);
         setQuizStats(null);
+        setHistoryItems(null);
       } finally {
+        setLoading(false);
         setLoadingQuizStats(false);
       }
     };
     getQuizStats();
   }, []);
 
-  // OCR 상태 감지 및 토스트 업데이트 관련 useEffect는 OcrStatusObserver.tsx로 완전히 이동하여 여기서 제거합니다.
-  // 이전 주석 처리된 useEffect 블록 전체 삭제
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setGuideIndex((prev) => (prev + 1) % guideMessages.length);
+    }, 10000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const numberofocr = historyItems?.length ?? 0;
 
   const renderQuizMission = () => {
-    if (loadingQuizStats) {
+    if (loadingQuizStats || loading) {
       return (
         <div className="bg-maincolor rounded-xl shadow-md p-4 animate-pulse">
           <div className="flex items-center">
@@ -70,9 +91,17 @@ export default function Home() {
       );
     }
 
+    if (error) {
+      return (
+        <div className="bg-red-500 rounded-xl shadow-md p-4">
+          <p className="text-white">오류가 발생했습니다: {error.message}</p>
+        </div>
+      );
+    }
+
     if (quizStats && quizStats.totalSolved < 30) {
       return (
-        <div className="bg-maincolor rounded-xl shadow-md p-4">
+        <div className="bg-maincolor rounded-xl shadow-md p-5">
           <div className="flex items-center">
             <div className="mr-3 text-white">
               <SealPercent size={28} weight="fill" />
@@ -91,7 +120,7 @@ export default function Home() {
     }
 
     return (
-      <div className="bg-green-500 rounded-xl shadow-md p-4">
+      <div className="bg-maincolor rounded-xl shadow-md p-4">
         <div className="flex items-center">
           <div className="mr-3 text-white">
             <CheckCircle size={28} weight="fill" />
@@ -116,8 +145,16 @@ export default function Home() {
 
       {/* 당당이 클릭 유도 문구 */}
       <div className="absolute top-30 left-0 right-0 flex justify-center z-10">
-        <p className="bg-white/80 backdrop-blur-sm text-sm text-maincolor font-semibold px-4 py-2 rounded-full shadow-md animate-bounce">
-          당당이를 터치해보세요! 👋
+        <p
+          className="bg-white/80 backdrop-blur-sm font-semibold px-4 py-2 rounded-full shadow-md animate-bounce text-center"
+          style={{ whiteSpace: 'pre-line' }}
+        >
+          <span className="text-maincolor text-sm font-bold block">
+            {guideMessages[guideIndex].split('\n')[0]}
+          </span>
+          <span className="text-black text-xs font-normal block mt-0.5">
+            {guideMessages[guideIndex].split('\n')[1]}
+          </span>
         </p>
       </div>
 
@@ -140,9 +177,16 @@ export default function Home() {
         <div className="grid grid-cols-2 gap-4 w-full">
           <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-md p-4 flex flex-col items-center justify-center">
             <div className="text-sm font-bold text-gray-500 mb-1">지금까지 분석한 식품</div>
-            <div className="text-2xl font-extrabold text-maincolor">20개</div>
-            <div className="mt-1 text-xs text-gray-500">대단해요!</div>
+            <div className="text-2xl font-extrabold text-maincolor">{numberofocr}개</div>
+            {numberofocr < 4 ? (
+              <div className="mt-1 text-xs text-gray-500">궁금한 성분, 지금 바로 확인!</div>
+            ) : 3 < numberofocr && numberofocr < 10 ? (
+              <div className="mt-1 text-xs text-gray-500">영양 지식 상승 중!</div>
+            ) : (
+              <div className="mt-1 text-xs text-gray-500">대단해요!</div>
+            )}
           </div>
+
           <button onClick={() => router.push('/ocr/camera')} className="flex flex-col items-center justify-center gap-2 bg-maincolor text-white rounded-xl p-4 font-bold text-lg shadow-md hover:bg-maincolor/90 transition-shadow cursor-pointer">
             <CameraPlus size={26} weight="bold" />
             <div>식품 분석</div>
