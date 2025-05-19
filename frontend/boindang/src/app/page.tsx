@@ -23,6 +23,12 @@ const DangDangi = dynamic(() => import('@/components/3D/DangDangi'), {
   ),
 });
 
+const guideMessages = [
+  "당당이를 터치해보세요! \n 방긋 웃는 얼굴을 만날 수 있어요 😊",
+  "당당이를 꾹 눌러보세요! \n 귀엽게 춤을 춰요 💃",
+  "당당이를 슬쩍 밀어보세요! \n 3D로 빙글빙글 감상할 수 있어요 🔄",
+];
+
 export default function Home() {
   const router = useRouter();
   const mainContainerRef = useRef<HTMLDivElement>(null);
@@ -31,7 +37,7 @@ export default function Home() {
   const [historyItems, setHistoryItems] = useState<ReportHistory[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<ApiError | null>(null);
-
+  const [guideIndex, setGuideIndex] = useState(0);
 
   usePreventSwipeBack(mainContainerRef, { edgeThreshold: 30 });
 
@@ -56,6 +62,13 @@ export default function Home() {
       }
     };
     getQuizStats();
+  }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setGuideIndex((prev) => (prev + 1) % guideMessages.length);
+    }, 10000);
+    return () => clearInterval(timer);
   }, []);
 
   const numberofocr = historyItems?.length ?? 0;
@@ -131,8 +144,16 @@ export default function Home() {
 
       {/* 당당이 클릭 유도 문구 */}
       <div className="absolute top-30 left-0 right-0 flex justify-center z-10">
-        <p className="bg-white/80 backdrop-blur-sm text-sm text-maincolor font-semibold px-4 py-2 rounded-full shadow-md animate-bounce">
-          당당이를 터치해보세요!
+        <p
+          className="bg-white/80 backdrop-blur-sm font-semibold px-4 py-2 rounded-full shadow-md animate-bounce text-center"
+          style={{ whiteSpace: 'pre-line' }}
+        >
+          <span className="text-maincolor text-sm font-bold block">
+            {guideMessages[guideIndex].split('\n')[0]}
+          </span>
+          <span className="text-black text-xs font-normal block mt-0.5">
+            {guideMessages[guideIndex].split('\n')[1]}
+          </span>
         </p>
       </div>
 
@@ -155,7 +176,7 @@ export default function Home() {
         <div className="grid grid-cols-2 gap-4 w-full">
           <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-md p-4 flex flex-col items-center justify-center">
             <div className="text-sm font-bold text-gray-500 mb-1">지금까지 분석한 식품</div>
-            <div className="text-2xl font-extrabold text-maincolor">{numberofocr}</div>
+            <div className="text-2xl font-extrabold text-maincolor">{numberofocr}개</div>
             {numberofocr < 4 ? (
               <div className="mt-1 text-xs text-gray-500">궁금한 성분, 지금 바로 확인!</div>
             ) : 3 < numberofocr && numberofocr < 10 ? (
