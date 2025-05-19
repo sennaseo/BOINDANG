@@ -7,8 +7,11 @@ import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { usePreventSwipeBack } from '@/hooks/usePreventSwipeBack';
 import { fetchQuizStatistics } from '@/api/more/quiz';
-import { QuizStatistics } from '@/types/api/more/quiz';
+import { ApiResponse, QuizStatistics } from '@/types/api/more/quiz';
 import { useRouter } from 'next/navigation';
+import { getReportHistory } from '@/api/report';
+import { ReportHistory } from '@/types/api/report';
+import { ApiError } from '@/types/api';
 
 // 클라이언트 사이드에서만 로드하기 위해 dynamic import 사용
 const DangDangi = dynamic(() => import('@/components/3D/DangDangi'), {
@@ -25,27 +28,40 @@ export default function Home() {
   const mainContainerRef = useRef<HTMLDivElement>(null);
   const [quizStats, setQuizStats] = useState<QuizStatistics | null>(null);
   const [loadingQuizStats, setLoadingQuizStats] = useState(true);
+  const [historyItems, setHistoryItems] = useState<ReportHistory[] | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<ApiError | null>(null);
+
 
   usePreventSwipeBack(mainContainerRef, { edgeThreshold: 30 });
 
   useEffect(() => {
     const getQuizStats = async () => {
       try {
+        setLoading(true);
+        setError(null);
         setLoadingQuizStats(true);
         const stats = await fetchQuizStatistics();
+        const axiosResponse = await getReportHistory();
         setQuizStats(stats);
+        setHistoryItems(axiosResponse.data.data);
       } catch (error) {
-        console.error("퀴즈 통계 로딩 실패:", error);
+        console.error("퀴즈 통계 및 분석 내역 로딩 실패:", error);
+        setError(error as ApiError);
         setQuizStats(null);
+        setHistoryItems(null);
       } finally {
+        setLoading(false);
         setLoadingQuizStats(false);
       }
     };
     getQuizStats();
   }, []);
 
+  const numberofocr = historyItems?.length ?? 0;
+
   const renderQuizMission = () => {
-    if (loadingQuizStats) {
+    if (loadingQuizStats || loading) {
       return (
         <div className="bg-maincolor rounded-xl shadow-md p-4 animate-pulse">
           <div className="flex items-center">
@@ -57,6 +73,14 @@ export default function Home() {
               <p className="text-sm opacity-90 h-4 bg-white/20 rounded w-1/2"></p>
             </div>
           </div>
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div className="bg-red-500 rounded-xl shadow-md p-4">
+          <p className="text-white">오류가 발생했습니다: {error.message}</p>
         </div>
       );
     }
@@ -108,7 +132,7 @@ export default function Home() {
       {/* 당당이 클릭 유도 문구 */}
       <div className="absolute top-30 left-0 right-0 flex justify-center z-10">
         <p className="bg-white/80 backdrop-blur-sm text-sm text-maincolor font-semibold px-4 py-2 rounded-full shadow-md animate-bounce">
-          당당이를 터치해보세요! 👋
+          당당이를 터치해보세요! ��
         </p>
       </div>
 
@@ -131,7 +155,7 @@ export default function Home() {
         <div className="grid grid-cols-2 gap-4 w-full">
           <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-md p-4 flex flex-col items-center justify-center">
             <div className="text-sm font-bold text-gray-500 mb-1">지금까지 분석한 식품</div>
-            <div className="text-2xl font-extrabold text-maincolor">20개</div>
+            <div className="text-2xl font-extrabold text-maincolor">{numberofocr}</div>
             <div className="mt-1 text-xs text-gray-500">대단해요!</div>
           </div>
           <button onClick={() => router.push('/ocr/camera')} className="flex flex-col items-center justify-center gap-2 bg-maincolor text-white rounded-xl p-4 font-bold text-lg shadow-md hover:bg-maincolor/90 transition-shadow cursor-pointer">
