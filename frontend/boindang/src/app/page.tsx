@@ -9,6 +9,8 @@ import { usePreventSwipeBack } from '@/hooks/usePreventSwipeBack';
 import { fetchQuizStatistics } from '@/api/more/quiz';
 import { QuizStatistics } from '@/types/api/more/quiz';
 import { useRouter } from 'next/navigation';
+// OCR 관련 토스트 로직은 OcrStatusObserver.tsx로 완전히 이전되었으므로 useToast는 여기서는 필요 없습니다.
+// import { useToast } from '@/context/ToastContext'; 
 
 // 클라이언트 사이드에서만 로드하기 위해 dynamic import 사용
 const DangDangi = dynamic(() => import('@/components/3D/DangDangi'), {
@@ -20,8 +22,12 @@ const DangDangi = dynamic(() => import('@/components/3D/DangDangi'), {
   ),
 });
 
+// OcrAnalysisStatus 타입은 OcrStatusObserver.tsx로 이동했습니다.
+// type OcrAnalysisStatus = 'processing' | 'completed' | 'error' | 'attempted' | null;
+
 export default function Home() {
-  const router = useRouter();
+  const router = useRouter(); // router는 페이지 내 다른 곳에서 사용되므로 유지
+  // const { showToast, hideToast } = useToast(); // OcrStatusObserver에서 처리하므로 제거
   const mainContainerRef = useRef<HTMLDivElement>(null);
   const [quizStats, setQuizStats] = useState<QuizStatistics | null>(null);
   const [loadingQuizStats, setLoadingQuizStats] = useState(true);
@@ -43,6 +49,9 @@ export default function Home() {
     };
     getQuizStats();
   }, []);
+
+  // OCR 상태 감지 및 토스트 업데이트 관련 useEffect는 OcrStatusObserver.tsx로 완전히 이동하여 여기서 제거합니다.
+  // 이전 주석 처리된 useEffect 블록 전체 삭제
 
   const renderQuizMission = () => {
     if (loadingQuizStats) {
