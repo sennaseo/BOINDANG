@@ -5,7 +5,9 @@ import ReportTabNav from "@/components/navigation/ReportTabNav";
 import BackArrowIcon from '@/components/common/BackArrowIcon';
 import { useParams, useRouter } from 'next/navigation';
 import { getReport } from "@/api/report";
-import { ApiError } from "@/types/api";
+import { ApiError, ApiResponse } from "@/types/api";
+import { SignUpResult } from "@/types/api/authTypes";
+import { getUserInfo } from "@/api/auth";
 // --- 타입 정의 시작 ---
 interface TopRisk {
   name: string;    // 성분명 (e.g., "말토덱스트린")
@@ -42,6 +44,7 @@ export default function UserTypePage() {
   const params = useParams();
   const productId = params.productId as string;
 
+  const [userInfo, setUserInfo] = useState<ApiResponse<SignUpResult> | null>(null);
   const [reportData, setReportData] = useState<ReportResultData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<ApiError | null>(null);
@@ -54,6 +57,8 @@ export default function UserTypePage() {
         try {
           const axiosResponse = await getReport(productId);
           const apiResponse = axiosResponse.data; // ApiResponse<ReportResultData> 추출
+          const userInfoResponse = await getUserInfo();
+          setUserInfo(userInfoResponse);
           if (apiResponse && apiResponse.success) {
             setReportData(apiResponse.data);
           } else {
@@ -113,7 +118,7 @@ export default function UserTypePage() {
       {/* TODO: 사용자 타입 정보가 API에 있다면 동적으로 변경 */}
       <section className="mb-4">
         <div className="bg-white rounded-xl shadow p-4 text-center">
-          <span className="text-green-500 font-bold">다이어터</span> 유저 타입에 대한 리포트 입니다
+          <span className="text-green-500 font-bold">{userInfo?.data?.userType}</span> 유저 타입에 대한 리포트 입니다
         </div>
       </section>
 
