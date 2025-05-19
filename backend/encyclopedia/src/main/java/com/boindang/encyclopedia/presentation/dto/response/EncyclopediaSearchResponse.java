@@ -40,4 +40,5 @@ public class EncyclopediaSearchResponse {
                 .riskLevel(riskLabel)
                 .build();
     }
+
 }

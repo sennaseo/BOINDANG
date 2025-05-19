@@ -27,6 +27,8 @@ public class Post {
 	@Column(nullable = false)
 	private String content;
 
+	private Long imageId;
+
 	@Column(nullable = false)
 	private boolean isDeleted = false;
 

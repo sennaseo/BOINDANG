@@ -1,6 +1,5 @@
 package com.boindang.campaign.presentation.dto.response;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -25,8 +24,9 @@ public class CampaignSummaryResponse {
 	private String status; // 모집 예정, 진행중, 종료
 	private int capacity;
 	private List<String> hashtags;
+	private boolean isApplied;
 
-	public static CampaignSummaryResponse from(Campaign campaign) {
+	public static CampaignSummaryResponse from(Campaign campaign, boolean isApplied) {
 		return CampaignSummaryResponse.builder()
 			.id(campaign.getId())
 			.name(campaign.getName())
@@ -37,6 +37,7 @@ public class CampaignSummaryResponse {
 			.status(convertStatusToLabel(campaign.getStatus()))
 			.capacity(campaign.getCapacity())
 			.hashtags(campaign.getHashtags())
+			.isApplied(isApplied)
 			.build();
 	}
 

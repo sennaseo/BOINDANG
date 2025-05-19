@@ -35,4 +35,11 @@ public class QuizSolvedHistory {
 		this.selectedOptionId = selectedOptionId;
 		this.solvedAt = LocalDateTime.now();
 	}
+
+	public void update(boolean isCorrect, int selectedOptionId) {
+		this.isCorrect = isCorrect;
+		this.selectedOptionId = selectedOptionId;
+		this.solvedAt = LocalDateTime.now();
+	}
+
 }

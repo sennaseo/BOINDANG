@@ -24,5 +24,7 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
     """, nativeQuery = true)
 	List<Long> findUnsolvedRandomQuizIds(@Param("solvedIds") List<Long> solvedIds);
 
+	@Query(value = "SELECT id FROM quiz WHERE id IN (:solvedIds) ORDER BY RAND() LIMIT :count", nativeQuery = true)
+	List<Long> findRandomSolvedQuizIds(@Param("solvedIds") List<Long> solvedIds, @Param("count") int count);
 
 }

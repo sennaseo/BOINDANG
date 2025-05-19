@@ -1,6 +1,7 @@
 package com.boindang.quiz.infrastructure;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -12,18 +13,13 @@ public interface QuizSolvedHistoryRepository extends JpaRepository<QuizSolvedHis
 	@Query("SELECT h.quiz.id FROM QuizSolvedHistory h WHERE h.userId = :userId")
 	List<Long> findQuizIdsByUserId(@Param("userId") Long userId);
 
-	@Query("""
-		SELECT h
-		FROM QuizSolvedHistory h
-		JOIN FETCH h.quiz q
-		JOIN FETCH q.options
-		WHERE h.userId = :userId AND h.isCorrect = false
-	""")
-	List<QuizSolvedHistory> findWrongAnswersByUserId(@Param("userId") Long userId);
-
 	int countByUserId(Long userId);
 
 	int countByUserIdAndIsCorrectTrue(Long userId);
+
+	List<QuizSolvedHistory> findAllByUserId(Long userId);
+
+	Optional<QuizSolvedHistory> findByUserIdAndQuizId(Long userId, Long quizId);
 
 }
 

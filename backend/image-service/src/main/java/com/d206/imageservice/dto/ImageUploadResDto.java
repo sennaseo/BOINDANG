@@ -10,6 +10,6 @@ import lombok.RequiredArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class ImageUploadResDto {
-    String prisignedUrl;
+    String presignedUrl;
     String fileKey;
 }
