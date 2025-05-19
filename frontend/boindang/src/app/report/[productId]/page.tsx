@@ -5,8 +5,9 @@ import Link from "next/link";
 import { House, ChartLine, Info, Heart } from "@phosphor-icons/react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { getReport } from "@/api/report";
-import { ApiError } from "@/types/api";
+import { ApiError, ApiResponse } from "@/types/api";
 import { ReportPageProps, ReportResultData } from "@/types/api/report";
+import { useToast } from "@/context/ToastContext";
 
 // GI 색상 설정
 const giColors = {
@@ -21,36 +22,85 @@ export default function ReportPage({ params: paramsPromise }: ReportPageProps) {
   const [report, setReport] = useState<ReportResultData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<ApiError | null>(null);
+  const { showToast, hideToast } = useToast();
 
   useEffect(() => {
+    hideToast();
+
+    // 페이지 진입 시 즉시 localStorage의 OCR 상태를 정리
+    console.log("[ReportPage] Entering page. Clearing OCR status from localStorage immediately.");
+    localStorage.removeItem('ocrAnalysisState');
+    localStorage.removeItem('ocrAnalysisMessage');
+    localStorage.removeItem('ocrResultId');
+    localStorage.removeItem('ocrUserNavigatedHome');
+
     console.log("productId:", productId);
     if (productId) {
       const fetchReport = async () => {
+        setLoading(true);
         try {
-          setLoading(true);
-          try {
-            const axiosResponse = await getReport(productId);
-            const apiResponse = axiosResponse.data;
-            if (apiResponse && apiResponse.success) {
-              setReport(apiResponse.data);
-              setLoading(false);
-              return; // API 호출 성공 시 리턴
-            } else {
-              console.warn("API 호출 실패");
-            }
-          } catch (apiError) {
-            console.error("API 호출 오류 발생", apiError);
-            // API 오류 시 localStorage 확인으로 넘어감
+          const axiosResponse = await getReport(productId);
+          const apiResponse: ApiResponse<ReportResultData> = axiosResponse.data;
+
+          if (apiResponse && apiResponse.success && apiResponse.data) {
+            setReport(apiResponse.data);
+            console.log("[ReportPage] Report data loaded successfully. Clearing any OCR status.");
+            localStorage.removeItem('ocrAnalysisState');
+            localStorage.removeItem('ocrAnalysisMessage');
+            localStorage.removeItem('ocrResultId');
+            localStorage.removeItem('ocrUserNavigatedHome');
+            setError(null);
+          } else {
+            // apiResponse.success === false 또는 apiResponse.data가 없는 경우
+            const errorMessage = apiResponse?.error?.message || "리포트 데이터를 가져오는데 실패했습니다. (서버 응답 오류)";
+            console.warn("API call failed or data missing from API response:", apiResponse, "Error message extracted:", errorMessage);
+            setError({ message: errorMessage, status: apiResponse?.error?.status || "UNKNOWN_ERROR" } as ApiError);
+
+            localStorage.setItem('ocrAnalysisState', 'error');
+            localStorage.setItem('ocrAnalysisMessage', `리포트 정보 로딩 실패: ${errorMessage}. 다시 촬영하시겠어요?`);
+            localStorage.removeItem('ocrResultId');
+            localStorage.removeItem('ocrUserNavigatedHome');
           }
-        } catch (error) {
-          console.error("오류 발생:", error);
-          setError({ message: "리포트를 불러오는 데 실패했습니다" } as ApiError);
+        } catch (apiError: unknown) {
+          console.error("API 호출 중 오류 발생 (catch block):", apiError);
+          let errorMessage = "리포트 로딩 중 알 수 없는 오류가 발생했습니다.";
+          let errorStatus = "UNKNOWN_ERROR";
+
+          if (typeof apiError === "object" && apiError && "response" in apiError) {
+            const err = apiError as { response?: { data?: ApiResponse<unknown>; status?: number }; message?: string };
+            const errorData = err.response?.data;
+            errorMessage = (errorData as ApiResponse<unknown>)?.error?.message
+              || (err.response?.data as { message?: string })?.message
+              || err.message
+              || errorMessage;
+            errorStatus = (errorData as ApiResponse<unknown>)?.error?.status
+              || err.response?.status?.toString()
+              || errorStatus;
+          } else if (typeof apiError === "object" && apiError && "message" in apiError) {
+            errorMessage = (apiError as { message: string }).message;
+          }
+
+          setError({ message: `리포트 로딩 중 오류: ${errorMessage}`, status: errorStatus } as ApiError);
+
+          localStorage.setItem('ocrAnalysisState', 'error');
+          localStorage.setItem('ocrAnalysisMessage', `리포트 로딩 오류: ${errorMessage}. 다시 촬영하시겠어요?`);
+          localStorage.removeItem('ocrResultId');
+          localStorage.removeItem('ocrUserNavigatedHome');
+        } finally {
           setLoading(false);
         }
       };
       fetchReport();
+    } else {
+      const noProductIdError = "제품 ID가 제공되지 않았습니다.";
+      setError({ message: noProductIdError, status: "VALIDATION_ERROR" } as ApiError);
+      localStorage.setItem('ocrAnalysisState', 'error');
+      localStorage.setItem('ocrAnalysisMessage', noProductIdError + " 다시 촬영해주세요.");
+      localStorage.removeItem('ocrResultId');
+      localStorage.removeItem('ocrUserNavigatedHome');
+      setLoading(false);
     }
-  }, [productId]);
+  }, [productId, showToast, hideToast]);
 
 
   // GI 지수 게이지 차트 데이터
@@ -61,7 +111,7 @@ export default function ReportPage({ params: paramsPromise }: ReportPageProps) {
     { name: '백분율', value: 0, color: '#FFFFFF' },
     { name: '남은 비율', value: 100, color: 'transparent' }
   ];
-  
+
   // 탄단지 비율 (API 데이터로 매핑)
   const nutritionDataForChart = report?.nutrientRatios?.map(ratio => ({
     name: ratio.name,
@@ -94,7 +144,7 @@ export default function ReportPage({ params: paramsPromise }: ReportPageProps) {
       </div>
     );
   }
-  
+
   if (!report) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-5">
@@ -130,11 +180,10 @@ export default function ReportPage({ params: paramsPromise }: ReportPageProps) {
           <div className="flex items-center mb-4">
             <ChartLine size={22} className="text-violet-600 mr-2" weight="bold" />
             <h2 className="font-bold text-lg text-gray-800">통합 GI 지수 ({report.giIndex || '정보없음'})
-              {report.giGrade && <span className={`ml-2 text-sm px-2 py-0.5 rounded ${
-                report.giGrade === '위험' ? 'bg-red-100 text-red-600' : 
-                report.giGrade === '주의' ? 'bg-yellow-100 text-yellow-600' : 
-                'bg-green-100 text-green-600'
-              }`}>{report.giGrade}</span>}
+              {report.giGrade && <span className={`ml-2 text-sm px-2 py-0.5 rounded ${report.giGrade === '위험' ? 'bg-red-100 text-red-600' :
+                report.giGrade === '주의' ? 'bg-yellow-100 text-yellow-600' :
+                  'bg-green-100 text-green-600'
+                }`}>{report.giGrade}</span>}
             </h2>
           </div>
           <div className="flex flex-col items-center">
@@ -181,9 +230,9 @@ export default function ReportPage({ params: paramsPromise }: ReportPageProps) {
                   <Tooltip formatter={(value: number) => `${value.toFixed(1)}%`} />
                 </PieChart>
               </ResponsiveContainer>
-              <div 
+              <div
                 className="absolute bottom-0 left-1/2 w-[2px] h-[60px] bg-gray-800 origin-bottom z-10 transition-transform duration-500 ease-out"
-                style={{ 
+                style={{
                   transform: `translateX(-50%) rotate(${(report.giIndex || 0) * 1.8 - 90}deg)`
                 }}
               >
@@ -235,7 +284,7 @@ export default function ReportPage({ params: paramsPromise }: ReportPageProps) {
                       <Cell key={`cell-${index}`} fill={entry.fill} />
                     ))}
                   </Pie>
-                <Tooltip formatter={(value: number) => `${value.toFixed(1)}%`} />
+                  <Tooltip formatter={(value: number) => `${value.toFixed(1)}%`} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
@@ -299,15 +348,15 @@ export default function ReportPage({ params: paramsPromise }: ReportPageProps) {
 
       {/* 버튼 */}
       <div className="fixed bottom-0 left-1/2 -translate-x-1/2 z-10 p-4 bg-gray-50 w-full max-w-md mx-auto flex flex-col gap-3">
-        <Link 
-          href={`/report/${productId}/safety`} 
+        <Link
+          href={`/report/${productId}/safety`}
           className="flex items-center justify-center gap-2 bg-violet-600 text-white rounded-xl py-4 font-bold shadow-md shadow-violet-200 transition-all hover:bg-violet-700 active:scale-[0.98] text-sm"
         >
           <ChartLine size={18} weight="bold" />
           식품 상세 리포트 보러가기
         </Link>
-        <Link 
-          href="/" 
+        <Link
+          href="/"
           className="flex items-center justify-center gap-2 bg-white border border-violet-600 text-violet-600 rounded-xl text-sm py-3 font-bold transition-all hover:bg-violet-50 active:scale-[0.98]"
         >
           <House size={18} weight="bold" />
