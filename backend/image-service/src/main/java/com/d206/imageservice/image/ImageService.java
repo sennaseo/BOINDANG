@@ -1,5 +1,6 @@
 package com.d206.imageservice.image;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 import com.d206.imageservice.dto.ImageUploadResDto;
@@ -34,22 +35,25 @@ public class ImageService {
         String presignedUrl = s3Service.createPresignedPutUrl(fileKey, fileType);
 
         return ImageUploadResDto.builder()
-                .prisignedUrl(presignedUrl)
+                .presignedUrl(presignedUrl)
                 .fileKey(fileKey)
                 .build();
     }
 
-    public Image saveMetadata(MetaUploadReqDto metaUploadReqDto) {
-        if (metaUploadReqDto.getUserId() == null) {
+    public Image saveMetadata(Long userId, MetaUploadReqDto metaUploadReqDto) {
+        String fileKey = metaUploadReqDto.getFileKey();
+
+        if (userId == null) {
             throw new MissingUserIdException("유저 ID가 없습니다");
         }
-        if (metaUploadReqDto.getFileKey() == null || metaUploadReqDto.getFileKey().isEmpty()) {
+        if (fileKey == null || fileKey.isEmpty()) {
             throw new MissingUuidException("UUID가 없습니다");
         }
 
         Image image = Image.builder()
-                .imageUrl("https://d1d5plumlg2gxc.cloudfront.net/" + metaUploadReqDto.getFileKey())
-                .userId(metaUploadReqDto.getUserId())
+                .imageUrl("https://d1d5plumlg2gxc.cloudfront.net/" + fileKey)
+                .userId(userId)
+                .createdAt(LocalDateTime.now())
                 .build();
         return imageRepository.save(image);
     }

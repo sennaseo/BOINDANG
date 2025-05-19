@@ -1,35 +1,52 @@
 package com.boindang.community.client;
 
+import java.util.List;
+import java.util.Map;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
 import com.boindang.community.dto.response.ApiResponse;
 import com.boindang.community.dto.response.UserResponse;
+import com.boindang.community.service.EurekaService;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class UserClient {
 
 	private final RestClient restClient;
-	private final DiscoveryClient discoveryClient;
+	private final EurekaService eurekaService;
 
 	public String getUsernameById(Long userId) {
-		String baseUrl = discoveryClient.getInstances("USER")
-			.stream()
-			.findFirst()
-			.map(instance -> instance.getUri().toString())
-			.orElseThrow(() -> new RuntimeException("USER 서비스 인스턴스를 찾을 수 없습니다."));
+		try {
+			String url = eurekaService.getUrl("BOINDANG-USER") + "users/" + userId;
+			ApiResponse<UserResponse> apiResponse = restClient.get()
+				.uri(url)
+				.retrieve()
+				.body(new ParameterizedTypeReference<>() {});
+			return apiResponse.getResult().getNickname();
+		} catch (Exception e) {
+			throw new RuntimeException("유저 이름 조회 실패: " + e.getMessage(), e);
+		}
+	}
 
-		String url = baseUrl + "/users/" + userId;
-
-		ApiResponse<UserResponse> response = restClient.get()
-			.uri(url)
-			.retrieve()
-			.body(new ParameterizedTypeReference<>() {});
-
-		return response.getResult().getUsername();
+	public Map<Long, String> getUsernamesByIds(List<Long> userIds) {
+		try {
+			String url = eurekaService.getUrl("BOINDANG-USER") + "users/batch";
+			log.info("🩵url = " + url);
+			ApiResponse<Map<Long, String>> apiResponse = restClient.post()
+				.uri(url)
+				.body(userIds)
+				.retrieve()
+				.body(new ParameterizedTypeReference<>() {});
+			return apiResponse.getResult();
+		} catch (Exception e) {
+			throw new RuntimeException("유저명 배치 조회 실패: " + e.getMessage(), e);
+		}
 	}
 }

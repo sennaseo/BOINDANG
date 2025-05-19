@@ -1,9 +1,9 @@
 package com.d206.imageservice.image;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -13,6 +13,7 @@ import lombok.*;
 @ToString
 public class Image {
 	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long imageId;
 
 	@Column(nullable = false)
@@ -20,4 +21,10 @@ public class Image {
 
 	@Column(nullable = false)
 	private String imageUrl;
+
+	@Column(nullable = false)
+	private LocalDateTime createdAt;
+
+	@Column(nullable = true)
+	private LocalDateTime  deletedAt;
 }

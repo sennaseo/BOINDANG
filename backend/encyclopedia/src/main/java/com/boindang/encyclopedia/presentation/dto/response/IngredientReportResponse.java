@@ -13,6 +13,7 @@ public class IngredientReportResponse {
 	private String name;
 	private int gi;
 	private String shortMessage;
+	private String keyword;
 	private List<String> description;
 	private String riskLevel;
 }

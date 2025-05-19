@@ -1,15 +1,16 @@
 package com.boindang.community.service;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestClient;
 
 import com.boindang.community.client.UserClient;
+import com.boindang.community.common.exception.CommunityException;
+import com.boindang.community.common.exception.ErrorCode;
 import com.boindang.community.dto.request.CreatePostRequest;
 import com.boindang.community.dto.response.PostResponse;
-import com.boindang.community.entity.Like;
 import com.boindang.community.entity.Post;
 import com.boindang.community.repository.LikeRepository;
 import com.boindang.community.repository.PostRepository;
@@ -27,10 +28,20 @@ public class PostService {
 	public List<PostResponse> getAllPosts(Long currentUserId) {
 		List<Post> posts = postRepository.findAllByIsDeletedFalseOrderByCreatedAtDesc();
 
+		// userId 목록 추출 후 중복 제거
+		List<Long> userIds = posts.stream()
+			.map(Post::getUserId)
+			.distinct()
+			.toList();
+
+		// USER 서비스에 배치 요청
+		Map<Long, String> usernames = userClient.getUsernamesByIds(userIds);
+
+		// 최종 매핑
 		return posts.stream()
 			.map(post -> {
 				boolean likedByMe = likeRepository.existsByPostIdAndUserIdAndIsDeletedFalse(post.getId(), currentUserId);
-				String username = userClient.getUsernameById(post.getUserId());
+				String username = usernames.getOrDefault(post.getUserId(), "알 수 없음");
 				return PostResponse.from(post, likedByMe, username);
 			})
 			.toList();
@@ -51,6 +62,7 @@ public class PostService {
 			.userId(userId)
 			.title(request.getTitle())
 			.content(request.getContent())
+			.imageId(request.getImageId())
 			.build();
 
 		postRepository.save(post);
@@ -62,39 +74,11 @@ public class PostService {
 			.orElseThrow(() -> new RuntimeException("존재하지 않는 게시글입니다."));
 
 		if (!post.getUserId().equals(userId)) {
-			throw new RuntimeException("본인의 게시글만 삭제할 수 있습니다.");
+			throw new CommunityException(ErrorCode.FORBIDDEN_DELETE_POST);
 		}
 
 		post.softDelete();
 		postRepository.save(post);
 	}
 
-	@Transactional
-	public void toggleLike(Long postId, Long userId) {
-		Post post = postRepository.findByIdAndIsDeletedFalse(postId)
-			.orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다."));
-
-		Optional<Like> existing = likeRepository.findByPostIdAndUserId(postId, userId);
-
-		if (existing.isPresent()) {
-			Like like = existing.get();
-			if (like.isDeleted()) {
-				like.restore();           // 좋아요 복구
-				post.increaseLikeCount();
-			} else {
-				like.softDelete();       // 좋아요 취소
-				post.decreaseLikeCount();
-			}
-			likeRepository.save(like);
-		} else {
-			Like newLike = Like.builder()
-				.postId(postId)
-				.userId(userId)
-				.build();
-			likeRepository.save(newLike);
-			post.increaseLikeCount();
-		}
-
-		postRepository.save(post); // likeCount 갱신
-	}
 }

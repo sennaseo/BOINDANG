@@ -1,15 +1,19 @@
 package com.boindang.encyclopedia.presentation;
 
 import com.boindang.encyclopedia.application.EncyclopediaService;
-import com.boindang.encyclopedia.common.response.BaseResponse;
+import com.boindang.encyclopedia.application.IngredientSearchService;
+import com.boindang.encyclopedia.common.response.ApiResponses;
+import com.boindang.encyclopedia.common.response.ErrorResponse;
+import com.boindang.encyclopedia.presentation.api.EncyclopediaApi;
 import com.boindang.encyclopedia.presentation.dto.response.EncyclopediaDetailResponse;
-import com.boindang.encyclopedia.presentation.dto.response.EncyclopediaSearchResponse;
+import com.boindang.encyclopedia.presentation.dto.response.IngredientListResponse;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -19,41 +23,37 @@ import java.util.Map;
 public class EncyclopediaController implements EncyclopediaApi {
 
     private final EncyclopediaService encyclopediaService;
+    private final IngredientSearchService ingredientSearchService;
 
     @Override
     @GetMapping("/search")
-    public BaseResponse<Map<String, Object>> searchIngredients(
+    public ApiResponses<Map<String, Object>> searchIngredients(
             @RequestParam String query,
-            @RequestParam(required = false) Boolean suggested
+            @RequestParam(required = false, defaultValue = "true") Boolean suggested
     ) {
-        log.info("🩵 성분 검색 with query={}, suggested={}", query, suggested);
         if (query == null || query.trim().isEmpty()) {
-            return BaseResponse.fail(400, "검색어를 입력하세요.");
+            return ApiResponses.error(new ErrorResponse(HttpStatus.BAD_REQUEST, "검색어를 입력해주세요."));
         }
 
-        if (query.trim().length() < 2) {
-            return BaseResponse.fail(400, "검색어는 최소 2자 이상 입력해주세요.");
-        }
-
-        return BaseResponse.success(encyclopediaService.searchWithSuggestion(query, suggested));
+        return ApiResponses.success(ingredientSearchService.search(query, suggested));
     }
 
     @Override
     @GetMapping("/ingredient/{id}")
-    public BaseResponse<EncyclopediaDetailResponse> getDetail(@PathVariable String id) {
-        return BaseResponse.success(encyclopediaService.getIngredientDetail(id));
+    public ApiResponses<EncyclopediaDetailResponse> getDetail(@PathVariable String id) {
+        return ApiResponses.success(encyclopediaService.getIngredientDetail(id));
     }
 
     @Override
     @GetMapping("/category")
-    public BaseResponse<List<EncyclopediaSearchResponse>> getIngredientsByCategory(
+    public ApiResponses<IngredientListResponse> getIngredientsByCategory(
         @RequestParam String category,
         @RequestParam(required = false) String sort,
         @RequestParam(defaultValue = "desc") String order,
-        @RequestParam(defaultValue = "20") int size
+        @RequestParam(defaultValue = "15") int size,
+        @RequestParam(defaultValue = "0") int page
     ) {
-        List<EncyclopediaSearchResponse> result = encyclopediaService.getIngredientsByType(category, sort, order, size);
-        return BaseResponse.success(result);
+        return ApiResponses.success(encyclopediaService.getIngredientsByType(category, sort, order, size, page));
     }
 
 }
