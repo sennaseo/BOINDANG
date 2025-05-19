@@ -10,12 +10,15 @@ import org.bson.types.ObjectId;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-//@Document("product_nutrition")
+@ToString
 @Document("product")
 public class ProductNutrition {
-
     @Id
     private ObjectId id;
     private String name;
     private ProductResult result;
+    private String ingredientImageUrl;
+    private String nutritionImageUrl;
 }
+
+
