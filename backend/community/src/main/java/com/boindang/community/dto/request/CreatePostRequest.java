@@ -10,9 +10,9 @@ import lombok.NoArgsConstructor;
 @Schema(description = "게시글 작성 Request DTO")
 public class CreatePostRequest {
 
-	@NotBlank(message = "제목은 필수 입력값입니다.")
-	@Schema(description = "게시글 제목", example = "오늘 점심 뭐 먹지?")
-	private String title;
+	@NotBlank(message = "카테고리는 필수 입력값입니다.")
+	@Schema(description = "게시글 카테고리", example = "식단")
+	private String category;
 
 	@NotBlank(message = "내용은 필수 입력값입니다.")
 	@Schema(description = "게시글 내용", example = "저는 고단백 도시락 먹었습니다.")
