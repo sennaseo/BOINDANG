@@ -266,6 +266,7 @@ export default function CommunityPage() {
                     layout="fill"
                     objectFit="contain"
                     className="rounded-[22px]"
+                    unoptimized
                   />
                 </div>
               )}

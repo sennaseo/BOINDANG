@@ -286,6 +286,7 @@ export default function CommunityWritePage() {
                   onClick={removeSelectedImage}
                   className="absolute top-2 right-2 p-1 bg-black bg-opacity-40 rounded-full text-white hover:bg-opacity-60 transition-opacity"
                   aria-label="이미지 삭제"
+                  unoptimized
                 >
                   <X size={16} />
                 </button>
