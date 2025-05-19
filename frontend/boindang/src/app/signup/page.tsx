@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeSlash, Shuffle, CheckCircle } from '@phosphor-icons/react'; // 아이콘 추가
 import { getRandomNickname } from '@woowa-babble/random-nickname';
@@ -64,6 +64,7 @@ export default function SignUp() {
     } else {
       setConfirmPasswordError('');
     }
+    validateForm(); // 실시간 유효성 검사
   };
 
   const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -73,6 +74,7 @@ export default function SignUp() {
     } else {
       setConfirmPasswordError('');
     }
+    validateForm(); // 실시간 유효성 검사
   };
 
   // 아이디 중복 확인 예시 (나중에 TanStack Query와 연동)
@@ -184,25 +186,19 @@ export default function SignUp() {
   const isFormValid = (): boolean => {
     const trimmedUsername = username.trim();
     const trimmedNickname = nickname.trim();
-
-    // 모든 필드가 채워져 있는지 일차적으로 확인
-    if (!trimmedUsername || !trimmedNickname || !password || !confirmPassword) {
-      return false;
-    }
-
-    // 에러 메시지가 하나라도 있으면 비활성화
-    // (validateForm을 버튼 클릭 시 호출하므로, isFormValid는 현재 에러 상태만 체크해도 됨)
-    // 하지만, 더 정확하려면 isFormValid 내부에서 validateForm의 축약된 버전을 실행하거나,
-    // validateForm이 설정한 에러 상태를 직접 참조해야 함.
-    // 여기서는 모든 에러 상태가 비어있는지 + 비밀번호 일치 여부만 확인.
-    // (handleSubmit에서 validateForm이 먼저 실행되므로 이 정도도 괜찮을 수 있음)
-    return usernameError === null &&
-      nicknameError === '' &&
-      passwordError === '' &&
-      confirmPasswordError === '' &&
+    return (
+      !!trimmedUsername &&
+      !!trimmedNickname &&
+      !!password &&
+      !!confirmPassword &&
+      !usernameError &&
+      !nicknameError &&
+      !passwordError &&
+      !confirmPasswordError &&
       password === confirmPassword &&
-      isUsernameChecked && // 아이디 중복 확인을 했고
-      isUsernameAvailable === true; // 사용 가능해야 함
+      isUsernameChecked &&
+      isUsernameAvailable === true
+    );
   };
 
   // --- 아이디 중복 확인 로직 추가 ---
@@ -274,6 +270,12 @@ export default function SignUp() {
   const handleModalClose = () => {
     setIsConfirmModalOpen(false);
   };
+
+  // --- 실시간 유효성 검사 추가 ---
+  useEffect(() => {
+    validateForm();
+    // eslint-disable-next-line
+  }, [username, nickname, password, confirmPassword]);
 
   return (
     <div className="flex flex-col min-h-screen overflow-x-hidden">
@@ -384,6 +386,11 @@ export default function SignUp() {
               <p id="password-hint" className="text-xs text-gray-500 mt-1">
                 8~20자, 영문, 숫자, 특수문자 중 2가지 이상 조합
               </p>
+              {password && !passwordError && (
+                <p className="text-green-600 text-xs flex items-center gap-1 mt-1">
+                  <CheckCircle size={14} weight="fill" /> 사용 가능한 비밀번호입니다.
+                </p>
+              )}
               {passwordError && (
                 <p id="password-error" className="text-red-500 text-xs mt-1">{passwordError}</p>
               )}
