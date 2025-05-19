@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { HandPointing, Lightbulb, X, CaretRight } from '@phosphor-icons/react'; // CaretRight 아이콘 추가
 import HandShakeDang from '@/components/3D/handShakeDang';
 import ConfirmModal from '@/components/common/ConfirmModal';
@@ -62,56 +63,83 @@ const knowledgeTips = [
 ];
 
 export default function OcrProcessingScreen() {
+  const router = useRouter();
   const [progress, setProgress] = useState<number>(0);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState<boolean>(false);
   const [shouldShowTouchText, setShouldShowTouchText] = useState<boolean>(false);
-
   const [isKnowledgeCardVisible, setIsKnowledgeCardVisible] = useState<boolean>(false);
-  // const [knowledgeCardTip, setKnowledgeCardTip] = useState<string>(""); // currentTipIndex로 대체
   const [currentTipIndex, setCurrentTipIndex] = useState<number>(0);
   const [askDangToRunForward, setAskDangToRunForward] = useState<boolean>(false);
 
   useEffect(() => {
-    // 프로그레스 바 로직 (기존 유지)
     setProgress(0);
     const totalDuration = 20000;
     const updatesPerInterval = 1;
     const intervalTime = totalDuration / (100 / updatesPerInterval);
     const timer = setInterval(() => {
       setProgress(prev => {
-        if (prev + updatesPerInterval >= 100) {
+        const newProgress = prev + updatesPerInterval;
+        if (newProgress >= 100) {
           clearInterval(timer);
+          console.log("OCR Progress 100%.");
+          const navigatedHome = localStorage.getItem('ocrUserNavigatedHome');
+          if (navigatedHome === 'true') {
+            console.log("User chose to wait at home. Result will be available there via toast.");
+          } else {
+            console.log("User stayed on processing screen. API call should determine navigation to result.");
+          }
           return 100;
         }
-        return prev + updatesPerInterval;
+        return newProgress;
       });
     }, intervalTime);
     return () => clearInterval(timer);
   }, []);
 
-  useEffect(() => {
-    if (askDangToRunForward) {
-      const timer = setTimeout(() => setAskDangToRunForward(false), 100);
-      return () => clearTimeout(timer);
-    }
-  }, [askDangToRunForward]);
-
-  const displayKnowledgeCardHandler = () => { // tip 인자 제거
-    console.log('OcrProcessingScreen: Displaying knowledge card.');
+  const handleShouldShowKnowledgeCard = useCallback(() => {
+    console.log('OcrProcessingScreen: Received request to show knowledge card.');
     const randomIndex = Math.floor(Math.random() * knowledgeTips.length);
-    setCurrentTipIndex(randomIndex); // 랜덤 팁으로 시작
+    setCurrentTipIndex(randomIndex);
     setIsKnowledgeCardVisible(true);
-    setAskDangToRunForward(false);
-  };
+  }, []);
 
-  const handleKnowledgeCardClose = () => {
+  const handleKnowledgeCardClose = useCallback(() => {
     console.log('OcrProcessingScreen: Knowledge card closed. Asking Dang to run forward.');
     setIsKnowledgeCardVisible(false);
     setAskDangToRunForward(true);
-  };
+  }, []);
 
-  const handleNextTip = () => {
+  const handleNextTip = useCallback(() => {
     setCurrentTipIndex(prevIndex => (prevIndex + 1) % knowledgeTips.length);
+  }, []);
+
+  const handleDangRunForwardFinished = useCallback(() => {
+    console.log('OcrProcessingScreen: Dang finished running forward. Resetting command.');
+    setAskDangToRunForward(false);
+  }, []);
+
+  const handleConfirmAndGoHome = () => {
+    const processingMessage = '성분 분석 리포트를 준비 중입니다...';
+    localStorage.setItem('ocrAnalysisState', 'processing');
+    localStorage.setItem('ocrAnalysisMessage', processingMessage);
+    localStorage.setItem('ocrRequestTimestamp', Date.now().toString());
+    localStorage.setItem('ocrUserNavigatedHome', 'true');
+
+    // BroadcastChannel로 processing 상태 즉시 알림
+    try {
+      const channel = new BroadcastChannel('ocr_status_channel');
+      channel.postMessage({
+        status: 'processing',
+        message: processingMessage
+      });
+      channel.close();
+      console.log("[OcrProcessingScreen] Posted 'processing' status via BroadcastChannel.");
+    } catch (error) {
+      console.error("[OcrProcessingScreen] Error posting to BroadcastChannel:", error);
+    }
+
+    router.push('/');
+    setIsConfirmModalOpen(false);
   };
 
   return (
@@ -129,8 +157,9 @@ export default function OcrProcessingScreen() {
       >
         <HandShakeDang
           onShouldShowTouchPrompt={setShouldShowTouchText}
-          onShowKnowledgeCard={displayKnowledgeCardHandler} // 핸들러 타입 일치
+          onShouldShowKnowledgeCard={handleShouldShowKnowledgeCard}
           runForwardCommand={askDangToRunForward}
+          onRunForwardAnimationFinished={handleDangRunForwardFinished}
         />
       </div>
 
@@ -171,14 +200,11 @@ export default function OcrProcessingScreen() {
       <ConfirmModal
         isOpen={isConfirmModalOpen}
         onClose={() => setIsConfirmModalOpen(false)}
-        onConfirm={() => {
-          console.log('홈으로 이동 처리 + 알림 설정 로직 필요');
-          setIsConfirmModalOpen(false);
-        }}
-        title=""
-        message="리포트가 준비되면 알려드릴게요!"
+        onConfirm={handleConfirmAndGoHome}
+        title="홈으로 이동"
+        message="리포트가 준비되면 알려드릴게요! 홈으로 이동하시겠습니까?"
         confirmText="홈으로 가기"
-        cancelText="취소"
+        cancelText="계속 기다리기"
       />
     </div>
   );

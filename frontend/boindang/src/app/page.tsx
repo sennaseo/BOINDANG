@@ -30,7 +30,8 @@ const guideMessages = [
 ];
 
 export default function Home() {
-  const router = useRouter();
+  const router = useRouter(); // router는 페이지 내 다른 곳에서 사용되므로 유지
+  // const { showToast, hideToast } = useToast(); // OcrStatusObserver에서 처리하므로 제거
   const mainContainerRef = useRef<HTMLDivElement>(null);
   const [quizStats, setQuizStats] = useState<QuizStatistics | null>(null);
   const [loadingQuizStats, setLoadingQuizStats] = useState(true);
