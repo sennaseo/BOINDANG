@@ -57,6 +57,7 @@ export default function ExperienceCard({
             alt={title}
             fill
             className="object-cover"
+            unoptimized
           />
           {statusLabel && (
             <div
@@ -75,6 +76,7 @@ export default function ExperienceCard({
                 height={200}
                 className="absolute inset-0 w-full h-full object-contain z-10 pointer-events-none scale-140"
                 style={{ background: 'rgba(0,0,0,0.0)' }}
+                unoptimized
               />
             </>
           )}
@@ -86,6 +88,7 @@ export default function ExperienceCard({
               height={200}
               className="absolute inset-0 w-full h-full object-contain z-10 pointer-events-none scale-100"
               style={{ background: 'rgba(0,0,0,0.4)' }}
+              unoptimized
             />
           )}
         </div>
