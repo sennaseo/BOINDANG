@@ -16,18 +16,18 @@ const apiClient = axios.create({
 // 요청 인터셉터
 apiClient.interceptors.request.use(
   (config) => {
-    const { accessToken } = useAuthStore.getState();
-    const isRefreshRequest = config.url === '/user/refresh'; // 실제 토큰 재발급 API 경로로 수정해야 할 수 있음
+    const { refreshToken } = useAuthStore.getState();
+    const isRefreshRequest = config.url === '/user/refresh';
 
-    console.log(`[APIClient Request Interceptor] Url: ${config.url}, IsRefresh: ${isRefreshRequest}, Token from store: ${accessToken ? 'Exists' : 'NULL'}`);
+    console.log(`[APIClient Request Interceptor] Url: ${config.url}, IsRefresh: ${isRefreshRequest}, RefreshToken from store: ${refreshToken ? 'Exists' : 'NULL'}`);
 
-    if (accessToken && !isRefreshRequest) { // 재발급 요청이 아닐 때만 액세스 토큰 첨부
-      config.headers.Authorization = `Bearer ${accessToken}`;
-      console.log('[APIClient Request Interceptor] Authorization header SET for:', config.url);
-    } else if (isRefreshRequest) {
+    if (refreshToken && !isRefreshRequest) {
+      config.headers.Authorization = `Bearer ${refreshToken}`;
+      console.log('[APIClient Request Interceptor] Authorization header SET with RefreshToken for:', config.url);
+    } else if (isRefreshRequest) { 
       console.log('[APIClient Request Interceptor] This is a refresh token request. Authorization header SKIPPED for:', config.url);
     } else {
-      console.log('[APIClient Request Interceptor] No access token or is refresh request, Authorization header NOT set for:', config.url);
+      console.log('[APIClient Request Interceptor] No refresh token or is refresh request, Authorization header NOT set for:', config.url);
     }
     return config;
   },
@@ -53,71 +53,71 @@ const processQueue = (error: Error | null, token: string | null = null) => {
 
 // 토큰 재발급 및 원래 요청 재시도 핸들러 (공통 함수)
 const handleTokenRefreshAndRetry = async (originalRequest: InternalAxiosRequestConfig & { _retry?: boolean }) => {
-  // 재시도 요청에 대해 다시 재발급 로직을 타지 않도록 체크
-  if (originalRequest._retry) {
-    console.log('[handleTokenRefreshAndRetry] Request already retried. Rejecting.');
-    // 여기서 적절한 에러를 반환하거나, 특정 에러 객체를 reject 해야 합니다.
-    // 예를 들어, 원래 에러를 그대로 reject 하거나, 새로운 커스텀 에러를 생성합니다.
-    // 지금은 간단히 로그인 필요 에러 메시지로 reject 합니다.
-    return Promise.reject(new Error("토큰 재발급 후에도 인증 실패. 다시 로그인해주세요."));
-  }
-
-  if (isRefreshing) {
-    console.log('[handleTokenRefreshAndRetry] Token is already refreshing. Adding to queue.');
-    return new Promise((resolve, reject) => {
-      failedQueue.push({ resolve, reject });
-    })
-      .then(token => {
-        if (originalRequest.headers) {
-          originalRequest.headers['Authorization'] = 'Bearer ' + token;
-        }
-        originalRequest._retry = true; // 재시도 플래그 설정
-        return apiClient(originalRequest);
-      })
-      .catch(err => {
-        return Promise.reject(err);
-      });
-  }
-
-  originalRequest._retry = true; // 재시도 플래그 설정
-  isRefreshing = true;
-  console.log('[handleTokenRefreshAndRetry] Attempting token refresh for request to:', originalRequest.url);
-
-  const { refreshToken, logout, setAccessToken } = useAuthStore.getState();
-
-  if (!refreshToken) {
-    console.error('[handleTokenRefreshAndRetry] No refresh token available. Logging out.');
-    logout(); // Zustand 스토어의 로그아웃 액션
-    isRefreshing = false;
-    processQueue(new Error('No refresh token available. Please login again.'), null);
-    return Promise.reject(new Error('No refresh token available. Please login again.'));
-  }
-
   try {
+    // 재시도 요청에 대해 다시 재발급 로직을 타지 않도록 체크
+    if (originalRequest._retry) {
+      console.log('[handleTokenRefreshAndRetry] Request already retried. Rejecting.');
+      return Promise.reject(new Error("토큰 재발급 후에도 인증 실패. 다시 로그인해주세요."));
+    }
+
+    if (isRefreshing) {
+      console.log('[handleTokenRefreshAndRetry] Token is already refreshing. Adding to queue.');
+      try {
+        const token = await new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        });
+        
+        if (originalRequest.headers) {
+          originalRequest.headers['Authorization'] = `Bearer ${token}`;
+        }
+        originalRequest._retry = true;
+        return apiClient(originalRequest);
+      } catch (err) {
+        return Promise.reject(err);
+      }
+    }
+
+    originalRequest._retry = true;
+    isRefreshing = true;
+    console.log('[handleTokenRefreshAndRetry] Attempting token refresh for request to:', originalRequest.url);
+
+    const { refreshToken, logout } = useAuthStore.getState();
+
+    if (!refreshToken) {
+      console.error('[handleTokenRefreshAndRetry] No refresh token available. Logging out.');
+      logout();
+      isRefreshing = false;
+      processQueue(new Error('로그인이 필요합니다.'));
+      return Promise.reject(new Error('로그인이 필요합니다.'));
+    }
+
     console.log('[handleTokenRefreshAndRetry] Calling postRefreshToken API.');
-    const refreshResponse = await postRefreshToken(); // ApiResponse<string> 반환 가정
+    const refreshResponse = await postRefreshToken();
 
     if (refreshResponse.success && refreshResponse.data) {
-      const newAccessToken = refreshResponse.data;
-      console.log('[handleTokenRefreshAndRetry] Token refreshed successfully. New AT obtained.');
-      setAccessToken(newAccessToken); // Zustand 스토어에 새 토큰 저장
+      const newToken = refreshResponse.data;
+      console.log('[handleTokenRefreshAndRetry] Token refreshed successfully. New token obtained.');
+      
       if (originalRequest.headers) {
-        originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
+        originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
       }
-      processQueue(null, newAccessToken);
+      
+      processQueue(null, newToken);
       console.log('[handleTokenRefreshAndRetry] Retrying original request with new token to:', originalRequest.url);
-      return apiClient(originalRequest); // 원래 요청 재시도
+      
+      return apiClient(originalRequest);
     } else {
       console.error('[handleTokenRefreshAndRetry] Token refresh API call failed:', refreshResponse.error);
       logout();
-      processQueue(new Error(refreshResponse.error?.message || 'Token refresh failed and no new token obtained.'), null);
-      return Promise.reject(new Error(refreshResponse.error?.message || 'Token refresh failed.'));
+      processQueue(new Error(refreshResponse.error?.message || '토큰 갱신에 실패했습니다.'));
+      return Promise.reject(new Error(refreshResponse.error?.message || '토큰 갱신에 실패했습니다.'));
     }
-  } catch (refreshError) {
-    console.error('[handleTokenRefreshAndRetry] Exception during postRefreshToken API call:', refreshError);
+  } catch (error) {
+    console.error('[handleTokenRefreshAndRetry] Exception during token refresh:', error);
+    const { logout } = useAuthStore.getState();
     logout();
-    processQueue(refreshError as Error, null);
-    return Promise.reject(refreshError); // 또는 더 구체적인 에러
+    processQueue(error as Error);
+    return Promise.reject(error);
   } finally {
     isRefreshing = false;
     console.log('[handleTokenRefreshAndRetry] Finished token refresh process. isRefreshing set to false.');
