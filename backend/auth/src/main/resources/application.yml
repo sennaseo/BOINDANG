@@ -1,14 +1,17 @@
 spring:
   application:
     name: auth
-
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: 6379
 
 jwt:
   secret: ${JWT_SECRET}
   access-token:
-    expire-time: 259200000 # 3?
+    expire-time: 600000 # 10min
   refresh-token:
-    expire-time: 604800000 # 7?
+    expire-time: 604800000 # 7day
 
 eureka:
   client:
