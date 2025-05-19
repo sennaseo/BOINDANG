@@ -6,7 +6,6 @@ import java.time.LocalDateTime;
 import org.springframework.stereotype.Service;
 
 import com.boindang.campaign.common.exception.BadRequestException;
-import com.boindang.campaign.common.exception.CampaignException;
 import com.boindang.campaign.common.exception.CampaignNotFoundException;
 import com.boindang.campaign.domain.model.Campaign;
 import com.boindang.campaign.domain.model.CampaignStatus;
