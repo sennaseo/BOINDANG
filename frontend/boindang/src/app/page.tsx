@@ -7,7 +7,7 @@ import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { usePreventSwipeBack } from '@/hooks/usePreventSwipeBack';
 import { fetchQuizStatistics } from '@/api/more/quiz';
-import { ApiResponse, QuizStatistics } from '@/types/api/more/quiz';
+import { QuizStatistics } from '@/types/api/more/quiz';
 import { useRouter } from 'next/navigation';
 import { getReportHistory } from '@/api/report';
 import { ReportHistory } from '@/types/api/report';
@@ -87,7 +87,7 @@ export default function Home() {
 
     if (quizStats && quizStats.totalSolved < 30) {
       return (
-        <div className="bg-maincolor rounded-xl shadow-md p-4">
+        <div className="bg-maincolor rounded-xl shadow-md p-5">
           <div className="flex items-center">
             <div className="mr-3 text-white">
               <SealPercent size={28} weight="fill" />
@@ -106,7 +106,7 @@ export default function Home() {
     }
 
     return (
-      <div className="bg-green-500 rounded-xl shadow-md p-4">
+      <div className="bg-maincolor rounded-xl shadow-md p-4">
         <div className="flex items-center">
           <div className="mr-3 text-white">
             <CheckCircle size={28} weight="fill" />
@@ -132,7 +132,7 @@ export default function Home() {
       {/* 당당이 클릭 유도 문구 */}
       <div className="absolute top-30 left-0 right-0 flex justify-center z-10">
         <p className="bg-white/80 backdrop-blur-sm text-sm text-maincolor font-semibold px-4 py-2 rounded-full shadow-md animate-bounce">
-          당당이를 터치해보세요! ��
+          당당이를 터치해보세요!
         </p>
       </div>
 
@@ -156,8 +156,15 @@ export default function Home() {
           <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-md p-4 flex flex-col items-center justify-center">
             <div className="text-sm font-bold text-gray-500 mb-1">지금까지 분석한 식품</div>
             <div className="text-2xl font-extrabold text-maincolor">{numberofocr}</div>
-            <div className="mt-1 text-xs text-gray-500">대단해요!</div>
+            {numberofocr < 4 ? (
+              <div className="mt-1 text-xs text-gray-500">궁금한 성분, 지금 바로 확인!</div>
+            ) : 3 < numberofocr && numberofocr < 10 ? (
+              <div className="mt-1 text-xs text-gray-500">영양 지식 상승 중!</div>
+            ) : (
+              <div className="mt-1 text-xs text-gray-500">대단해요!</div>
+            )}
           </div>
+
           <button onClick={() => router.push('/ocr/camera')} className="flex flex-col items-center justify-center gap-2 bg-maincolor text-white rounded-xl p-4 font-bold text-lg shadow-md hover:bg-maincolor/90 transition-shadow cursor-pointer">
             <CameraPlus size={26} weight="bold" />
             <div>식품 분석</div>
