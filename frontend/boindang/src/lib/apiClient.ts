@@ -15,7 +15,7 @@ const apiClient = axios.create({
 
 // 요청 인터셉터
 apiClient.interceptors.request.use(
-  (config) => {
+  (config: InternalAxiosRequestConfig) => {
     const { refreshToken } = useAuthStore.getState();
     const isRefreshRequest = config.url === '/user/refresh';
 
@@ -31,7 +31,7 @@ apiClient.interceptors.request.use(
     }
     return config;
   },
-  (error) => {
+  (error: AxiosError) => {
     return Promise.reject(error);
   }
 );
