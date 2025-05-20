@@ -16,7 +16,7 @@ const categoryIngredients = [
   { name: '감미료', imageSrc: '/assets/category_icon/gammi.png' },
   { name: '식이섬유', imageSrc: '/assets/category_icon/sike.png' },
   { name: '지방', imageSrc: '/assets/category_icon/jibang.png' },
-  { name: '식품 첨가물', imageSrc: '/assets/category_icon/chumga.png' },
+  { name: '식품첨가물', imageSrc: '/assets/category_icon/chumga.png' },
   { name: '비타민', imageSrc: '/assets/category_icon/vita.png' },
   { name: '미네랄', imageSrc: '/assets/category_icon/mine.png' },
 ];
