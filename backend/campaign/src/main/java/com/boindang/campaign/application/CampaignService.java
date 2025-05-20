@@ -1,7 +1,7 @@
 package com.boindang.campaign.application;
 
-import com.boindang.campaign.common.exception.CampaignException;
-import com.boindang.campaign.common.exception.ErrorCode;
+import com.boindang.campaign.common.exception.BadRequestException;
+import com.boindang.campaign.common.exception.CampaignNotFoundException;
 import com.boindang.campaign.domain.model.Campaign;
 import com.boindang.campaign.domain.model.CampaignStatus;
 import com.boindang.campaign.infrastructure.repository.CampaignApplicationRepository;
@@ -11,15 +11,15 @@ import com.boindang.campaign.presentation.dto.response.CampaignListResponse;
 import com.boindang.campaign.presentation.dto.response.CampaignSummaryResponse;
 import com.boindang.campaign.presentation.dto.response.MyApplicationResponse;
 
-import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,37 +29,43 @@ public class CampaignService {
 	private final CampaignRepository campaignRepository;
 	private final CampaignApplicationRepository applicationRepository;
 
-	public CampaignListResponse getCampaigns(String status, int size, int page) {
-		// 전체 데이터 조회
+	@Transactional // ✅ 반드시 있어야 DB에 상태가 반영됨
+	public CampaignListResponse getCampaigns(String status, int size, int page, Long userId) {
+		LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
 		List<Campaign> allCampaigns = campaignRepository.findAll();
 
-		// 상태 필터링
+		// ✅ 상태 한 번만 계산 + DB 반영
+		Map<Long, CampaignStatus> statusMap = allCampaigns.stream()
+			.collect(Collectors.toMap(Campaign::getId, c -> c.calculateAndSyncStatus(now)));
+
+		// ✅ 상태 필터링
 		List<Campaign> filtered = allCampaigns.stream()
 			.filter(campaign -> {
+				CampaignStatus dynamicStatus = statusMap.get(campaign.getId());
 				if (status == null) return true;
 				return switch (status) {
-					case "진행중" -> campaign.getStatus() == CampaignStatus.OPEN;
-					case "모집 예정" -> campaign.getStatus() == CampaignStatus.PENDING;
-					case "종료" -> campaign.getStatus() == CampaignStatus.CLOSED;
-					default -> throw new IllegalArgumentException("유효하지 않은 상태입니다.");
+					case "진행중" -> dynamicStatus == CampaignStatus.OPEN;
+					case "모집 예정" -> dynamicStatus == CampaignStatus.PENDING;
+					case "종료" -> dynamicStatus == CampaignStatus.CLOSED;
+					default -> throw new BadRequestException("유효하지 않은 상태입니다.");
 				};
 			})
 			.toList();
 
-		// 복합 정렬 로직
+		// ✅ 정렬
 		List<Campaign> sorted = filtered.stream()
 			.sorted(Comparator
 				.comparing((Campaign c) -> {
-					// 상태 우선순위 지정
-					return switch (c.getStatus()) {
+					CampaignStatus s = statusMap.get(c.getId());
+					return switch (s) {
 						case OPEN -> 0;
 						case PENDING -> 1;
 						case CLOSED -> 2;
 					};
 				})
 				.thenComparing(c -> {
-					// 상태별로 정렬 기준 다르게 적용
-					return switch (c.getStatus()) {
+					CampaignStatus s = statusMap.get(c.getId());
+					return switch (s) {
 						case OPEN, CLOSED -> c.getEndDate();
 						case PENDING -> c.getStartDate();
 					};
@@ -67,11 +73,15 @@ public class CampaignService {
 			)
 			.toList();
 
-		// 수동 페이징
+		// ✅ 페이징
 		int fromIndex = page * size;
 		int toIndex = Math.min(fromIndex + size, sorted.size());
+
 		List<CampaignSummaryResponse> pageContent = sorted.subList(fromIndex, toIndex).stream()
-			.map(CampaignSummaryResponse::from)
+			.map(campaign -> {
+				boolean isApplied = applicationRepository.existsByCampaignIdAndUserId(campaign.getId(), userId);
+				return CampaignSummaryResponse.from(campaign, isApplied);
+			})
 			.toList();
 
 		int totalPages = (int) Math.ceil((double) sorted.size() / size);
@@ -80,15 +90,14 @@ public class CampaignService {
 	}
 
 	@Transactional(readOnly = true)
-	public CampaignDetailResponse getCampaignDetail(Long campaignId) {
+	public CampaignDetailResponse getCampaignDetail(Long campaignId, Long userId) {
 		Campaign campaign = campaignRepository.findById(campaignId)
-			.orElseThrow(() -> new CampaignException(ErrorCode.CAMPAIGN_NOT_FOUND));
+			.orElseThrow(() -> new CampaignNotFoundException("해당 체험단이 존재하지 않습니다."));
 
-		// Lazy 초기화 트리거 ✅
-		campaign.getNotices().size();
+		campaign.getNotices().size(); // Lazy 초기화
 
-		campaign.updateStatusByDate(); // 상태 자동 갱신 (선택)
-		return CampaignDetailResponse.from(campaign);
+		boolean isApplied = applicationRepository.existsByCampaignIdAndUserId(campaign.getId(), userId);
+		return CampaignDetailResponse.from(campaign, isApplied);
 	}
 
 	public List<MyApplicationResponse> getMyApplications(Long userId) {
@@ -101,6 +110,5 @@ public class CampaignService {
 			))
 			.collect(Collectors.toList());
 	}
-
 }
 

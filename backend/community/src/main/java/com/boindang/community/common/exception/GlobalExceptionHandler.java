@@ -1,21 +1,48 @@
 package com.boindang.community.common.exception;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 
-import com.boindang.community.dto.response.BaseResponse;
+import com.boindang.community.dto.response.ApiResponses;
+import com.boindang.community.dto.response.ErrorResponse;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
 	@ExceptionHandler(CommunityException.class)
-	public BaseResponse<?> handleIngredientException(CommunityException e) {
-		return BaseResponse.fail(e.getCode(), e.getMessage());
+	public ApiResponses<?> handleCommunityException(Exception e) {
+		return ApiResponses.error(new ErrorResponse(HttpStatus.FORBIDDEN, e.getMessage()));
 	}
 
+	@ExceptionHandler(NotFoundException.class)
+	public ApiResponses<?> handleNotFoundException(Exception e) {
+		return ApiResponses.error(new ErrorResponse(HttpStatus.NOT_FOUND, e.getMessage()));
+	}
+
+	// ✅ @Valid 유효성 검사 실패 처리
+	@ExceptionHandler(MethodArgumentNotValidException.class)
+	public ApiResponses<?> handleValidationException(MethodArgumentNotValidException e) {
+		String errorMessage = e.getBindingResult()
+			.getFieldErrors()
+			.stream()
+			.findFirst()
+			.map(DefaultMessageSourceResolvable::getDefaultMessage)
+			.orElse("잘못된 요청입니다.");
+		return ApiResponses.error(new ErrorResponse(HttpStatus.BAD_REQUEST, errorMessage));
+	}
+
+	// 기타 예외 처리
 	@ExceptionHandler(Exception.class)
-	public BaseResponse<?> handleUnexpected(Exception e) {
-		return BaseResponse.fail(500, e.getMessage());
+	public ResponseEntity<ApiResponses<String>> handleAllExceptions(Exception e) {
+		log.info(e.getMessage());
+		log.info(e.toString());
+		return ResponseEntity.ok(
+			ApiResponses.error(new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage())));
 	}
-
 }

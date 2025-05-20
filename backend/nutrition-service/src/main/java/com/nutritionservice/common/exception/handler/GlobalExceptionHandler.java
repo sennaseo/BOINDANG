@@ -30,11 +30,11 @@ public class GlobalExceptionHandler {
     }
 
     // ✅ 예상치 못한 예외 처리 (서버 내부 오류)
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<Void>> handleGeneralException(Exception e) {
-        return ResponseEntity.internalServerError()
-                .body(ApiResponse.fail(500, "서버 오류가 발생했습니다."));
-    }
+    // @ExceptionHandler(Exception.class)
+    // public ResponseEntity<ApiResponse<Void>> handleGeneralException(Exception e) {
+    //     return ResponseEntity.internalServerError()
+    //             .body(ApiResponse.fail(500, "서버 오류가 발생했습니다."));
+    // }
 
     // ✅ 컨트롤러 메서드 실행전 오류는 AOP가 잡아낼 수 없으므로 여기서 직접 로그찍고 fail 반환
     @ExceptionHandler(HttpMessageNotReadableException.class)

@@ -4,7 +4,7 @@ build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
-
+.env_community
 ### STS ###
 .apt_generated
 .classpath
@@ -18,10 +18,11 @@ bin/
 !**/src/test/**/bin/
 
 ### IntelliJ IDEA ###
-.idea
+.idea/
 *.iws
 *.iml
 *.ipr
+*.html
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/

@@ -1,5 +1,6 @@
 package com.boindang.campaign.infrastructure.kafka.consumer;
 
+import org.springframework.kafka.KafkaException;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
@@ -30,7 +31,8 @@ public class KafkaConsumer {
 			log.info("✅ Campaign 신청 저장 성공: campaignId={}, userId={}", event.getCampaignId(), event.getUserId());
 
 		} catch (Exception e) {
-			log.error("Kafka 소비 중 예외 발생", e);
+			log.error("❗Kafka 소비 중 예외 발생", e);
+			throw new KafkaException("Kafka 소비 중 예외가 발생하였습니다.");
 		}
 	}
 }
