@@ -721,7 +721,7 @@ export default function OcrCameraPage() {
   };
 
   return (
-    <div ref={cameraPageContainerRef} className="flex flex-col h-screen w-full max-w-md mx-auto bg-black text-white relative overflow-hidden">
+    <div ref={cameraPageContainerRef} className="flex flex-col h-screen w-full bg-black text-white relative overflow-hidden">
       {/* 상단 바: X 버튼, 촬영 가이드 버튼 - 에러 없을 때만 표시 */}
       {!isProcessing && !error && (
         <div className="h-16 flex justify-between items-center p-4 z-10">
