@@ -7,8 +7,11 @@ import lombok.NoArgsConstructor;
 import jakarta.persistence.Id;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.boindang.campaign.common.exception.CampaignException;
 
 @Entity
 @Getter
@@ -64,34 +67,31 @@ public class Campaign {
     }
 
     public boolean isAvailable() {
-        return status == CampaignStatus.OPEN &&
-                LocalDateTime.now().isBefore(endDate);
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+        return calculateStatus(now) == CampaignStatus.OPEN;
+    }
+
+    @Transient
+    public CampaignStatus calculateStatus(LocalDateTime now) {
+        if (now.isBefore(this.startDate)) return CampaignStatus.PENDING;
+        if (now.isAfter(this.endDate)) return CampaignStatus.CLOSED;
+        return CampaignStatus.OPEN;
+    }
+
+    public CampaignStatus calculateAndSyncStatus(LocalDateTime now) {
+        CampaignStatus newStatus = calculateStatus(now);
+        if (this.status != newStatus) {
+            this.status = newStatus;
+        }
+        return newStatus;
     }
 
     public void increaseApplicant() {
         if (currentApplicants >= capacity) {
-            throw new IllegalStateException("모집 정원이 초과되었습니다.");
+            throw new CampaignException("모집 정원이 마감되었습니다.");
         }
         this.currentApplicants++;
-        if (currentApplicants == capacity) {
-            this.status = CampaignStatus.CLOSED;
-        }
     }
 
-    public void updateStatusByDate() {
-        LocalDateTime now = LocalDateTime.now();
-
-        if (now.isBefore(startDate)) {
-            this.status = CampaignStatus.PENDING;
-        } else if (now.isAfter(endDate) || currentApplicants >= capacity) {
-            this.status = CampaignStatus.CLOSED;
-        } else {
-            this.status = CampaignStatus.OPEN;
-        }
-    }
-
-    public void close() {
-        this.status = CampaignStatus.CLOSED;
-    }
 }
 

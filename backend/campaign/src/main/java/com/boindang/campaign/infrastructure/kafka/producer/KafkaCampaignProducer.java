@@ -4,10 +4,10 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
 import com.boindang.campaign.common.exception.CampaignException;
+import com.boindang.campaign.common.exception.KafkaException;
 import com.boindang.campaign.presentation.dto.response.ApplyEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.boindang.campaign.common.exception.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,7 +23,7 @@ public class KafkaCampaignProducer {
 			String json = objectMapper.writeValueAsString(event);
 			kafkaTemplate.send(topic, json);
 		} catch (JsonProcessingException e) {
-			throw new CampaignException(ErrorCode.KAFKA_SEND_FAILED);
+			throw new KafkaException("❗Kafka 이벤트 전송 중 오류가 발생했습니다.");
 		}
 	}
 }

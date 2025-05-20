@@ -1,9 +1,9 @@
 package com.boindang.encyclopedia.application.mapper;
 
 import com.boindang.encyclopedia.domain.IngredientDictionary;
-import com.boindang.encyclopedia.presentation.dto.EncyclopediaDetailResponse;
-import com.boindang.encyclopedia.presentation.dto.EncyclopediaDetailResponse.CompareTable;
-import com.boindang.encyclopedia.presentation.dto.EncyclopediaDetailResponse.CompareTable.Row;
+import com.boindang.encyclopedia.presentation.dto.response.EncyclopediaDetailResponse;
+import com.boindang.encyclopedia.presentation.dto.response.EncyclopediaDetailResponse.CompareTable;
+import com.boindang.encyclopedia.presentation.dto.response.EncyclopediaDetailResponse.CompareTable.Row;
 
 import java.util.List;
 import java.util.stream.Collectors;

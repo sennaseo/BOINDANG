@@ -7,7 +7,14 @@ services:
     container_name: gateway
     ports:
       - "8000:8000"
+      - "1111:1111"
     environment:
       EUREKA_URL: ${EUREKA_URL}
       JWT_SECRET: ${JWT_SECRET}
     restart: always
+    networks:
+      - nginx-network
+
+networks:
+  nginx-network:
+    external: true

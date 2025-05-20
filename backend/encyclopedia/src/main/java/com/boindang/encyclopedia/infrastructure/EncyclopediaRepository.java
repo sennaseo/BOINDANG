@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface EncyclopediaRepository extends ElasticsearchRepository<IngredientDictionary, String> {
     List<IngredientDictionary> findByNameContaining(String query);
+    List<IngredientDictionary> findByNameIn(List<String> names);
+
 }

@@ -9,6 +9,14 @@ services:
       EUREKA_URL: ${EUREKA_URL}
       HOST_IP: ${HOST_IP}
       JWT_SECRET: ${JWT_SECRET}
+      REDIS_HOST: redis
     ports:
       - "8080:8080"
+      - "1111:1111"
     restart: always
+    networks:
+      - redis-network
+
+networks:
+  redis-network:
+    external: true

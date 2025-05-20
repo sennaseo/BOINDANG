@@ -17,13 +17,13 @@ spring:
 
 eureka:
   client:
-    enabled: false
-#    fetch-registry: true
-#    register-with-eureka: true
-#    service-url:
-#      defaultZone: ${EUREKA_URL}
-#  instance:
-#    hostname: ${HOST_IP}
+    enabled: true
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+      defaultZone: ${EUREKA_URL}
+  instance:
+    hostname: ${HOST_IP}
 
 springdoc:
   swagger-ui:
@@ -45,15 +45,14 @@ cloud:
     stack:
       auto: false
 
-## prometheusds
-#management:
-#  endpoints:
-#    web:
-#      exposure:
-#        include: "*"
-#  server:
-#    port: 1111
-##    base-path:
+# prometheusds
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  server:
+    port: 1111
 
 server:
   port: 8081

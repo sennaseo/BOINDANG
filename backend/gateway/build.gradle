@@ -35,6 +35,11 @@ dependencies {
 	implementation 'org.springdoc:springdoc-openapi-webflux-core:1.8.0'
 	implementation 'org.springdoc:springdoc-openapi-webflux-ui:1.8.0'
 
+	// 모니터링
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'io.micrometer:micrometer-registry-prometheus'
+
+
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }

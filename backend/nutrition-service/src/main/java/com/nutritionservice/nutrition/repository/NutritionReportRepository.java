@@ -8,6 +8,6 @@ import java.util.Optional;
 
 public interface NutritionReportRepository extends MongoRepository<NutritionReport, String> {
     List<NutritionReport> findByUserId(String userId);
-
+    List<NutritionReport> findByUserIdOrderByAnalyzedAtDesc(String userId);
     Optional<NutritionReport> findByUserIdAndProductId(String userId, String productId);
 }

@@ -1,12 +1,17 @@
 package com.nutritionservice.nutrition.model.document;
 
 import lombok.*;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString
 public class NutritionAnalysis {
-    private NutritionSummary nutritionSummary;
+    @Field("nutrition")
+    private Nutrition nutrition;
+    @Field("summary")
+    private String summary;
 }
