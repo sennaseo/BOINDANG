@@ -109,7 +109,7 @@ export default function OcrCameraPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null); // 캡처용 캔버스 참조
   const router = useRouter(); // useRouter 훅 사용
-  const cameraPageContainerRef = useRef<HTMLDivElement>(null); // 스와이프 방지용 ref
+  const cameraPageContainerRef = useRef<HTMLDivElement>(null); // 스와이프 방지 및 높이 조절용 ref
 
   usePreventSwipeBack(cameraPageContainerRef, { edgeThreshold: 30 }); // 훅 사용
 
@@ -130,6 +130,29 @@ export default function OcrCameraPage() {
   // Ref to track if the initial camera setup and guide display has occurred
   const isInitialCameraSetupDone = useRef(false);
   const isStreamBeingInitialized = useRef(false); // Flag to prevent re-entrant calls
+
+  // 높이 동적 조절을 위한 useEffect
+  useEffect(() => {
+    const setVisualViewportHeight = () => {
+      if (cameraPageContainerRef.current) {
+        if (window.visualViewport) {
+          cameraPageContainerRef.current.style.height = `${window.visualViewport.height}px`;
+        } else {
+          cameraPageContainerRef.current.style.height = `${window.innerHeight}px`;
+        }
+      }
+    };
+
+    setVisualViewportHeight(); // 초기 높이 설정
+
+    // visualViewport가 존재하면 해당 객체의 resize 이벤트를 사용, 없으면 window의 resize 이벤트 사용
+    const resizeTarget = window.visualViewport || window;
+    resizeTarget.addEventListener('resize', setVisualViewportHeight);
+
+    return () => {
+      resizeTarget.removeEventListener('resize', setVisualViewportHeight);
+    };
+  }, []); // 마운트 시 한 번만 실행하여 리스너 등록/해제
 
   const showGuideTemporarily = useCallback(() => {
     if (guideTimeoutRef.current) {
@@ -721,7 +744,10 @@ export default function OcrCameraPage() {
   };
 
   return (
-    <div ref={cameraPageContainerRef} className="flex flex-col h-screen w-full bg-black text-white relative overflow-hidden">
+    <div
+      ref={cameraPageContainerRef}
+      className="flex flex-col w-full bg-black text-white relative overflow-hidden"
+    >
       {/* 상단 바: X 버튼, 촬영 가이드 버튼 - 에러 없을 때만 표시 */}
       {!isProcessing && !error && (
         <div className="h-16 flex justify-between items-center p-4 z-10">
