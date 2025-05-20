@@ -98,3 +98,9 @@ body {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
+
+/* 카메라 페이지 활성화 시 body 스크롤 방지 */
+body.ocr-camera-active {
+  overflow: hidden !important; 
+  /* height: 100% !important; */ /* height 100%는 iOS에서 문제를 일으킬 수 있으므로 우선 overflow만 처리 */
+}

@@ -131,10 +131,13 @@ export default function OcrCameraPage() {
   const isInitialCameraSetupDone = useRef(false);
   const isStreamBeingInitialized = useRef(false); // Flag to prevent re-entrant calls
 
-  // 높이 동적 조절을 위한 useEffect
+  // 높이 동적 조절 및 Body 스크롤 방지를 위한 useEffect
   useEffect(() => {
+    document.body.classList.add('ocr-camera-active');
+
     const setVisualViewportHeight = () => {
       if (cameraPageContainerRef.current) {
+        // cameraPageContainerRef.current.style.height = `${window.innerHeight}px`;
         if (window.visualViewport) {
           cameraPageContainerRef.current.style.height = `${window.visualViewport.height}px`;
         } else {
@@ -143,16 +146,15 @@ export default function OcrCameraPage() {
       }
     };
 
-    setVisualViewportHeight(); // 초기 높이 설정
-
-    // visualViewport가 존재하면 해당 객체의 resize 이벤트를 사용, 없으면 window의 resize 이벤트 사용
+    setVisualViewportHeight();
     const resizeTarget = window.visualViewport || window;
     resizeTarget.addEventListener('resize', setVisualViewportHeight);
 
     return () => {
+      document.body.classList.remove('ocr-camera-active');
       resizeTarget.removeEventListener('resize', setVisualViewportHeight);
     };
-  }, []); // 마운트 시 한 번만 실행하여 리스너 등록/해제
+  }, []); // 의존성 배열은 비워둡니다.
 
   const showGuideTemporarily = useCallback(() => {
     if (guideTimeoutRef.current) {

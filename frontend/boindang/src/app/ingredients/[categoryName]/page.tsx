@@ -16,7 +16,7 @@ const categoryImageMap: { [key: string]: string } = {
   '감미료': '/assets/category_icon/gammi.png',
   '식이섬유': '/assets/category_icon/sike.png',
   '지방': '/assets/category_icon/jibang.png',
-  '식품 첨가물': '/assets/category_icon/chumga.png',
+  '식품첨가물': '/assets/category_icon/chumga.png',
   '비타민': '/assets/category_icon/vita.png',
   '미네랄': '/assets/category_icon/mine.png',
 };
