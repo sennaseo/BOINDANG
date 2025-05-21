@@ -5,6 +5,9 @@ spring:
   application:
     name: encyclopedia
 
+  profiles:
+    active: test
+
   web:
     resources:
       add-mappings: false
