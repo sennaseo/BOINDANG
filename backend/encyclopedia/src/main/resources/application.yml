@@ -5,8 +5,8 @@ spring:
   application:
     name: encyclopedia
 
-  profiles:
-    active: test
+  # profiles:
+  #   active: test
 
   web:
     resources:
