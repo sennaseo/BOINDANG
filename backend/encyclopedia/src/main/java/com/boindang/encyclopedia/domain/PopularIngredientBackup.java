@@ -17,6 +17,9 @@ public class PopularIngredientBackup {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "ingredient_id", nullable = false)
+    private String ingredientId;
+
     @Column(name = "ingredient_name", nullable = false)
     private String ingredientName;
 

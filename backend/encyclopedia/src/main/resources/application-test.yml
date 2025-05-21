@@ -1,0 +1,28 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/encyclopedia?useSSL=false&characterEncoding=UTF-8&serverTimezone=Asia/Seoul
+    username: root
+    password: ssafy
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: false
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+
+  elasticsearch:
+    uris: http://localhost:9200
+
+  # Redis, Kafka 등을 쓴다면 여기에 추가
+  # redis:
+  #   host: localhost
+  #   port: 6379
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.elasticsearch.client: WARN
