@@ -1,5 +1,6 @@
 package com.boindang.encyclopedia.infrastructure;
 
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -7,6 +8,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 
 @Component
+@Profile("!test")
 @RequiredArgsConstructor
 public class RedisAutocompleteSeeder {
 

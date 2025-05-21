@@ -4,13 +4,15 @@ import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.info.Info;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @OpenAPIDefinition(
-		info = @Info(title = "보인당 백과사전 API", version = "v1", description = "보인당 API 명세서")
+	info = @Info(title = "보인당 백과사전 API", version = "v1", description = "보인당 API 명세서")
 )
 @EnableScheduling
 @SpringBootApplication
+@EnableElasticsearchRepositories(basePackages = "com.boindang.encyclopedia.infrastructure")
 public class EncyclopediaApplication {
 
 	public static void main(String[] args) {

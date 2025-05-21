@@ -9,6 +9,7 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.unit.Fuzziness;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import com.boindang.encyclopedia.common.exception.ElasticSearchException;
