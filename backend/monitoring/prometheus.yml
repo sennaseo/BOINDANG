@@ -1,0 +1,45 @@
+scrape_configs:
+  - job_name: 'Gateway'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['3.34.141.11:1111']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'Gateway'
+      
+  - job_name: 'Main Service Server'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['43.203.153.204:1111']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'Image Service'
+
+  - job_name: 'Sub Service Server'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['3.38.168.89:1111']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'Auth Service'
+        
+  - job_name: 'Sub Service Server 2'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['43.203.164.221:1111']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'Encyclopedia Service'
+
+
+
+
+
