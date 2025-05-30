@@ -8,7 +8,6 @@
 **보인당**은 이러한 문제점을 해결하여, 당 관련 질환을 앓고 있거나 혈당 관리를 하는 소비자들이 겉 포장 문구가 아닌 **실제 성분에 기반한 현명한 제품 선택**을 할 수 있도록 지원하는 것을 **목표**로 합니다.
 
 ## 기술스택
----
 ### 1. Frontend
 <img src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=React&logoColor=white">
 <img src="https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white">
@@ -44,7 +43,6 @@
 
 <img src="https://img.shields.io/badge/Prometheus-E6522C?style=for-the-badge&logo=Prometheus&logoColor=white">
 <img src="https://img.shields.io/badge/grafana-%23F46800.svg?style=for-the-badge&logo=grafana&logoColor=white">
-
 
 
 
