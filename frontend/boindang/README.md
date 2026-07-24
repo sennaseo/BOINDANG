@@ -25,22 +25,14 @@
 - TanStack Query (React Query)
 - axios
 
-### 실시간 통신 라이브러리
+### 차트 라이브러리
 
-- Socket.IO
+- Recharts
 
-### 테스팅 라이브러리
-
-- Jest
-- React Testing Library
-
-### 컴포넌트 라이브러리
-
-- Storybook
-
-### 애니메이션 라이브러리 (캐릭터 움직임용)
+### 3D 라이브러리 (캐릭터 움직임용)
 
 - Three.js
+- React Three Fiber (@react-three/fiber, @react-three/drei)
 
 ---
 

@@ -36,7 +36,7 @@ export const getCheckUsername = async (
   username: string,
 ): Promise<ApiResponse<CheckUsernameData>> => {
   const response = await apiClient.get<ApiResponse<CheckUsernameData>>(
-    `/user/check-username?username=${username}`,
+    `/user/check-username?username=${encodeURIComponent(username)}`,
   );
   return response.data;
 };

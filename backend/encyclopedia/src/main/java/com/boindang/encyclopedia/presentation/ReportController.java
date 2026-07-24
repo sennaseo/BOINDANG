@@ -22,7 +22,7 @@ public class ReportController {
 
 	private final ReportService reportService;
 
-	@Operation(summary = "성분 이름 목록으로 성분 정보 목록 조회 (for 유진)", description = "성분리스트 보내면 정보 쭈루룩 + 위험 성분 top3까G")
+	@Operation(summary = "성분 이름 목록으로 성분 정보 목록 조회", description = "성분 이름 리스트와 유저 타입을 보내면 성분 상세 정보 목록과 위험 성분 Top3를 반환합니다.")
 	@PostMapping("/user-type")
 	public ApiResponses<UserReportResponse> getReport(@RequestBody ReportRequest request) {
 		return ApiResponses.success(reportService.getUserReport(request.getIngredients(), request.getUserType()));

@@ -25,7 +25,6 @@ public class AuthService {
 
 
     public JwtTokenDto createToken(Long userId) {
-        System.out.println("Request: " + userId);
         return JwtTokenDto.builder()
                 .accessToken(jwtTokenProvider.createAccessToken(userId))
                 .refreshToken(jwtTokenProvider.createRefreshToken(userId))
@@ -57,7 +56,7 @@ public class AuthService {
             return false;
         }
         redisTemplate.opsForValue().set(token, "INVALIDATED", ttl, TimeUnit.MILLISECONDS);
-        return redisTemplate.opsForValue().get(token).equals("INVALIDATED");
+        return "INVALIDATED".equals(redisTemplate.opsForValue().get(token));
     }
 
 }

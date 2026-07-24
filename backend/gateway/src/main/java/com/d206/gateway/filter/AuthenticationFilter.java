@@ -59,7 +59,11 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
             return chain.filter(exchange);
         }
 
-        String token = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION).substring(7);
+        String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return onError(exchange, "Authorization 헤더가 없거나 형식이 잘못되었습니다.", HttpStatus.UNAUTHORIZED);
+        }
+        String token = authHeader.substring(7);
         Map<String, String> requestBody = Map.of("token", token);
         
         return webClientBuilder.build()
