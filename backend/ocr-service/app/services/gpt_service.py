@@ -28,8 +28,15 @@ async def call_gpt_api(messages: list[dict]) -> str:
     print("🔸 메시지:", messages)
 
     async with httpx.AsyncClient(timeout=60.0) as client:
-        response = await client.post(GPT_API_URL, headers=headers, json=payload)
-        response.raise_for_status()
+        try:
+            response = await client.post(GPT_API_URL, headers=headers, json=payload)
+            response.raise_for_status()
+        except (httpx.TimeoutException, httpx.HTTPStatusError) as e:
+            if isinstance(e, httpx.HTTPStatusError) and e.response.status_code < 500:
+                raise
+            # 타임아웃 또는 5xx 응답에 한해 1회만 재시도
+            response = await client.post(GPT_API_URL, headers=headers, json=payload)
+            response.raise_for_status()
         data = response.json()
 
     print("✅ [GPT 응답 수신 완료]")

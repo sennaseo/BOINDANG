@@ -55,8 +55,7 @@ export default function UserTypePage() {
         setLoading(true);
         setError(null);
         try {
-          const axiosResponse = await getReport(productId);
-          const apiResponse = axiosResponse.data; // ApiResponse<ReportResultData> 추출
+          const apiResponse = await getReport(productId); // ApiResponse<ReportResultData>
           const userInfoResponse = await getUserInfo();
           setUserInfo(userInfoResponse);
           if (apiResponse && apiResponse.success) {

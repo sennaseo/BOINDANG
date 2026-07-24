@@ -124,8 +124,7 @@ export default function SafetyPage() {
         setLoading(true);
         setError(null);
         try {
-            const axiosResponse = await getReport(productId);
-            const apiResponse = axiosResponse.data; // ApiResponse<ReportResultData> 추출
+            const apiResponse = await getReport(productId); // ApiResponse<ReportResultData>
 
           if (apiResponse && apiResponse.success) {
             setReportData(apiResponse.data);

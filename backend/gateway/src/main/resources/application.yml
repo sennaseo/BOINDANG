@@ -10,7 +10,9 @@ spring:
       globalcors:
         corsConfigurations:
           '[/**]':
-            allowedOriginPatterns: "*"
+            allowedOriginPatterns:
+              - "https://k12d206.p.ssafy.io"
+              - "http://localhost:3000"
             allowedMethods:
               - GET
               - POST
@@ -86,7 +88,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: "*"
+        include: health,info,prometheus
   server:
     port: 1111
 

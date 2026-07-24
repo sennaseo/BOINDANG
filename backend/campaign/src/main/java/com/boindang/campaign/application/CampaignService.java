@@ -73,16 +73,21 @@ public class CampaignService {
 			)
 			.toList();
 
-		// ✅ 페이징
+		// ✅ 페이징 (범위를 벗어나면 빈 목록 반환)
 		int fromIndex = page * size;
 		int toIndex = Math.min(fromIndex + size, sorted.size());
 
-		List<CampaignSummaryResponse> pageContent = sorted.subList(fromIndex, toIndex).stream()
-			.map(campaign -> {
-				boolean isApplied = applicationRepository.existsByCampaignIdAndUserId(campaign.getId(), userId);
-				return CampaignSummaryResponse.from(campaign, isApplied);
-			})
-			.toList();
+		List<CampaignSummaryResponse> pageContent;
+		if (fromIndex < 0 || fromIndex >= sorted.size() || fromIndex >= toIndex) {
+			pageContent = List.of();
+		} else {
+			pageContent = sorted.subList(fromIndex, toIndex).stream()
+				.map(campaign -> {
+					boolean isApplied = applicationRepository.existsByCampaignIdAndUserId(campaign.getId(), userId);
+					return CampaignSummaryResponse.from(campaign, isApplied);
+				})
+				.toList();
+		}
 
 		int totalPages = (int) Math.ceil((double) sorted.size() / size);
 

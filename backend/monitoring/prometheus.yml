@@ -1,3 +1,4 @@
+# ⚠️ 아래 IP들은 반납된 SSAFY EC2 — 재배포 시 갱신 필요
 scrape_configs:
   - job_name: 'Gateway'
     metrics_path: '/actuator/prometheus'

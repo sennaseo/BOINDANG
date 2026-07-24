@@ -49,9 +49,9 @@ export default function Home() {
         setError(null);
         setLoadingQuizStats(true);
         const stats = await fetchQuizStatistics();
-        const axiosResponse = await getReportHistory();
+        const apiResponse = await getReportHistory();
         setQuizStats(stats);
-        setHistoryItems(axiosResponse.data.data);
+        setHistoryItems(apiResponse.data);
       } catch (error) {
         console.error("퀴즈 통계 및 분석 내역 로딩 실패:", error);
         setError(error as ApiError);

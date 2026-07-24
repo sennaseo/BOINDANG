@@ -78,8 +78,7 @@ export default function CompositionPage({ params: paramsPromise }: ReportPagePro
         try {
           setLoading(true);
           try {
-            const response = await getReport(productId);
-            const apiResponse = response.data;
+            const apiResponse = await getReport(productId);
 
             if (apiResponse && apiResponse.success) {
               setReportData(apiResponse.data);

@@ -13,6 +13,9 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import java.net.URI;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.GATEWAY_ROUTE_ATTR;
 
@@ -48,7 +51,7 @@ public class LoggingGlobalFilter implements GlobalFilter {
         HttpHeaders headers = request.getHeaders();
 
         logger.info("Incoming Request: {} {}", method, uri);
-        logger.info("Request Headers: {}", headers);
+        logger.info("Request Headers: {}", maskSensitiveHeaders(headers));
     }
 
     private void logResponse(ServerHttpResponse response) {
@@ -56,6 +59,27 @@ public class LoggingGlobalFilter implements GlobalFilter {
         HttpHeaders headers = response.getHeaders();
 
         logger.info("Outgoing Response: Status Code {}", statusCode);
-        logger.info("Response Headers: {}", headers);
+        logger.info("Response Headers: {}", maskSensitiveHeaders(headers));
+    }
+
+    /**
+     * Authorization, token 관련 헤더는 값을 마스킹하여 로그에 평문으로 남지 않도록 한다.
+     * 나머지 헤더는 그대로 노출한다.
+     */
+    private Map<String, List<String>> maskSensitiveHeaders(HttpHeaders headers) {
+        Map<String, List<String>> masked = new LinkedHashMap<>();
+        headers.forEach((name, values) -> {
+            if (isSensitiveHeader(name)) {
+                masked.put(name, List.of("***"));
+            } else {
+                masked.put(name, values);
+            }
+        });
+        return masked;
+    }
+
+    private boolean isSensitiveHeader(String headerName) {
+        String lower = headerName.toLowerCase();
+        return lower.contains("authorization") || lower.contains("token");
     }
 }

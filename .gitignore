@@ -1,0 +1,4 @@
+# nginx 운영 로그 (실제 접속 IP 등 민감 정보 포함 — 커밋 금지)
+backend/nginx/log
+backend/nginx/log_nginx.txt
+backend/nginx/*.log

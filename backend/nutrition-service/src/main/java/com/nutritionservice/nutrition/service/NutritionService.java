@@ -173,9 +173,7 @@ public class NutritionService {
 	}
 
 	private NutritionReport saveOrUpdateReport(NutritionReport report) {
-		Optional<NutritionReport> existing = reportRepo.findByUserId(report.getUserId()).stream()
-			.filter(r -> r.getProductId().equals(report.getProductId()))
-			.findFirst();
+		Optional<NutritionReport> existing = reportRepo.findByUserIdAndProductId(report.getUserId(), report.getProductId());
 
 		existing.ifPresent(e -> report.setId(e.getId()));
 		NutritionReport saved = reportRepo.save(report);

@@ -32,8 +32,15 @@ async def call_clova_ocr_with_url(image_url: str) -> str:
     }
 
     async with httpx.AsyncClient(timeout=30.0) as client:
-        response = await client.post(ocr_url, headers=headers, json=body)
-        response.raise_for_status()
+        try:
+            response = await client.post(ocr_url, headers=headers, json=body)
+            response.raise_for_status()
+        except (httpx.TimeoutException, httpx.HTTPStatusError) as e:
+            if isinstance(e, httpx.HTTPStatusError) and e.response.status_code < 500:
+                raise
+            # 타임아웃 또는 5xx 응답에 한해 1회만 재시도
+            response = await client.post(ocr_url, headers=headers, json=body)
+            response.raise_for_status()
         data = response.json()
 
     fields = data.get("images", [])[0].get("fields", [])

@@ -39,8 +39,7 @@ export default function ReportPage({ params: paramsPromise }: ReportPageProps) {
       const fetchReport = async () => {
         setLoading(true);
         try {
-          const axiosResponse = await getReport(productId);
-          const apiResponse: ApiResponse<ReportResultData> = axiosResponse.data;
+          const apiResponse: ApiResponse<ReportResultData> = await getReport(productId);
 
           if (apiResponse && apiResponse.success && apiResponse.data) {
             setReport(apiResponse.data);

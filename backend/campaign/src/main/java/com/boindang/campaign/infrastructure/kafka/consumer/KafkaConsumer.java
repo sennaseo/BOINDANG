@@ -19,7 +19,7 @@ public class KafkaConsumer {
 	private final CampaignSaveService saveService;
 	private final ObjectMapper objectMapper;
 
-	@KafkaListener(topics = "apply-campaign", groupId = "campaign-group")
+	@KafkaListener(topics = "apply-campaign", groupId = "campaign-group", containerFactory = "kafkaListenerContainerFactory")
 	public void consume(String message) {
 		log.info("📥 Kafka 메시지 수신됨: {}", message);
 

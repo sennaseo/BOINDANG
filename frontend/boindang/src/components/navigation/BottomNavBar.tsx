@@ -25,9 +25,15 @@ export default function BottomNavBar() {
     setIsActionMenuOpen(!isActionMenuOpen);
   };
 
-  // TODO: 현재 활성 경로에 따라 아이콘/텍스트 색상 변경 로직 추가 (usePathname 사용)
   const activeColor = "#6C2FF2"; // 활성 상태 색상 예시
   const inactiveColor = "#A0AEC0"; // 비활성 상태 색상 (회색 계열)
+
+  // 현재 경로가 해당 탭에 속하는지 판정. 홈('/')은 정확히 일치할 때만,
+  // 그 외 탭은 하위 경로(예: /more/history)까지 활성으로 잡기 위해 startsWith 사용.
+  const isActive = (basePath: string) =>
+    basePath === '/'
+      ? pathname === '/'
+      : pathname === basePath || pathname.startsWith(`${basePath}/`);
 
   useEffect(() => {
     if (pathname !== '/') return;
@@ -59,17 +65,16 @@ export default function BottomNavBar() {
         {/* 홈 */}
         <Link href="/" className="flex flex-col items-center justify-center w-1/5">
           <div className="flex flex-col items-center transform -translate-y-1">
-            <House size={26} weight="fill" color={pathname === '/' ? activeColor : inactiveColor} />
-            <span className="text-xs mt-1" style={{ color: pathname === '/' ? activeColor : inactiveColor }}>홈</span>
+            <House size={26} weight="fill" color={isActive('/') ? activeColor : inactiveColor} />
+            <span className="text-xs mt-1" style={{ color: isActive('/') ? activeColor : inactiveColor }}>홈</span>
           </div>
         </Link>
 
         {/* 성분 */}
-        {/* TODO: 성분 페이지 경로로 변경 */}
         <Link href="/ingredients" className="flex flex-col items-center justify-center w-1/5">
           <div className="flex flex-col items-center transform -translate-y-1">
-            <Pill size={26} weight="fill" color={pathname === '/ingredients' ? activeColor : inactiveColor} />
-            <span className="text-xs mt-1" style={{ color: pathname === '/ingredients' ? activeColor : inactiveColor }}>성분</span>
+            <Pill size={26} weight="fill" color={isActive('/ingredients') ? activeColor : inactiveColor} />
+            <span className="text-xs mt-1" style={{ color: isActive('/ingredients') ? activeColor : inactiveColor }}>성분</span>
           </div>
         </Link>
 
@@ -144,20 +149,18 @@ export default function BottomNavBar() {
         </div>
 
         {/* 커뮤니티 (기존 식품 자리) */}
-        {/* TODO: 커뮤니티 페이지 경로 확인 */}
         <Link href="/community" className="flex flex-col items-center justify-center w-1/5">
           <div className="flex flex-col items-center transform -translate-y-1">
-            <ChatCircleDots size={26} weight="fill" color={pathname === '/community' ? activeColor : inactiveColor} />
-            <span className="text-xs mt-1" style={{ color: pathname === '/community' ? activeColor : inactiveColor }}>커뮤니티</span>
+            <ChatCircleDots size={26} weight="fill" color={isActive('/community') ? activeColor : inactiveColor} />
+            <span className="text-xs mt-1" style={{ color: isActive('/community') ? activeColor : inactiveColor }}>커뮤니티</span>
           </div>
         </Link>
 
         {/* 마이 (기존 더보기 자리) */}
-        {/* TODO: 마이페이지 경로 확인 후 /more 와 비교하는 로직 수정 필요 */}
         <Link href="/more" className="flex flex-col items-center justify-center w-1/5">
           <div className="flex flex-col items-center transform -translate-y-1">
-            <User size={26} weight="fill" color={pathname === '/more' ? activeColor : inactiveColor} />
-            <span className="text-xs mt-1" style={{ color: pathname === '/more' ? activeColor : inactiveColor }}>마이</span>
+            <User size={26} weight="fill" color={isActive('/more') ? activeColor : inactiveColor} />
+            <span className="text-xs mt-1" style={{ color: isActive('/more') ? activeColor : inactiveColor }}>마이</span>
           </div>
         </Link>
       </nav>

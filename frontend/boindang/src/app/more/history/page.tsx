@@ -32,9 +32,9 @@ export default function AnalysisHistoryPage() {
       try {
         setLoading(true);
         setError(null);
-        const axiosResponse = await getReportHistory();
-        console.log(axiosResponse);
-        setHistoryItems(axiosResponse.data);
+        const apiResponse = await getReportHistory();
+        console.log(apiResponse);
+        setHistoryItems(apiResponse);
       } catch (err) {
         setError(err as ApiError);
       }
