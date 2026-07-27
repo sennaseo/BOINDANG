@@ -2,3 +2,7 @@
 backend/nginx/log
 backend/nginx/log_nginx.txt
 backend/nginx/*.log
+
+# Python bytecode
+__pycache__/
+*.pyc
