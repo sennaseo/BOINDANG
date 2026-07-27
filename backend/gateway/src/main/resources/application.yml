@@ -15,6 +15,7 @@ spring:
         corsConfigurations:
           '[/**]':
             allowedOriginPatterns:
+              - "https://boindang.duckdns.org"
               - "https://k12d206.p.ssafy.io"
               - "http://localhost:3000"
             allowedMethods:

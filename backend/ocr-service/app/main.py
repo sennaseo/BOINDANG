@@ -32,6 +32,7 @@ app = FastAPI(lifespan=lifespan)
 app.include_router(ocr_router.router, prefix="")
 
 origins = [
+    "https://boindang.duckdns.org",
     "https://k12d206.p.ssafy.io",
     "http://localhost:3000"
 ]

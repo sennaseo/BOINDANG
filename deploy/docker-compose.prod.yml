@@ -1,0 +1,359 @@
+# BOINDANG 프로덕션 단일 컴포즈 (Oracle A1.Flex ARM/aarch64, 4코어/24GB, Ubuntu 24.04)
+# - BBANGGU 와 공존. BOINDANG 전체 RAM 예산 ~8GB.
+# - 모니터링(Prometheus/Grafana/Kibana) 제외.
+# - 인프라 → eureka → 앱 순서로 depends_on + healthcheck 기동.
+# - 앱 Dockerfile 들은 ./build/libs/*.jar 를 ADD 하는 방식 → 빌드 전 gradle bootJar 필요! (README 참고)
+# - 값은 전부 deploy/.env.prod 에서 주입 (docker compose 는 이 파일과 같은 디렉토리의 .env 를 자동 로드).
+#   실행 예: cd deploy && docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+
+x-eureka: &eureka-url "http://eureka:8761/eureka/"
+
+services:
+  # ───────────────────────── 인프라 ─────────────────────────
+  mysql:
+    image: mysql:8.0
+    container_name: boindang-mysql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_0900_ai_ci
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_USER: ${MYSQL_USER:-boindang}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      # entrypoint 가 이 DB 하나를 만들고 위 USER 에 권한을 준다. 나머지 DB/권한은 init 스크립트가 확장.
+      MYSQL_DATABASE: boindang_user
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d:ro   # 01-databases.sql, 02-encyclopedia.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    mem_limit: 1500m
+    restart: unless-stopped
+    networks: [boindang-net]
+
+  mongo:
+    image: mongo:6.0
+    container_name: boindang-mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      # init-mongo.js 가 env 로 앱 계정을 nutrition_db 에 만든다 (기존 스크립트 재사용).
+      DB_USERNAME: ${MONGO_APP_USERNAME}
+      DB_PASSWORD: ${MONGO_APP_PASSWORD}
+    volumes:
+      - mongo_data:/data/db
+      - ../backend/ocr-service/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    mem_limit: 700m
+    restart: unless-stopped
+    networks: [boindang-net]
+
+  redis:
+    image: redis:7-alpine
+    container_name: boindang-redis
+    command: ["redis-server", "--maxmemory", "128mb", "--maxmemory-policy", "allkeys-lru"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 20
+    mem_limit: 200m
+    restart: unless-stopped
+    networks: [boindang-net]
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+    container_name: boindang-es
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - xpack.security.http.ssl.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - bootstrap.memory_lock=true
+    ulimits:
+      memlock: { soft: -1, hard: -1 }
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+    mem_limit: 1200m
+    restart: unless-stopped
+    networks: [boindang-net]
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.3
+    container_name: boindang-kafka
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      # 내부망 전용: 다른 컨테이너가 kafka:9092 로 접속.
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_NUM_PARTITIONS: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      CLUSTER_ID: "LQ4uqTmOQteR31bEqSsRBw"
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-broker-api-versions --bootstrap-server localhost:9092 || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+    mem_limit: 700m
+    restart: unless-stopped
+    networks: [boindang-net]
+
+  # ───────────────────────── 디스커버리 ─────────────────────────
+  eureka:
+    build: { context: ../backend/eureka }
+    image: boindang/eureka:prod
+    container_name: boindang-eureka
+    environment:
+      JAVA_TOOL_OPTIONS: "-Xmx256m"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8761/actuator/health || curl -sf http://localhost:8761/ || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+    mem_limit: 512m
+    restart: unless-stopped
+    networks: [boindang-net]
+
+  # ───────────────────────── 앱 ─────────────────────────
+  gateway:
+    build: { context: ../backend/gateway }
+    image: boindang/gateway:prod
+    container_name: boindang-gateway
+    environment:
+      JAVA_TOOL_OPTIONS: "-Xmx256m"
+      EUREKA_URL: *eureka-url
+      REDIS_HOST: redis
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on:
+      redis: { condition: service_healthy }
+      eureka: { condition: service_healthy }
+    mem_limit: 512m
+    restart: unless-stopped
+    networks: [boindang-net, proxy-net]
+
+  auth:
+    build: { context: ../backend/auth }
+    image: boindang/auth:prod
+    container_name: boindang-auth
+    environment:
+      JAVA_TOOL_OPTIONS: "-Xmx256m"
+      EUREKA_URL: *eureka-url
+      HOST_IP: auth
+      REDIS_HOST: redis
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on:
+      redis: { condition: service_healthy }
+      eureka: { condition: service_healthy }
+    mem_limit: 512m
+    restart: unless-stopped
+    networks: [boindang-net]
+
+  boindang-user:
+    build: { context: ../backend/boindang-user }
+    image: boindang/boindang-user:prod
+    container_name: boindang-user
+    environment:
+      JAVA_TOOL_OPTIONS: "-Xmx256m"
+      EUREKA_URL: *eureka-url
+      HOST_IP: boindang-user
+      # ⚠ p6spy 형식! (다른 서비스는 일반 jdbc)
+      DB_URL: jdbc:p6spy:mysql://mysql:3306/boindang_user
+      DB_USERNAME: ${MYSQL_USER:-boindang}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      COOKIE_SECURE: "true"
+    depends_on:
+      mysql: { condition: service_healthy }
+      eureka: { condition: service_healthy }
+    mem_limit: 512m
+    restart: unless-stopped
+    networks: [boindang-net]
+
+  campaign:
+    build: { context: ../backend/campaign }
+    image: boindang/campaign:prod
+    container_name: boindang-campaign
+    environment:
+      JAVA_TOOL_OPTIONS: "-Xmx256m"
+      EUREKA_URL: *eureka-url
+      HOST_IP: campaign
+      DB_URL: jdbc:mysql://mysql:3306/boindang_campaign
+      DB_USERNAME: ${MYSQL_USER:-boindang}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      REDIS_HOST: redis
+      BOOTSTRAP_SERVER: kafka:9092
+    depends_on:
+      mysql: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      kafka: { condition: service_healthy }
+      eureka: { condition: service_healthy }
+    mem_limit: 512m
+    restart: unless-stopped
+    networks: [boindang-net]
+
+  community:
+    build: { context: ../backend/community }
+    image: boindang/community:prod
+    container_name: boindang-community
+    environment:
+      JAVA_TOOL_OPTIONS: "-Xmx256m"
+      EUREKA_URL: *eureka-url
+      HOST_IP: community
+      DB_URL: jdbc:mysql://mysql:3306/boindang_community
+      DB_USERNAME: ${MYSQL_USER:-boindang}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+    depends_on:
+      mysql: { condition: service_healthy }
+      eureka: { condition: service_healthy }
+    mem_limit: 512m
+    restart: unless-stopped
+    networks: [boindang-net]
+
+  quiz:
+    build: { context: ../backend/quiz }
+    image: boindang/quiz:prod
+    container_name: boindang-quiz
+    environment:
+      JAVA_TOOL_OPTIONS: "-Xmx256m"
+      EUREKA_URL: *eureka-url
+      HOST_IP: quiz
+      DB_URL: jdbc:mysql://mysql:3306/boindang_quiz
+      DB_USERNAME: ${MYSQL_USER:-boindang}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+    depends_on:
+      mysql: { condition: service_healthy }
+      eureka: { condition: service_healthy }
+    mem_limit: 512m
+    restart: unless-stopped
+    networks: [boindang-net]
+
+  encyclopedia:
+    build: { context: ../backend/encyclopedia }
+    image: boindang/encyclopedia:prod
+    container_name: boindang-encyclopedia
+    environment:
+      JAVA_TOOL_OPTIONS: "-Xmx384m"   # ES 클라이언트 때문에 조금 더
+      EUREKA_URL: *eureka-url
+      HOST_IP: encyclopedia
+      DB_URL: jdbc:mysql://mysql:3306/encyclopedia_db
+      DB_USERNAME: ${MYSQL_USER:-boindang}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      REDIS_HOST: redis
+      ELASTICSEARCH_URL: elasticsearch   # application.yml: http://${ELASTICSEARCH_URL}:9200
+    depends_on:
+      mysql: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      elasticsearch: { condition: service_healthy }
+      eureka: { condition: service_healthy }
+    mem_limit: 640m
+    restart: unless-stopped
+    networks: [boindang-net]
+
+  nutrition-service:
+    build: { context: ../backend/nutrition-service }
+    image: boindang/nutrition-service:prod
+    container_name: boindang-nutrition
+    environment:
+      JAVA_TOOL_OPTIONS: "-Xmx256m"
+      EUREKA_URL: *eureka-url
+      HOST_IP: nutrition-service
+      # nutrition-service application.yml: spring.data.mongodb.uri=${DB_URL}, database=${DB_NAME}
+      DB_URL: ${MONGO_APP_URI}
+      DB_NAME: nutrition_db
+    depends_on:
+      mongo: { condition: service_healthy }
+      eureka: { condition: service_healthy }
+    mem_limit: 512m
+    restart: unless-stopped
+    networks: [boindang-net]
+
+  ocr-service:
+    build: { context: ../backend/ocr-service }
+    image: boindang/ocr-service:prod
+    container_name: boindang-ocr
+    environment:
+      EUREKA_URL: *eureka-url
+      HOST_IP: ocr-service
+      MONGODB_URI: ${MONGO_APP_URI}
+      DB_USERNAME: ${MONGO_APP_USERNAME}
+      DB_PASSWORD: ${MONGO_APP_PASSWORD}
+      DB_NAME: nutrition_db
+      CLOVA_OCR_API_URL: ${CLOVA_OCR_API_URL}
+      CLOVA_OCR_SECRET_KEY: ${CLOVA_OCR_SECRET_KEY}
+      OPENAI_API_URL: ${OPENAI_API_URL}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+    depends_on:
+      mongo: { condition: service_healthy }
+      eureka: { condition: service_healthy }
+    mem_limit: 700m   # Python + opencv/numpy
+    restart: unless-stopped
+    networks: [boindang-net]
+
+  image-service:
+    build: { context: ../backend/image-service }
+    image: boindang/image-service:prod
+    container_name: boindang-image
+    environment:
+      JAVA_TOOL_OPTIONS: "-Xmx256m"
+      EUREKA_URL: *eureka-url
+      HOST_IP: image-service
+      DB_URL: jdbc:mysql://mysql:3306/boindang_image
+      DB_USERNAME: ${MYSQL_USER:-boindang}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      S3_BUCKET_NAME: ${S3_BUCKET_NAME}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY}
+      S3_REGION: ${S3_REGION}
+    depends_on:
+      mysql: { condition: service_healthy }
+      eureka: { condition: service_healthy }
+    mem_limit: 512m
+    restart: unless-stopped
+    networks: [boindang-net]
+
+  frontend:
+    build:
+      context: ../frontend/boindang
+      args:
+        # NEXT_PUBLIC_* 는 빌드타임에 번들에 박힌다.
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-https://boindang.duckdns.org/api}
+        NEXT_PUBLIC_CDN_BASE_URL: ${NEXT_PUBLIC_CDN_BASE_URL}
+    image: boindang/frontend:prod
+    container_name: boindang-frontend
+    mem_limit: 512m
+    restart: unless-stopped
+    networks: [boindang-net, proxy-net]
+
+volumes:
+  mysql_data:
+  mongo_data:
+  es_data:
+  kafka_data:
+
+networks:
+  boindang-net:
+    name: boindang-net
+  # 공유 프록시(nginx)가 붙는 외부 네트워크. 최초 1회 `docker network create proxy-net` 필요.
+  proxy-net:
+    external: true
+    name: proxy-net
