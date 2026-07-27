@@ -6,3 +6,6 @@ backend/nginx/*.log
 # Python bytecode
 __pycache__/
 *.pyc
+
+# 배포 비밀값
+deploy/.env.prod

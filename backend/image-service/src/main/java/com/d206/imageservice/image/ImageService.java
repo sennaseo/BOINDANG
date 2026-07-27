@@ -7,6 +7,7 @@ import com.d206.imageservice.dto.ImageUploadResDto;
 import com.d206.imageservice.dto.MetaUploadReqDto;
 import com.d206.imageservice.exception.*;
 import com.netflix.discovery.EurekaClient;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.d206.imageservice.s3.S3Service;
@@ -22,6 +23,9 @@ public class ImageService {
 
     private final RestClient restClient;
     private EurekaClient discoveryClient;
+
+    @Value("${CDN_BASE_URL:https://d1d5plumlg2gxc.cloudfront.net}")
+    private String cdnBaseUrl;
 
 
     public ImageUploadResDto getPresignedUrl(String fileType, String fileName) {
@@ -51,7 +55,7 @@ public class ImageService {
         }
 
         Image image = Image.builder()
-                .imageUrl("https://d1d5plumlg2gxc.cloudfront.net/" + fileKey)
+                .imageUrl(cdnBaseUrl + "/" + fileKey)
                 .userId(userId)
                 .createdAt(LocalDateTime.now())
                 .build();

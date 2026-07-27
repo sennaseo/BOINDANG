@@ -10,7 +10,9 @@ const withPWA = withPWAInit({
 const nextConfig: NextConfig = {
   images: {
     domains: [
-      'd1d5plumlg2gxc.cloudfront.net'
+      'd1d5plumlg2gxc.cloudfront.net',
+      // CDN 베이스가 env 로 바뀌면 (예: S3 직접 서빙) 그 호스트도 허용
+      ...(process.env.NEXT_PUBLIC_CDN_BASE_URL ? [new URL(process.env.NEXT_PUBLIC_CDN_BASE_URL).hostname] : []),
     ],
   },
   compiler: {
