@@ -7,6 +7,7 @@ import { MagnifyingGlass, WarningCircle, CheckCircle, Fire } from '@phosphor-ico
 import CategoryListSection from './components/CategoryListSection';
 import type { PopularIngredient } from '@/types/api/encyclopedia';
 import { fetchPopularIngredients } from '@/api/encyclopedia';
+import { getApiErrorMessage } from '@/lib/getApiErrorMessage';
 import FeaturedIngredientsCarousel from './components/FeaturedIngredientsSection';
 import { usePreventSwipeBack } from '@/hooks/usePreventSwipeBack';
 
@@ -92,11 +93,7 @@ export default function IngredientsPage() {
           setPopularIngredients([]);
         }
       } catch (err) {
-        if (err instanceof Error) {
-          setErrorPopular(err.message);
-        } else {
-          setErrorPopular('알 수 없는 오류가 발생했습니다.');
-        }
+        setErrorPopular(getApiErrorMessage(err) ?? (err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.'));
         setPopularIngredients([]);
       }
       setIsLoadingPopular(false);

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Info } from '@phosphor-icons/react';
 import BottomNavBar from '@/components/navigation/BottomNavBar';
 import { getReportHistory } from '@/api/report';
+import { getApiErrorMessage } from '@/lib/getApiErrorMessage';
 import { ReportHistory } from '@/types/api/report';
 import { ApiError, ApiResponse } from '@/types/api';
 import BackArrowIcon from '@/components/common/BackArrowIcon';
@@ -36,7 +37,7 @@ export default function AnalysisHistoryPage() {
         console.log(apiResponse);
         setHistoryItems(apiResponse);
       } catch (err) {
-        setError(err as ApiError);
+        setError({ status: 'ERROR', message: getApiErrorMessage(err) ?? '분석 기록을 불러오는데 실패했습니다.' });
       }
       setLoading(false);
     };

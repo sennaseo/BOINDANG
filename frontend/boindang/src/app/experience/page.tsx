@@ -5,6 +5,7 @@ import ExperienceHeader from '../../components/experience/ExperienceHeader';
 import ExperienceList from '../../components/experience/ExperienceList';
 import BottomNavBar from '../../components/navigation/BottomNavBar';
 import { fetchExperiences } from '../../api/experience';
+import { getApiErrorMessage } from '@/lib/getApiErrorMessage';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { ExperienceCardProps } from '../../components/experience/ExperienceCard';
 import { usePreventSwipeBack } from '@/hooks/usePreventSwipeBack';
@@ -55,6 +56,7 @@ export default function ExperiencePage() {
     const fetchData = async () => {
       setIsLoading(true);
       isFetchingRef.current = true;
+      try {
       const data = await fetchExperiences(status || undefined, ITEMS_PER_PAGE, currentPage);
       if (data && data.data && Array.isArray(data.data.campaigns)) {
         const newItems = data.data.campaigns.map((item) => ({
@@ -81,8 +83,12 @@ export default function ExperiencePage() {
         });
         setTotalPages(data.data.totalPages);
       }
-      setIsLoading(false);
-      isFetchingRef.current = false;
+      } catch (e) {
+        console.error('체험단 목록 로딩 실패:', getApiErrorMessage(e) ?? e);
+      } finally {
+        setIsLoading(false);
+        isFetchingRef.current = false;
+      }
     };
     fetchData();
   }, [status, currentPage]);

@@ -16,25 +16,25 @@ import lombok.extern.slf4j.Slf4j;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 	@ExceptionHandler(CommunityException.class)
-	public ApiResponses<?> handleCommunityException(Exception e) {
-		return ApiResponses.error(new ErrorResponse(HttpStatus.FORBIDDEN, e.getMessage()));
+	public ResponseEntity<ApiResponses<?>> handleCommunityException(Exception e) {
+		return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponses.error(new ErrorResponse(HttpStatus.FORBIDDEN, e.getMessage())));
 	}
 
 	@ExceptionHandler(NotFoundException.class)
-	public ApiResponses<?> handleNotFoundException(Exception e) {
-		return ApiResponses.error(new ErrorResponse(HttpStatus.NOT_FOUND, e.getMessage()));
+	public ResponseEntity<ApiResponses<?>> handleNotFoundException(Exception e) {
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponses.error(new ErrorResponse(HttpStatus.NOT_FOUND, e.getMessage())));
 	}
 
 	// ✅ @Valid 유효성 검사 실패 처리
 	@ExceptionHandler(MethodArgumentNotValidException.class)
-	public ApiResponses<?> handleValidationException(MethodArgumentNotValidException e) {
+	public ResponseEntity<ApiResponses<?>> handleValidationException(MethodArgumentNotValidException e) {
 		String errorMessage = e.getBindingResult()
 			.getFieldErrors()
 			.stream()
 			.findFirst()
 			.map(DefaultMessageSourceResolvable::getDefaultMessage)
 			.orElse("잘못된 요청입니다.");
-		return ApiResponses.error(new ErrorResponse(HttpStatus.BAD_REQUEST, errorMessage));
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponses.error(new ErrorResponse(HttpStatus.BAD_REQUEST, errorMessage)));
 	}
 
 	// 기타 예외 처리
@@ -42,7 +42,7 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<ApiResponses<String>> handleAllExceptions(Exception e) {
 		log.info(e.getMessage());
 		log.info(e.toString());
-		return ResponseEntity.ok(
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
 			ApiResponses.error(new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage())));
 	}
 }

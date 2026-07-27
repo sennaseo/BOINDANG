@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation';
 import { getReportHistory } from '@/api/report';
 import { ReportHistory } from '@/types/api/report';
 import { ApiError } from '@/types/api';
+import { getApiErrorMessage } from '@/lib/getApiErrorMessage';
 
 // 클라이언트 사이드에서만 로드하기 위해 dynamic import 사용
 const DangDangi = dynamic(() => import('@/components/3D/DangDangi'), {
@@ -54,7 +55,7 @@ export default function Home() {
         setHistoryItems(apiResponse.data);
       } catch (error) {
         console.error("퀴즈 통계 및 분석 내역 로딩 실패:", error);
-        setError(error as ApiError);
+        setError({ status: 'ERROR', message: getApiErrorMessage(error) ?? '데이터를 불러오는데 실패했습니다.' });
         setQuizStats(null);
         setHistoryItems(null);
       } finally {

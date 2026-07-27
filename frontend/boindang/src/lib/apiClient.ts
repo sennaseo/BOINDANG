@@ -87,24 +87,18 @@ const handleTokenRefreshAndRetry = async (originalRequest: InternalAxiosRequestC
 
 // 응답 인터셉터
 apiClient.interceptors.response.use(
-  // 1. 성공 응답 처리 (HTTP 2xx)
-  async (response: AxiosResponse<ApiResponse<unknown>>) => {
-    const apiResponseData = response.data; // ApiResponse<T> 형태의 객체
-
-    // HTTP 200 이지만, 백엔드가 success:false 이고 UNATHORIZED 에러를 준 경우
-    if (apiResponseData && apiResponseData.success === false && apiResponseData.error?.status === 'UNAUTHORIZED') {
-      console.warn('[APIClient Success Interceptor] Detected UNAUTHORIZED (token expired) in 2xx response for:', response.config.url);
-      // 토큰 재발급 및 원래 요청 재시도
-      return handleTokenRefreshAndRetry(response.config as InternalAxiosRequestConfig & { _retry?: boolean });
-    }
-    // 그 외 모든 정상적인 성공 응답 (실제 데이터가 있거나, success:true인 다른 로직 에러 포함)
-    return response; // AxiosResponse를 그대로 반환해야 다음 then에서 response.data 등으로 접근
-  },
+  // 1. 성공 응답 처리 (HTTP 2xx) — 이제 인증 실패는 4xx로 오므로 그대로 통과
+  (response: AxiosResponse<ApiResponse<unknown>>) => response,
   // 2. 에러 응답 처리 (HTTP 4xx, 5xx 등 네트워크 에러 포함)
   async (error: AxiosError<ApiResponse<unknown> | unknown >) => { // 에러 응답 타입은 다양할 수 있음
     console.error('[APIClient Error Interceptor] Error for URL:', error.config?.url, 'Status:', error.response?.status, 'Data:', error.response?.data);
-    
+
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+
+    // refresh 요청 자체가 401이면 재발급 재시도하지 않고 그대로 reject → 상위 catch에서 logout (무한루프/데드락 방지)
+    if (error.response?.status === 401 && originalRequest?.url?.includes('/user/refresh')) {
+      return Promise.reject(error);
+    }
 
     // 실제 HTTP 401 에러인 경우
     if (error.response?.status === 401) {

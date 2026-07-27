@@ -14,18 +14,18 @@ import lombok.extern.slf4j.Slf4j;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(ElasticSearchException.class)
-    public ApiResponses<?> handleElasticError(Exception e) {
-        return ApiResponses.error(new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage()));
+    public ResponseEntity<ApiResponses<?>> handleElasticError(Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponses.error(new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage())));
     }
 
     @ExceptionHandler(InvalidIngredientQueryException.class)
-    public ApiResponses<?> handleInvalidCategory(Exception e) {
-        return ApiResponses.error(new ErrorResponse(HttpStatus.BAD_REQUEST, e.getMessage()));
+    public ResponseEntity<ApiResponses<?>> handleInvalidCategory(Exception e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponses.error(new ErrorResponse(HttpStatus.BAD_REQUEST, e.getMessage())));
     }
 
     @ExceptionHandler(IngredientNotFoundException.class)
-    public ApiResponses<?> handleNotFound(Exception e) {
-        return ApiResponses.error(new ErrorResponse(HttpStatus.NOT_FOUND, e.getMessage()));
+    public ResponseEntity<ApiResponses<?>> handleNotFound(Exception e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponses.error(new ErrorResponse(HttpStatus.NOT_FOUND, e.getMessage())));
     }
 
     // 기타 예외 처리
@@ -33,7 +33,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponses<String>> handleAllExceptions(Exception e) {
         log.info(e.getMessage());
         log.info(e.toString());
-        return ResponseEntity.ok(
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
             ApiResponses.error(new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage())));
     }
 }

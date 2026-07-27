@@ -99,11 +99,11 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
         return null;
     }
 
-    // 프론트 계약: HTTP 200 + {success:false, error:{status:"UNAUTHORIZED", ...}}
+    // 프론트 계약: HTTP 401 + {success:false, error:{status:"UNAUTHORIZED", ...}}
     private Mono<Void> unauthorized(ServerWebExchange exchange, String message) {
         ApiResponses<?> body = ApiResponses.error(new ErrorResponse(HttpStatus.UNAUTHORIZED, message));
         ServerHttpResponse response = exchange.getResponse();
-        response.setStatusCode(HttpStatus.OK);
+        response.setStatusCode(HttpStatus.UNAUTHORIZED);
         response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
         byte[] bytes;
         try {

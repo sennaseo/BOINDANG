@@ -14,28 +14,28 @@ import lombok.extern.slf4j.Slf4j;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(CampaignException.class)
-    public ApiResponses<?> handleCampaignException(Exception e) {
-        return ApiResponses.error(new ErrorResponse(HttpStatus.CONFLICT, e.getMessage()));
+    public ResponseEntity<ApiResponses<?>> handleCampaignException(Exception e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResponses.error(new ErrorResponse(HttpStatus.CONFLICT, e.getMessage())));
     }
 
     @ExceptionHandler(BadRequestException.class)
-    public ApiResponses<?> handleBadRequestException(Exception e) {
-        return ApiResponses.error(new ErrorResponse(HttpStatus.BAD_REQUEST, e.getMessage()));
+    public ResponseEntity<ApiResponses<?>> handleBadRequestException(Exception e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponses.error(new ErrorResponse(HttpStatus.BAD_REQUEST, e.getMessage())));
     }
 
     @ExceptionHandler(CampaignNotFoundException.class)
-    public ApiResponses<?> handleCampaignNotFoundException(Exception e) {
-        return ApiResponses.error(new ErrorResponse(HttpStatus.NOT_FOUND, e.getMessage()));
+    public ResponseEntity<ApiResponses<?>> handleCampaignNotFoundException(Exception e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponses.error(new ErrorResponse(HttpStatus.NOT_FOUND, e.getMessage())));
     }
 
     @ExceptionHandler(UserException.class)
-    public ApiResponses<?> handleUserException(Exception e) {
-        return ApiResponses.error(new ErrorResponse(HttpStatus.UNAUTHORIZED, e.getMessage()));
+    public ResponseEntity<ApiResponses<?>> handleUserException(Exception e) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponses.error(new ErrorResponse(HttpStatus.UNAUTHORIZED, e.getMessage())));
     }
 
     @ExceptionHandler(KafkaException.class)
-    public ApiResponses<?> handleKafkaException(Exception e) {
-        return ApiResponses.error(new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage()));
+    public ResponseEntity<ApiResponses<?>> handleKafkaException(Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponses.error(new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage())));
     }
 
     // 기타 예외 처리
@@ -43,7 +43,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponses<String>> handleAllExceptions(Exception e) {
         log.info(e.getMessage());
         log.info(e.toString());
-        return ResponseEntity.ok(
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
             ApiResponses.error(new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage())));
     }
 }

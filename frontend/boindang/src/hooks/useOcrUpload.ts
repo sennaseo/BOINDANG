@@ -5,6 +5,7 @@ import { getPresignedUrl } from '@/api/image';
 import { CDN_BASE_URL } from '@/lib/constants';
 import { ApiResponse } from '@/types/api';
 import { OcrResponseData } from '@/types/api/ocrCameraTypes';
+import { getApiErrorMessage } from '@/lib/getApiErrorMessage';
 
 // Base64 문자열을 Blob 객체로 변환하는 헬퍼 함수
 async function base64ToBlob(base64: string, fileType: string): Promise<Blob> {
@@ -365,11 +366,14 @@ export function useOcrUpload({ router, setError, resetToIngredientStep }: UseOcr
         console.error('[ProcessAndNavigate] CATCH block entered. Error:', err);
         let errorMessage = '이미지 처리 중 알 수 없는 오류가 발생했습니다.';
 
-        if (typeof err === 'object' && err !== null) {
+        const apiMessage = getApiErrorMessage(err);
+        if (apiMessage) {
+          errorMessage = apiMessage;
+        } else if (typeof err === 'object' && err !== null) {
           if ('response' in err) {
-            const axiosError = err as { response?: { data?: { message?: string }; status?: number } };
-            console.error('OCR API 서버 오류 응답:', axiosError.response?.data);
-            errorMessage = axiosError.response?.data?.message || `서버 응답 오류: ${axiosError.response?.status ?? '알 수 없음'}`;
+            const axiosError = err as { response?: { status?: number } };
+            console.error('OCR API 서버 오류 응답:', err);
+            errorMessage = `서버 응답 오류: ${axiosError.response?.status ?? '알 수 없음'}`;
           } else if ('request' in err) {
             console.error('OCR API 응답 없음:', (err as { request?: unknown }).request);
             errorMessage = '서버에서 응답이 없습니다. 네트워크 연결을 확인해주세요.';

@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { ImageSquare, X, CaretDown } from '@phosphor-icons/react';
 import { getPresignedUrl, uploadImageToS3, uploadImageMetadata } from '../../../api/image';
 import { createCommunityPost } from '../../../api/community';
+import { getApiErrorMessage } from '@/lib/getApiErrorMessage';
 import { ApiCreatePostRequest } from '../../../types/api/community';
 import { Listbox, Transition } from '@headlessui/react';
 
@@ -97,7 +98,10 @@ export default function CommunityWritePage() {
     } catch (err: unknown) {
       console.error('Image processing error in handleFileChange:', err);
       let errorMessage = '이미지 처리 중 오류가 발생했습니다.';
-      if (err instanceof Error) {
+      const apiMessage = getApiErrorMessage(err);
+      if (apiMessage) {
+        errorMessage = apiMessage;
+      } else if (err instanceof Error) {
         errorMessage = err.message;
       } else if (typeof err === 'string') {
         errorMessage = err;

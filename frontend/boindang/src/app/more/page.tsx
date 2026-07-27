@@ -8,6 +8,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getUserInfo, getLogout, postDeleteAccount } from "@/api/auth";
+import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 import type { ApiResponse } from "@/types/api";
 import type { SignUpResult } from "@/types/api/authTypes";
 import { useAuthStore } from "@/stores/authStore";
@@ -36,7 +37,7 @@ export default function MorePage() {
                     setError("사용자 정보를 불러오는데 실패했습니다.");
                 }
             } catch (err) {
-                setError(err instanceof Error ? err.message : "알 수 없는 에러가 발생했습니다.");
+                setError(getApiErrorMessage(err) ?? (err instanceof Error ? err.message : "알 수 없는 에러가 발생했습니다."));
             }
             setLoading(false);
         };
@@ -105,11 +106,15 @@ export default function MorePage() {
     };
 
     const handleDeleteAccount = async () => {
-        const response = await postDeleteAccount();
-        if (response.success) {
-            useAuthStore.getState().logout();
-            console.log("회원탈퇴 처리");
-            setIsMenuOpen(false);
+        try {
+            const response = await postDeleteAccount();
+            if (response.success) {
+                useAuthStore.getState().logout();
+                console.log("회원탈퇴 처리");
+                setIsMenuOpen(false);
+            }
+        } catch (err) {
+            console.error("회원탈퇴 API 호출 중 에러 발생:", getApiErrorMessage(err) ?? err);
         }
     };
 

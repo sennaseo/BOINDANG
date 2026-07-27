@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import BackArrowIcon from '../../../components/common/BackArrowIcon';
 import { fetchExperienceDetail, applyExperience } from '../../../api/experience';
+import { getApiErrorMessage } from '@/lib/getApiErrorMessage';
 import { useAuthStore } from '../../../stores/authStore';
 import type { ExperienceDetail } from '../../../types/api/experience';
 import AlertModal from '../../../components/common/AlertModal';
@@ -49,9 +50,9 @@ export default function ExperienceDetailPage() {
         setModalMessage(res.error?.message || '신청에 실패했습니다.');
       }
       setModalOpen(true);
-    } catch {
+    } catch (e) {
       setModalTitle('신청 실패');
-      setModalMessage('신청에 실패했습니다.');
+      setModalMessage(getApiErrorMessage(e) ?? '신청에 실패했습니다.');
       setModalOpen(true);
     } finally {
       setApplying(false);

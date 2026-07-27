@@ -17,22 +17,22 @@ import lombok.extern.slf4j.Slf4j;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(JwtAuthenticationException.class)
-    public ApiResponses<?> handleInvalidateTokenException(Exception e) {
-        return ApiResponses.error(new ErrorResponse(HttpStatus.UNAUTHORIZED, e.getMessage()));
+    public ResponseEntity<ApiResponses<?>> handleInvalidateTokenException(Exception e) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponses.error(new ErrorResponse(HttpStatus.UNAUTHORIZED, e.getMessage())));
     }
 
     @ExceptionHandler(ExpiredTokenException.class)
-    public ApiResponses<?> handleExpiredTokenException(Exception e) {
+    public ResponseEntity<ApiResponses<?>> handleExpiredTokenException(Exception e) {
         ApiResponses<String> response = ApiResponses.error(new ErrorResponse(HttpStatus.UNAUTHORIZED, e.getMessage()));
         response.setData("REFRESH");
-        return response;
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 
     @ExceptionHandler(BlackListedTokenException.class)
-    public ApiResponses<?> handleBlackListedTokenException(Exception e) {
+    public ResponseEntity<ApiResponses<?>> handleBlackListedTokenException(Exception e) {
         ApiResponses<String> response = ApiResponses.error(new ErrorResponse(HttpStatus.UNAUTHORIZED, e.getMessage()));
         response.setData("RELOGIN");
-        return response;
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 
     // 기타 예외 처리
@@ -40,7 +40,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponses<String>> handleAllExceptions(Exception e) {
         log.info(e.getMessage());
         log.info(e.toString());
-        return ResponseEntity.ok(
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                 ApiResponses.error(new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage())));
     }
 }

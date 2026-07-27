@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Barbell, FirstAidKit, FloppyDisk, Heartbeat, Scales } from '@phosphor-icons/react';
 import BottomNavBar from '@/components/navigation/BottomNavBar';
 import { getUserInfo, updateUserProfile } from '@/api/auth';
+import { getApiErrorMessage } from '@/lib/getApiErrorMessage';
 import type { UserProfileUpdatePayload, UserTypeApi } from '@/types/api/authTypes';
 import type { ApiResponse } from '@/types/api';
 import BackArrowIcon from '@/components/common/BackArrowIcon';
@@ -62,7 +63,7 @@ export default function EditProfilePage() {
           setError(response.error?.message || '사용자 정보를 불러오는데 실패했습니다.');
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : '데이터 로딩 중 오류 발생');
+        setError(getApiErrorMessage(err) ?? (err instanceof Error ? err.message : '데이터 로딩 중 오류 발생'));
       }
       setLoading(false);
     };
@@ -121,7 +122,7 @@ export default function EditProfilePage() {
         setError(response.error?.message || '프로필 업데이트에 실패했습니다.');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : '프로필 업데이트 중 오류 발생');
+      setError(getApiErrorMessage(err) ?? (err instanceof Error ? err.message : '프로필 업데이트 중 오류 발생'));
     }
     setSaving(false);
   };

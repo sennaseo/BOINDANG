@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, HttpUrl
 from app.services.main_service import process_images
 
@@ -32,11 +33,14 @@ async def upload_images_by_url(payload: ImageUrlRequest):
         }
 
     except Exception as e:
-        return {
-            "data": None,
-            "error": {
-                "status": 500,
-                "message": str(e)
-            },
-            "success": False
-        }
+        return JSONResponse(
+            status_code=500,
+            content={
+                "data": None,
+                "error": {
+                    "status": 500,
+                    "message": str(e)
+                },
+                "success": False
+            }
+        )
