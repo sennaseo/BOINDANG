@@ -11,10 +11,14 @@ services:
     environment:
       EUREKA_URL: ${EUREKA_URL}
       JWT_SECRET: ${JWT_SECRET}
+      REDIS_HOST: redis
     restart: always
     networks:
       - nginx-network
+      - redis-network
 
 networks:
   nginx-network:
+    external: true
+  redis-network:
     external: true

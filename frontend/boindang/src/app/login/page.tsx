@@ -104,7 +104,7 @@ const InputField = ({
 export default function LoginPage() {
   const router = useRouter();
   const loginMutation = useLogin();
-  const { login, accessToken } = useAuthStore();
+  const { login, isLoggedIn } = useAuthStore();
 
   // 상태 관리
   const [formData, setFormData] = useState<LoginFormData>({
@@ -117,10 +117,10 @@ export default function LoginPage() {
 
   // 로그인 상태 확인 및 리디렉션 로직 (주석 해제)  
   useEffect(() => {
-    if (accessToken) {
+    if (isLoggedIn) {
       router.push('/'); // 로그인된 상태면 메인 페이지로 리디렉션
     }
-  }, [accessToken, router]);
+  }, [isLoggedIn, router]);
 
   // 입력 필드 변경 핸들러
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -175,15 +175,13 @@ export default function LoginPage() {
     // 로그인 뮤테이션 실행
     loginMutation.mutate(formData, {
       onSuccess: (response: ApiResponse<LoginResult | null>) => {
-        if (response.success && response.data) {
+        if (response.success) {
           console.log('로그인 성공 (ApiResponse):', response);
-          const { accessToken, refreshToken } = response.data;
-          login(accessToken, refreshToken);
-          console.log('토큰이 Zustand 스토어에 저장되었습니다.');
+          login(); // 토큰은 httpOnly 쿠키로 서버가 세팅함
           router.push('/');
         } else {
-          console.error('로그인 API 성공 응답이지만, 토큰 데이터가 없거나 실패했습니다:', response);
-          setError(response.error?.message || "로그인에 성공했으나 토큰 정보를 받아오지 못했습니다.");
+          console.error('로그인 API 응답 실패:', response);
+          setError(response.error?.message || "로그인에 실패했습니다.");
         }
       },
       onError: (error: unknown) => {
@@ -223,7 +221,7 @@ export default function LoginPage() {
   }, [focusedField]);
 
   // 이미 로그인된 상태라면 아무것도 렌더링하지 않거나 로딩 스피너를 보여줄 수 있습니다. (주석 해제)
-  if (accessToken) {
+  if (isLoggedIn) {
     return null; // 또는 <LoadingSpinner /> 같은 컴포넌트
   }
 

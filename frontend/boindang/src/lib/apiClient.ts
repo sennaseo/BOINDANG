@@ -7,44 +7,22 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://k12d206.p.
 
 const apiClient = axios.create({
   baseURL : API_BASE_URL,
+  withCredentials: true, // access_token/refresh_token httpOnly 쿠키 자동 전송/수신
   headers : {
     'Content-Type' : 'application/json',
   },
 });
 
-// 요청 인터셉터
-apiClient.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    const { accessToken } = useAuthStore.getState();
-    const isRefreshRequest = config.url === '/user/refresh';
-
-    console.log(`[APIClient Request Interceptor] Url: ${config.url}, IsRefresh: ${isRefreshRequest}, AccessToken from store: ${accessToken ? 'Exists' : 'NULL'}`);
-
-    if (accessToken && !isRefreshRequest) {
-      config.headers.Authorization = `Bearer ${accessToken}`;
-      console.log('[APIClient Request Interceptor] Authorization header SET with AccessToken for:', config.url);
-    } else if (isRefreshRequest) {
-      console.log('[APIClient Request Interceptor] This is a refresh token request. Authorization header SKIPPED for:', config.url);
-    } else {
-      console.log('[APIClient Request Interceptor] No access token or is refresh request, Authorization header NOT set for:', config.url);
-    }
-    return config;
-  },
-  (error: AxiosError) => {
-    return Promise.reject(error);
-  }
-);
-
 // 토큰 재발급 및 요청 재시도 관련 변수
 let isRefreshing = false;
 let failedQueue: Array<{ resolve: (value: unknown) => void; reject: (reason?: unknown) => void }> = [];
 
-const processQueue = (error: Error | null, token: string | null = null) => {
+const processQueue = (error: Error | null) => {
   failedQueue.forEach(prom => {
     if (error) {
       prom.reject(error);
     } else {
-      prom.resolve(token);
+      prom.resolve(null);
     }
   });
   failedQueue = [];
@@ -62,13 +40,10 @@ const handleTokenRefreshAndRetry = async (originalRequest: InternalAxiosRequestC
     if (isRefreshing) {
       console.log('[handleTokenRefreshAndRetry] Token is already refreshing. Adding to queue.');
       try {
-        const token = await new Promise((resolve, reject) => {
+        // 진행 중인 갱신이 끝날 때까지 대기 (쿠키가 갱신되므로 토큰 세팅 불필요)
+        await new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
         });
-        
-        if (originalRequest.headers) {
-          originalRequest.headers['Authorization'] = `Bearer ${token}`;
-        }
         originalRequest._retry = true;
         return apiClient(originalRequest);
       } catch (err) {
@@ -80,33 +55,17 @@ const handleTokenRefreshAndRetry = async (originalRequest: InternalAxiosRequestC
     isRefreshing = true;
     console.log('[handleTokenRefreshAndRetry] Attempting token refresh for request to:', originalRequest.url);
 
-    const { refreshToken, logout, setAccessToken } = useAuthStore.getState();
-
-    if (!refreshToken) {
-      console.error('[handleTokenRefreshAndRetry] No refresh token available. Logging out.');
-      logout();
-      isRefreshing = false;
-      processQueue(new Error('로그인이 필요합니다.'));
-      return Promise.reject(new Error('로그인이 필요합니다.'));
-    }
+    const { logout } = useAuthStore.getState();
 
     console.log('[handleTokenRefreshAndRetry] Calling postRefreshToken API.');
     const refreshResponse = await postRefreshToken();
 
-    if (refreshResponse.success && refreshResponse.data) {
-      const newToken = refreshResponse.data;
-      console.log('[handleTokenRefreshAndRetry] Token refreshed successfully. New token obtained.');
+    if (refreshResponse.success) {
+      console.log('[handleTokenRefreshAndRetry] Token refreshed successfully (cookie updated).');
 
-      // 재발급된 accessToken을 스토어에도 반영하여 이후 요청에서도 사용되도록 함
-      setAccessToken(newToken);
+      processQueue(null);
+      console.log('[handleTokenRefreshAndRetry] Retrying original request to:', originalRequest.url);
 
-      if (originalRequest.headers) {
-        originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
-      }
-
-      processQueue(null, newToken);
-      console.log('[handleTokenRefreshAndRetry] Retrying original request with new token to:', originalRequest.url);
-      
       return apiClient(originalRequest);
     } else {
       console.error('[handleTokenRefreshAndRetry] Token refresh API call failed:', refreshResponse.error);

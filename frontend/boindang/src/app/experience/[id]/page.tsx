@@ -25,7 +25,7 @@ export default function ExperienceDetailPage() {
   const router = useRouter();
   const params = useParams();
   const campaignId = Number(params.id);
-  const accessToken = useAuthStore((state) => state.accessToken);
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
 
   const [experience, setExperience] = useState<ExperienceDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -37,7 +37,7 @@ export default function ExperienceDetailPage() {
   const [modalMessage, setModalMessage] = useState('');
 
   const handleApply = async () => {
-    if (!accessToken || !campaignId) return;
+    if (!isLoggedIn || !campaignId) return;
     setApplying(true);
     try {
       const res = await applyExperience(campaignId);
@@ -59,7 +59,7 @@ export default function ExperienceDetailPage() {
   };
 
   useEffect(() => {
-    if (!accessToken || !campaignId) return;
+    if (!isLoggedIn || !campaignId) return;
     setLoading(true);
     fetchExperienceDetail(campaignId)
       .then((res) => {
@@ -70,7 +70,7 @@ export default function ExperienceDetailPage() {
         setError('상세 정보를 불러오지 못했습니다.');
         setLoading(false);
       });
-  }, [accessToken, campaignId]);
+  }, [isLoggedIn, campaignId]);
 
   useEffect(() => {
     if (!experience || experience.status !== '모집 예정') return;

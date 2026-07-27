@@ -14,8 +14,12 @@ import com.boindanguser.user.model.dto.request.UserSignupRequest;
 import com.boindanguser.user.model.dto.response.UserResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -25,24 +29,50 @@ public class UserController {
 
     private final UserService userService;
 
+    // auth application.yml 만료시간과 일치 (access 600000ms=600s, refresh 604800000ms=604800s)
+    private static final long ACCESS_MAX_AGE = 600;
+    private static final long REFRESH_MAX_AGE = 604800;
+
+    @Value("${cookie.secure:false}")
+    private boolean cookieSecure;
+
+    // 프론트 계약: 이름 access_token/refresh_token, HttpOnly, SameSite=Lax, Path=/
+    private void setTokenCookie(HttpServletResponse response, String name, String value, long maxAge) {
+        ResponseCookie cookie = ResponseCookie.from(name, value)
+                .httpOnly(true)
+                .secure(cookieSecure)
+                .sameSite("Lax")
+                .path("/")
+                .maxAge(maxAge)
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+    }
+
     @PostMapping("/signup")
     public ApiResponses<UserResponse> signup(@RequestBody @Valid UserSignupRequest request) {
         return ApiResponses.success(userService.signup(request));
     }
 
     @PostMapping("/login")
-    public ApiResponses<JwtTokenDto> login(@RequestBody @Valid UserLoginRequest request) {
-        return ApiResponses.success(userService.login(request));
+    public ApiResponses<JwtTokenDto> login(@RequestBody @Valid UserLoginRequest request, HttpServletResponse response) {
+        JwtTokenDto token = userService.login(request);
+        setTokenCookie(response, "access_token", token.getAccessToken(), ACCESS_MAX_AGE);
+        setTokenCookie(response, "refresh_token", token.getRefreshToken(), REFRESH_MAX_AGE);
+        return ApiResponses.success(token); // 바디 유지 (하위 호환)
     }
 
     @GetMapping("/logout")
-    public ApiResponses<Boolean> logout(@RequestHeader("token") String token) {
+    public ApiResponses<Boolean> logout(@RequestHeader("token") String token, HttpServletResponse response) {
+        setTokenCookie(response, "access_token", "", 0);
+        setTokenCookie(response, "refresh_token", "", 0);
         return ApiResponses.success(userService.logout(token));
     }
 
     @GetMapping("/refresh")
-    public ApiResponses<String> refresh(@RequestHeader("X-User-Id") Long userId) {
-        return ApiResponses.success(userService.refresh(userId));
+    public ApiResponses<String> refresh(@RequestHeader("X-User-Id") Long userId, HttpServletResponse response) {
+        String accessToken = userService.refresh(userId);
+        setTokenCookie(response, "access_token", accessToken, ACCESS_MAX_AGE);
+        return ApiResponses.success(accessToken); // 바디 유지 (하위 호환)
     }
 
     @DeleteMapping("/delete")
