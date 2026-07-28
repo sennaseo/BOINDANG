@@ -202,6 +202,8 @@ services:
       DB_URL: jdbc:mysql://mysql:3306/boindang_campaign
       DB_USERNAME: ${MYSQL_USER:-boindang}
       DB_PASSWORD: ${MYSQL_PASSWORD}
+      # 소스는 ddl-auto:none — 새 DB엔 테이블이 없어서 첫 조회부터 500. 엔티티 기준으로 생성/보정.
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
       REDIS_HOST: redis
       BOOTSTRAP_SERVER: kafka:9092
     depends_on:
@@ -224,6 +226,7 @@ services:
       DB_URL: jdbc:mysql://mysql:3306/boindang_community
       DB_USERNAME: ${MYSQL_USER:-boindang}
       DB_PASSWORD: ${MYSQL_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
     depends_on:
       mysql: { condition: service_healthy }
       eureka: { condition: service_healthy }
@@ -242,6 +245,7 @@ services:
       DB_URL: jdbc:mysql://mysql:3306/boindang_quiz
       DB_USERNAME: ${MYSQL_USER:-boindang}
       DB_PASSWORD: ${MYSQL_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
     depends_on:
       mysql: { condition: service_healthy }
       eureka: { condition: service_healthy }
