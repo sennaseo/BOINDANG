@@ -108,6 +108,8 @@ services:
       KAFKA_NUM_PARTITIONS: 1
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
       CLUSTER_ID: "LQ4uqTmOQteR31bEqSsRBw"
+      # cp-kafka 기본 힙(1G)이 mem_limit 700m 를 넘어 OOM kill → 2시간 주기 재시작 루프. 힙을 한도 안으로.
+      KAFKA_HEAP_OPTS: "-Xmx256M -Xms256M"
     volumes:
       - kafka_data:/var/lib/kafka/data
     healthcheck:

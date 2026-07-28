@@ -9,3 +9,4 @@ __pycache__/
 
 # 배포 비밀값
 deploy/.env.prod
+.gstack/
