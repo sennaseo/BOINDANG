@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
 import SplashScreen from './SplashScreen';
 
@@ -11,10 +11,16 @@ interface AuthInitializerProps {
 
 const splashShownSessionKey = 'splashAlreadyShown';
 
+// 비로그인 상태로도 접근 가능한 경로 (리다이렉트 대상에서 제외)
+const PUBLIC_PATHS = ['/onboarding', '/login', '/signup'];
+
 export default function AuthInitializer({ children }: AuthInitializerProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const { isLoggedIn } = useAuthStore();
   const [isLoading, setIsLoading] = useState(true);
+
+  const isPublicPath = PUBLIC_PATHS.some((path) => pathname.startsWith(path));
 
   const [isHydrated, setIsHydrated] = useState(false);
   const [hasSplashBeenShown, setHasSplashBeenShown] = useState(false);
@@ -55,11 +61,11 @@ export default function AuthInitializer({ children }: AuthInitializerProps) {
 
     const performAuthCheckAndFinishLoading = () => {
       console.log('AuthInitializer: Performing auth check...', { isLoggedIn });
-      if (isLoggedIn) {
-        console.log('AuthInitializer: User is logged in. Allowing access.');
-      } else {
+      if (!isLoggedIn && !isPublicPath) {
         console.log('AuthInitializer: User is not logged in. Redirecting to /onboarding.');
         router.replace('/onboarding');
+        // isLoading 은 그대로 둔다 — 아래 렌더 가드가 온보딩 도착 전까지 스플래시를 유지
+        // (여기서 바로 풀면 보호 페이지가 한 프레임 그려지는 "번쩍" 현상이 남)
       }
       setIsLoading(false);
     };
@@ -86,10 +92,11 @@ export default function AuthInitializer({ children }: AuthInitializerProps) {
         clearTimeout(splashTimer);
       };
     }
-  }, [isLoggedIn, isHydrated, router, hasSplashBeenShown]);
+  }, [isLoggedIn, isHydrated, router, hasSplashBeenShown, isPublicPath]);
 
-  if (isLoading) {
-    console.log('AuthInitializer: isLoading is true, showing SplashScreen.');
+  // 로딩 중이거나, 비로그인 사용자가 보호 경로에 있는 동안(온보딩 리다이렉트 진행 중)은 스플래시 유지
+  if (isLoading || (isHydrated && !isLoggedIn && !isPublicPath)) {
+    console.log('AuthInitializer: showing SplashScreen.', { isLoading, isPublicPath });
     return <SplashScreen />;
   }
 
