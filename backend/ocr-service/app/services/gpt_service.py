@@ -21,7 +21,8 @@ async def call_gpt_api(messages: list[dict]) -> str:
         "model": "gpt-4.1-mini",
         "messages": messages,
         "max_tokens": 4096,
-        "temperature": 0.3
+        "temperature": 0.3,
+        "response_format": {"type": "json_object"}
     }
 
     print("\n🚀 [GPT 호출 시작]")
@@ -45,7 +46,7 @@ async def call_gpt_api(messages: list[dict]) -> str:
     return data["choices"][0]["message"]["content"]
 
 
-async def ask_gpt_ingredient(ingredient_text: str) -> dict:
+async def ask_gpt_ingredient(image_url: str) -> dict:
     system_prompt = (
         """
         너는 식품 성분 분석 전문가다. 아래 성분 텍스트를 분석하여 다음 JSON 구조로 요약하라.
@@ -94,7 +95,10 @@ async def ask_gpt_ingredient(ingredient_text: str) -> dict:
 
     raw_content = await call_gpt_api([
         {"role": "system", "content": system_prompt},
-        {"role": "user", "content": f"분석 대상 텍스트:\n{ingredient_text}"}
+        {"role": "user", "content": [
+            {"type": "text", "text": "다음 제품 사진의 원재료명(성분) 표기를 읽고 분석하라."},
+            {"type": "image_url", "image_url": {"url": image_url}}
+        ]}
     ])
 
     try:
@@ -108,7 +112,7 @@ async def ask_gpt_ingredient(ingredient_text: str) -> dict:
         return {"error": "Invalid JSON response from GPT"}
 
 
-async def ask_gpt_nutrition(nutrition_text: str) -> dict:
+async def ask_gpt_nutrition(image_url: str) -> dict:
     system_prompt = (
     """
     너는 식품 영양정보 분석 전문가다. 아래 텍스트를 분석해 영양 성분을 요약하라.
@@ -154,7 +158,10 @@ async def ask_gpt_nutrition(nutrition_text: str) -> dict:
 
     raw_content = await call_gpt_api([
         {"role": "system", "content": system_prompt},
-        {"role": "user", "content": f"영양정보 텍스트:\n{nutrition_text}"}
+        {"role": "user", "content": [
+            {"type": "text", "text": "다음 제품 사진의 영양정보표를 읽고 분석하라."},
+            {"type": "image_url", "image_url": {"url": image_url}}
+        ]}
     ])
 
     try:

@@ -1,3 +1,5 @@
+import traceback
+
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, HttpUrl
@@ -33,13 +35,15 @@ async def upload_images_by_url(payload: ImageUrlRequest):
         }
 
     except Exception as e:
+        traceback.print_exc()
         return JSONResponse(
             status_code=500,
             content={
                 "data": None,
                 "error": {
                     "status": 500,
-                    "message": str(e)
+                    # ConnectTimeout 등 str()이 빈 예외 대비
+                    "message": str(e) or type(e).__name__
                 },
                 "success": False
             }

@@ -1,24 +1,17 @@
 # app/services/main_service.py
 
 import asyncio
-from app.services.ocr_service import call_clova_ocr_with_url
 from app.services.gpt_service import ask_gpt_ingredient, ask_gpt_nutrition
 from app.db.mongo_repository import save_product
-from app.utils.parser import clean_ingredient_text
 
 
-# 🧠 OCR → GPT 하나의 흐름을 처리하는 함수
+# 🧠 이미지 → GPT vision 하나의 흐름을 처리하는 함수
+# CLOVA OCR 제거: clovaocr-api-kr.ncloud.com은 NCP 내부망 전용이라 외부에서 연결 불가
 async def ocr_and_gpt(image_url: str, mode: str):
-    # OCR 처리
-    text = await call_clova_ocr_with_url(image_url)
-    print(f"[{mode.upper()} OCR 결과]:", text)
-
-    # GPT 분석
     if mode == "ingredient":
-        text = clean_ingredient_text(text)
-        result = await ask_gpt_ingredient(text)
+        result = await ask_gpt_ingredient(image_url)
     elif mode == "nutrition":
-        result = await ask_gpt_nutrition(text)
+        result = await ask_gpt_nutrition(image_url)
     else:
         raise ValueError("Invalid mode: must be 'ingredient' or 'nutrition'")
 

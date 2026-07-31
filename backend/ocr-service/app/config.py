@@ -2,8 +2,6 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import lru_cache
 
 class Settings(BaseSettings):
-    CLOVA_OCR_API_URL: str
-    CLOVA_OCR_SECRET_KEY: str
     OPENAI_API_URL: str
     OPENAI_API_KEY: str
     MONGODB_URI: str
