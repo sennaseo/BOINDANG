@@ -55,6 +55,9 @@ export default function OcrStatusObserver() {
         }
       } else if (status === 'error' && messageFromStorage) {
         hideToast(); // 이전 토스트가 있다면 닫음
+        // error는 종결 상태 — 지우지 않으면 마운트마다 토스트가 부활한다 (닫아도 페이지 이동 시 재표시)
+        localStorage.removeItem('ocrAnalysisState');
+        localStorage.removeItem('ocrAnalysisMessage');
         showToast({
           message: messageFromStorage,
           type: 'error',
