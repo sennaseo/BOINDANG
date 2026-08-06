@@ -66,6 +66,11 @@ export default function AuthInitializer({ children }: AuthInitializerProps) {
         router.replace('/onboarding');
         // isLoading 은 그대로 둔다 — 아래 렌더 가드가 온보딩 도착 전까지 스플래시를 유지
         // (여기서 바로 풀면 보호 페이지가 한 프레임 그려지는 "번쩍" 현상이 남)
+      } else if (isLoggedIn && isPublicPath) {
+        // 반대 방향도 막는다: 로그인 상태로 온보딩/로그인/가입에 들어오면 홈으로.
+        // 이걸 안 하면 앱 첫 진입에서 온보딩이 한 프레임 그려졌다 사라진다.
+        console.log('AuthInitializer: Already logged in on a public path. Redirecting to /.');
+        router.replace('/');
       }
       setIsLoading(false);
     };
@@ -94,9 +99,13 @@ export default function AuthInitializer({ children }: AuthInitializerProps) {
     }
   }, [isLoggedIn, isHydrated, router, hasSplashBeenShown, isPublicPath]);
 
-  // 로딩 중이거나, 비로그인 사용자가 보호 경로에 있는 동안(온보딩 리다이렉트 진행 중)은 스플래시 유지
-  if (isLoading || (isHydrated && !isLoggedIn && !isPublicPath)) {
-    console.log('AuthInitializer: showing SplashScreen.', { isLoading, isPublicPath });
+  // 리다이렉트가 끝날 때까지 스플래시를 유지한다. 양방향 모두 —
+  //  ① 비로그인 + 보호 경로 → 온보딩으로 가는 중
+  //  ② 로그인 + 공개 경로   → 홈으로 가는 중 (이게 없으면 온보딩이 한 프레임 번쩍)
+  const isRedirecting = isHydrated && (isLoggedIn ? isPublicPath : !isPublicPath);
+
+  if (isLoading || isRedirecting) {
+    console.log('AuthInitializer: showing SplashScreen.', { isLoading, isRedirecting, isPublicPath });
     return <SplashScreen />;
   }
 

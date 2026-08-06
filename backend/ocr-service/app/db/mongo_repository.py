@@ -13,27 +13,16 @@ print("DB name:", db.name)
 def save_product(image_urls:dict, product_name, result):
     print("🧪 save_product() 함수 시작")
 
-    # upsert 시도
-    update_result = db.product.update_one(
-        {"name": product_name},
-        {
-            "$set": {
-                "ingredientImageUrl": image_urls["ingredient_image_url"],
-                "nutritionImageUrl": image_urls["nutrition_image_url"],
-                "result": result,
-                "updatedAt": datetime.utcnow()
-            }
-        },
-        upsert=True
-    )
+    # 제품명 기반 upsert 는 폐기: 필터가 {"name": ...} 인데 $set 에 name 이 없어
+    # 제품명을 못 읽은 건들이 전부 같은 문서(name=null)를 덮어썼다.
+    # 리포트는 촬영 건별 기록이므로 매번 새 문서로 남긴다.
+    inserted = db.product.insert_one({
+        "name": product_name,
+        "ingredientImageUrl": image_urls["ingredient_image_url"],
+        "nutritionImageUrl": image_urls["nutrition_image_url"],
+        "result": result,
+        "updatedAt": datetime.utcnow()
+    })
 
-    # _id 가져오기: 삽입된 경우 → upserted_id, 아닌 경우 → 기존 문서 조회
-    if update_result.upserted_id:
-        inserted_id = update_result.upserted_id
-    else:
-        # name이 같은 기존 문서 조회해서 _id 반환
-        existing_doc = db.product.find_one({"name": product_name})
-        inserted_id = existing_doc["_id"]
-
-    print(f"✅ 저장 완료 - product_id: {inserted_id}")
-    return str(inserted_id)  # 문자열로 변환해서 반환
+    print(f"✅ 저장 완료 - product_id: {inserted.inserted_id}")
+    return str(inserted.inserted_id)  # 문자열로 변환해서 반환

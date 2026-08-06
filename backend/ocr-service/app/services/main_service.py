@@ -36,7 +36,9 @@ async def process_images(image_urls: dict, ingredient_url: str, nutrition_url: s
     }
 
     # 제품명 추출
-    product_name = result_ingredient.get("basicInfo", {}).get("name", "Unknown Product")
+    # GPT 가 basicInfo/name 을 명시적 null 로 보내면 .get(key, default) 는 default 를 안 쓴다
+    # → null 이 그대로 흘러 프론트의 'Unknown Product' 차단을 우회했다. or 로 막는다.
+    product_name = (result_ingredient.get("basicInfo") or {}).get("name") or "Unknown Product"
 
     # MongoDB 저장
     inserted_id = save_product(image_urls, product_name, result)
